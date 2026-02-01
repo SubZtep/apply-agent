@@ -1,10 +1,5 @@
 import { z } from "zod"
-
-const testData: JobSpec = {
-  skills: [],
-  responsibilities: [],
-  senioritySignals: ["leadership"],
-}
+import { normalise } from "../ai/normalise"
 
 const JobSpec = z.object({
   skills: z.array(z.string()),
@@ -14,6 +9,7 @@ const JobSpec = z.object({
 
 export type JobSpec = z.infer<typeof JobSpec>
 
-export function normalizeJob(_jobText?: string) {
-  return Promise.resolve(JobSpec.parse(testData))
+export async function normalizeJob(jobText: string) {
+  const job = await normalise(jobText)
+  return Promise.resolve(JobSpec.parse(job))
 }

@@ -19,7 +19,7 @@ export const handlers: Record<AgentState, StateHandler> = {
   },
 
   NORMALIZE: async ctx => {
-    ctx.job = await normalizeJob(ctx.jobText)
+    ctx.job = await normalizeJob(ctx.jobText!)
     return "EVALUATE"
   },
 

@@ -1,3 +1,4 @@
+import { join } from "node:path"
 import { runAgent } from "./machine/run"
 import type { RiskAssessment } from "./states/challenge"
 import type { EvaluationResult } from "./states/evaluate"
@@ -51,8 +52,8 @@ export interface AgentContext {
 
 const ctx: AgentContext = {
   state: "IDLE",
-  jobText: "job",
-  profileText: "profile",
+  jobText: await Bun.file(join(import.meta.dirname, "data", "job.txt")).text(),
+  profileText: await Bun.file(join(import.meta.dirname, "data", "cv.txt")).text(),
 }
 
 await runAgent(ctx)

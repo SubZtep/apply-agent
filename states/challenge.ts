@@ -2,7 +2,7 @@ import { z } from "zod"
 import type { AgentContext } from ".."
 
 const testData: RiskAssessment = {
-  hardGaps: ["owtnership"],
+  hardGaps: ["ownership"],
   softGaps: [],
   interviewerPushbacks: [],
 }
