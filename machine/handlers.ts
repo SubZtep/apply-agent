@@ -1,7 +1,7 @@
 import type { AgentContext, AgentState } from ".."
 import { logger } from "../lib/logger"
 import { challengeAssessment } from "../states/challenge"
-import { evaluateMatch } from "../states/evaluate"
+import { evaluateWithRetry } from "../states/evaluate"
 import { normalizeWithRetry } from "../states/normalize"
 import { generatePlan } from "../states/plan"
 import { decideNextState } from "./next"
@@ -32,7 +32,14 @@ export const handlers: Record<AgentState, StateHandler> = {
   },
 
   EVALUATE: async ctx => {
-    ctx.evaluation = await evaluateMatch(ctx.job!, ctx.profileText!)
+    const result = await evaluateWithRetry(ctx)
+
+    if (!result.ok) {
+      ctx.errors = [result.error.message]
+      return "FAILED"
+    }
+
+    ctx.evaluation = result.data
     return "CHALLENGE"
   },
 
@@ -59,8 +66,8 @@ export const handlers: Record<AgentState, StateHandler> = {
 
   DONE: async () => "DONE",
 
-  FAILED: async () => {
-    logger.error("Agent failed")
+  FAILED: async ctx => {
+    logger.error(ctx, "Agent failed")
     return "FAILED"
   },
 }

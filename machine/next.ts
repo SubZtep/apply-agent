@@ -28,12 +28,10 @@ export function decideNextState(ctx: AgentContext): {
   }
 
   // Rule C — low confidence
-  if (ctx.evaluation.requirements.length > 0) {
-    const lowConfidenceCount = ctx.evaluation.requirements.filter(r => r.confidence === "low").length
-    const ratio = lowConfidenceCount / ctx.evaluation.requirements.length
-    if (ratio > 0.4) {
-      questions.push("Several matches are uncertain. Should I assume best-case or conservative interpretation?")
-    }
+  const lowConfidenceCount = ctx.evaluation.requirements.filter(r => r.confidence < 0.5).length
+  const ratio = lowConfidenceCount / ctx.evaluation.requirements.length
+  if (ratio > 0.4) {
+    questions.push("Several matches are uncertain. Should I assume best-case or conservative interpretation?")
   }
 
   if (questions.length > 0) {

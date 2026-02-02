@@ -1,7 +1,7 @@
 import { join } from "node:path"
 import { runAgent } from "./machine/run"
 import type { RiskAssessment } from "./states/challenge"
-import type { EvaluationResult } from "./states/evaluate"
+import type { Evaluation } from "./states/evaluate"
 import type { JobSpec } from "./states/normalize"
 import type { ActionPlan } from "./states/plan"
 
@@ -33,7 +33,7 @@ export interface AgentContext {
   job?: JobSpec
 
   // evaluation results
-  evaluation?: EvaluationResult
+  evaluation?: Evaluation
 
   // challenge phase output
   risks?: RiskAssessment
