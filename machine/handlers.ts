@@ -1,7 +1,8 @@
 import type { AgentContext, AgentState } from ".."
+import { normalizeWithRetry } from "../ai/normalize"
+import { logger } from "../logger"
 import { challengeAssessment } from "../states/challenge"
 import { evaluateMatch } from "../states/evaluate"
-import { normalizeJob } from "../states/normalize"
 import { generatePlan } from "../states/plan"
 import { decideNextState } from "./next"
 
@@ -12,14 +13,21 @@ export const handlers: Record<AgentState, StateHandler> = {
 
   INGEST: async ctx => {
     if (!ctx.jobText || !ctx.profileText) {
-      console.error("Missing input")
+      logger.error(ctx, "Missing input")
       return "FAILED"
     }
     return "NORMALIZE"
   },
 
   NORMALIZE: async ctx => {
-    ctx.job = await normalizeJob(ctx.jobText!)
+    const result = await normalizeWithRetry(ctx.jobText!)
+
+    if (!result.ok) {
+      ctx.errors = [result.error.message]
+      return "FAILED"
+    }
+
+    ctx.job = result.data
     return "EVALUATE"
   },
 
@@ -52,7 +60,7 @@ export const handlers: Record<AgentState, StateHandler> = {
   DONE: async () => "DONE",
 
   FAILED: async () => {
-    console.error("Agent failed")
+    logger.error("Agent failed")
     return "FAILED"
   },
 }

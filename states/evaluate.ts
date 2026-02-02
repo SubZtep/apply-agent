@@ -1,7 +1,7 @@
 import { z } from "zod"
 import type { JobSpec } from "./normalize"
 
-const testData: EvaluationResult = { requirements: [] }
+const mockResult: EvaluationResult = { requirements: [] }
 
 const RequirementEvaluation = z.array(
   z.object({
@@ -19,5 +19,5 @@ const EvaluationResult = z.object({
 export type EvaluationResult = z.infer<typeof EvaluationResult>
 
 export function evaluateMatch(_jobSpec: JobSpec, _profileText: string) {
-  return Promise.resolve(EvaluationResult.parse(testData))
+  return Promise.resolve(EvaluationResult.parse(mockResult))
 }

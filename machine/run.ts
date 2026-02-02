@@ -1,4 +1,5 @@
 import type { AgentContext } from ".."
+import { logger } from "../logger"
 import { handlers } from "./handlers"
 
 export async function runAgent(initialContext: AgentContext) {
@@ -6,7 +7,7 @@ export async function runAgent(initialContext: AgentContext) {
 
   while (true) {
     const state = ctx.state
-    console.log(`→ State: ${state}`, ctx)
+    logger.info({ state }, "Entering state")
 
     const handler = handlers[state]
     if (!handler) {

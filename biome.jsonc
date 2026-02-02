@@ -17,8 +17,15 @@
   "linter": {
     "rules": {
       "recommended": true,
+      "complexity": {
+        "noUselessUndefinedInitialization": "off"
+      },
+      "correctness": {
+        "noUnreachable": "warn"
+      },
       "suspicious": {
         "noExplicitAny": "off",
+        "noImplicitAnyLet": "off",
         "noTsIgnore": "off"
       },
       "style": {
