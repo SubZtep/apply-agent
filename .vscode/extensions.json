@@ -1,5 +1,5 @@
 {
-  "recommendations": ["biomejs.biome", "bradlc.vscode-tailwindcss"],
+  "recommendations": ["biomejs.biome", "oven.bun-vscode"],
   "unwantedRecommendations": [
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode"
