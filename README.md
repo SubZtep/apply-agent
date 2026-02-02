@@ -17,3 +17,12 @@ DECIDE ───→ WAIT_FOR_HUMAN
   ↓
  DONE
 ```
+
+## Mode semantics
+
+| Strict                                       | Exploratory                               |
+| -------------------------------------------- | ----------------------------------------- |
+| Any unresolved uncertainty → WAIT_FOR_HUMAN  | Hard gaps → ask once, then proceed        |
+| Hard gaps → WAIT_FOR_HUMAN                   | Low confidence → assume best-case         |
+| Low confidence → WAIT_FOR_HUMAN              | LOW_QUALITY → downgrade severity, proceed |
+| LOW_QUALITY from EVALUATE/CHALLENGE → FAILED | Bias toward PLAN                          |

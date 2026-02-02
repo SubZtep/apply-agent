@@ -1,4 +1,5 @@
 import type { AgentContext, AgentState } from ".."
+import { logger } from "../lib/logger"
 
 export function decideNextState(ctx: AgentContext): {
   nextState: AgentState
@@ -35,9 +36,15 @@ export function decideNextState(ctx: AgentContext): {
   }
 
   if (questions.length > 0) {
-    return {
-      nextState: "WAIT_FOR_HUMAN",
-      questions,
+    switch (ctx.mode) {
+      case "strict":
+        return {
+          nextState: "WAIT_FOR_HUMAN",
+          questions,
+        }
+      case "exploratory":
+        logger.info("Exploratory mode: proceeding despite uncertainty")
+        return { nextState: "PLAN" }
     }
   }
 

@@ -23,6 +23,7 @@ interface HumanDecision {
 }
 
 export interface AgentContext {
+  mode: "strict" | "exploratory"
   state: AgentState
 
   // raw inputs
@@ -51,6 +52,7 @@ export interface AgentContext {
 }
 
 const ctx: AgentContext = {
+  mode: "strict",
   state: "IDLE",
   jobText: await Bun.file(join(import.meta.dirname, "data", "job.txt")).text(),
   profileText: await Bun.file(join(import.meta.dirname, "data", "cv.txt")).text(),
