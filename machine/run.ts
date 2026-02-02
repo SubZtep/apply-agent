@@ -1,5 +1,5 @@
 import type { AgentContext } from ".."
-import { logger } from "../logger"
+import { logger } from "../lib/logger"
 import { handlers } from "./handlers"
 
 export async function runAgent(initialContext: AgentContext) {

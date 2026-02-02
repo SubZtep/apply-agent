@@ -1,8 +1,8 @@
 import type { AgentContext, AgentState } from ".."
-import { normalizeWithRetry } from "../ai/normalize"
-import { logger } from "../logger"
+import { logger } from "../lib/logger"
 import { challengeAssessment } from "../states/challenge"
 import { evaluateMatch } from "../states/evaluate"
+import { normalizeWithRetry } from "../states/normalize"
 import { generatePlan } from "../states/plan"
 import { decideNextState } from "./next"
 
