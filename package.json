@@ -14,5 +14,8 @@
     "ai": "^6.0.67",
     "pino": "^10.3.0",
     "zod": "^4.3.6"
+  },
+  "optionalDependencies": {
+    "pdfmake": "^0.3.3"
   }
 }

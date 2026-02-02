@@ -1,61 +1,42 @@
-import { join } from "node:path"
-import { runAgent } from "./machine/run"
-import type { RiskAssessment } from "./states/challenge"
-import type { Evaluation } from "./states/evaluate"
-import type { JobSpec } from "./states/normalize"
-import type { ActionPlan } from "./states/plan"
+import { join } from "node:path";
+import { file, randomUUIDv7 } from "bun";
+import { getInitValues } from "./lib/input";
+import { FileAgentStore } from "./lib/persistence";
+import { runAgent } from "./machine/runner";
+// import type { RiskAssessment } from "./states/challenge";
+// import type { Evaluation } from "./states/evaluate";
+// import type { JobSpec } from "./states/normalize";
+// import type { ActionPlan } from "./states/plan";
 
-export type AgentState =
-  | "IDLE"
-  | "INGEST"
-  | "NORMALIZE"
-  | "EVALUATE"
-  | "CHALLENGE"
-  | "DECIDE"
-  | "WAIT_FOR_HUMAN"
-  | "PLAN"
-  | "DONE"
-  | "FAILED"
+// const store = new FileAgentStore();
+// const { agentId, mode, state, ...inputContext } = await getInitValues(store);
+// const { agentId, ...inputContext } = await getInitValues(store);
+// const { id, context } = await getInitValues(store);
+// console.log(initValues);
+// process.exit();
+const persisted = await getInitValues(store);
 
-interface HumanDecision {
-  forceProceed?: boolean
-  interpretAsBestCase?: boolean
-}
-
-export interface AgentContext {
-  mode: "strict" | "exploratory"
-  state: AgentState
-
-  // raw inputs
-  jobText?: string
-  profileText?: string
-
-  // normalized data
-  job?: JobSpec
-
-  // evaluation results
-  evaluation?: Evaluation
-
-  // challenge phase output
-  risks?: RiskAssessment
-
-  questions?: string[]
-
-  // human feedback
-  humanInput?: HumanDecision
-
-  // final output
-  plan?: ActionPlan
-
-  // meta
-  errors?: string[]
-}
-
-const ctx: AgentContext = {
-  mode: "strict",
-  state: "IDLE",
-  jobText: await Bun.file(join(import.meta.dirname, "data", "job.txt")).text(),
-  profileText: await Bun.file(join(import.meta.dirname, "data", "cv.txt")).text(),
-}
-
-await runAgent(ctx)
+await runAgent(
+  persisted.id
+    ? {
+        agentId: persisted.id,
+        initialContext: persisted.context,
+        store,
+      }
+    : {
+        agentId: randomUUIDv7(),
+        initialContext: {
+          mode: persisted.mode ?? "strict",
+          state: "IDLE",
+          // state: "IDLE",
+          // ...inputContext,
+          jobText: await file(
+            join(import.meta.dirname, "data", "job.md"),
+          ).text(),
+          profileText: await file(
+            join(import.meta.dirname, "data", "cv.md"),
+          ).text(),
+        },
+        store,
+      },
+);
