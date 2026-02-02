@@ -1,6 +1,6 @@
 import type { AgentContext, AgentState } from ".."
 import { logger } from "../lib/logger"
-import { challengeAssessment } from "../states/challenge"
+import { challengeWithRetry } from "../states/challenge"
 import { evaluateWithRetry } from "../states/evaluate"
 import { normalizeWithRetry } from "../states/normalize"
 import { generatePlan } from "../states/plan"
@@ -44,7 +44,14 @@ export const handlers: Record<AgentState, StateHandler> = {
   },
 
   CHALLENGE: async ctx => {
-    ctx.risks = await challengeAssessment(ctx)
+    const result = await challengeWithRetry(ctx)
+
+    if (!result.ok) {
+      ctx.errors = [result.error.message]
+      return "FAILED"
+    }
+
+    ctx.risks = result.data
     return "DECIDE"
   },
 
