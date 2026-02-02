@@ -39,7 +39,7 @@ export async function normalizeWithRetry(prompt: string, maxAttempts = 3): Promi
       rawOutput = result.output
       return { ok: true, data: result.output }
     } catch (err: any) {
-      logger.warn({ attempt, err }, "Normalize attempt failed")
+      logger.warn({ attempt, err }, "NORMALIZE attempt failed")
       if (attempt === maxAttempts) {
         logger.error(err, "Normalize failed")
         return {

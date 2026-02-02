@@ -38,12 +38,12 @@ function buildEvaluationPrompt(ctx: AgentContext) {
 }
 
 export async function evaluateWithRetry(ctx: AgentContext, maxAttempts = 3): Promise<EvaluateResult> {
-  let rawOutput: unknown
+  let rawOutput: unknown = undefined
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const result = await generateText({
-        model: lmstudio(process.env.EVALUATE_MODEL!),
+        model: lmstudio(process.env.EVALUATE_MODEL),
         output: Output.object({ schema: Evaluation }),
         system: SYSTEM_PROMPT,
         prompt: buildEvaluationPrompt(ctx),
@@ -55,23 +55,23 @@ export async function evaluateWithRetry(ctx: AgentContext, maxAttempts = 3): Pro
           ok: false,
           error: {
             reason: "INSUFFICIENT_SIGNAL",
-            rawOutput,
             message: "Evaluation lacks decision signal",
+            rawOutput,
           },
         }
       }
 
       return { ok: true, data: result.output }
     } catch (err) {
-      logger.warn({ attempt, err }, "Evaluate attempt failed")
+      logger.warn({ attempt, err }, "EVALUATE attempt failed")
 
       if (attempt === maxAttempts) {
         return {
           ok: false,
           error: {
             reason: err instanceof ZodError ? "SCHEMA_INVALID" : "MODEL_ERROR",
-            rawOutput,
             message: "Failed to evaluate job fit",
+            rawOutput,
           },
         }
       }
