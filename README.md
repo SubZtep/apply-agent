@@ -1,10 +1,3 @@
-```sh
-apply-agent analyze \
-  --job job.txt \
-  --profile me.json \
-  --mode conservative
-```
-
 ## States
 
 ```
@@ -19,8 +12,8 @@ EVALUATE
 CHALLENGE
   ↓
 DECIDE ───→ WAIT_FOR_HUMAN
-   ↓              ↑
-  PLAN ───────────┘
-   ↓
-  DONE
+  ↓               ↑
+ PLAN ────────────┘
+  ↓
+ DONE
 ```

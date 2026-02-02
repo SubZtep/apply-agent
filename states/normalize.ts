@@ -31,7 +31,7 @@ export async function normalizeWithRetry(prompt: string, maxAttempts = 3): Promi
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const result = await generateText({
-        model: lmstudio("qwen/qwen3-4b-2507"),
+        model: lmstudio(process.env.NORMALIZE_MODEL!),
         output: Output.object({ schema: JobSpec }),
         system: SYSTEM_PROMPT,
         prompt,
