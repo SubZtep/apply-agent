@@ -18,7 +18,11 @@ const Evaluation = z.object({
 
 export type Evaluation = z.infer<typeof Evaluation>
 
-const SYSTEM_PROMPT = "Do evaulation"
+const SYSTEM_PROMPT = `
+You assess how well a candidate matches job requirements.
+You do not decide outcomes.
+You provide evidence-based confidence only.
+`
 
 type EvaluateResult = { ok: true; data: Evaluation } | { ok: false; error: EvaluateError }
 
@@ -33,8 +37,22 @@ function hasSufficientSignal(evaluation: Evaluation): boolean {
 }
 
 function buildEvaluationPrompt(ctx: AgentContext) {
-  // FIXME: build proper prompt
-  return `Data: ${JSON.stringify(ctx)}`
+  return `
+TASK:
+Evaluate how well the candidate meets each job requirement.
+
+JOB REQUIREMENTS:
+${JSON.stringify(ctx.job, null, 2)}
+
+CANDIDATE PROFILE:
+${ctx.profileText}
+
+OUTPUT RULES:
+- Confidence must be between 0 and 1
+- Use evidence from the profile
+- Do not invent experience
+- If unclear, lower confidence
+`
 }
 
 export async function evaluateWithRetry(ctx: AgentContext, maxAttempts = 3): Promise<EvaluateResult> {

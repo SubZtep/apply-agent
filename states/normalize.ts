@@ -11,12 +11,28 @@ const JobSpec = z.object({
 
 export type JobSpec = z.infer<typeof JobSpec>
 
-const SYSTEM_PROMPT = `Extract structured data from the given text.
-Rules:
-- no opinions
-- no scoring
-- no advice
+const SYSTEM_PROMPT = `
+You extract structured job requirements.
+You do not evaluate candidates.
+You do not give advice.
+You only extract facts stated or strongly implied.
 `
+
+function buildNormalizePrompt(jobText: string) {
+  return `
+TASK:
+Extract the job information into a structured format.
+
+INPUT:
+${jobText}
+
+OUTPUT RULES:
+- Only include information present in the text
+- Do not infer candidate fit
+- Use concise phrases
+- Leave fields empty if information is missing
+`
+}
 
 interface NormalizeError {
   reason: "SCHEMA_INVALID" | "MODEL_ERROR"
@@ -34,7 +50,7 @@ export async function normalizeWithRetry(prompt: string, maxAttempts = 3): Promi
         model: lmstudio(process.env.NORMALIZE_MODEL!),
         output: Output.object({ schema: JobSpec }),
         system: SYSTEM_PROMPT,
-        prompt,
+        prompt: buildNormalizePrompt(prompt),
       })
       rawOutput = result.output
       return { ok: true, data: result.output }

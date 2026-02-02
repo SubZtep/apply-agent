@@ -20,11 +20,29 @@ interface ChallengeError {
 
 type ChallengeResult = { ok: true; data: RiskAssessment } | { ok: false; error: ChallengeError }
 
-const SYSTEM_PROMPT = "You are the challenge state"
+const SYSTEM_PROMPT = `
+You identify risks and gaps in a job application strategy.
+You do not decide whether to proceed.
+You do not rewrite experience.
+`
 
 function buildChallengePrompt(ctx: AgentContext) {
-  // FIXME: build proper prompt
-  return `Data: ${JSON.stringify(ctx)}`
+  return `
+TASK:
+Identify risks or gaps that could weaken this application.
+
+JOB:
+${JSON.stringify(ctx.job, null, 2)}
+
+EVALUATION:
+${JSON.stringify(ctx.evaluation, null, 2)}
+
+OUTPUT RULES:
+- Hard gaps are missing required experience
+- Soft gaps are weaker or indirect matches
+- Mitigations are possible framing strategies
+- Be specific and concise
+`
 }
 
 /**
