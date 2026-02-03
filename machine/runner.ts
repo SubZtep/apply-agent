@@ -1,7 +1,7 @@
 // import type { AgentContext } from ".."
-import { logger } from "../lib/logger";
+import { logger } from "../lib/logger"
 // import type { FileAgentStore } from "../lib/persistence";
-import { handlers } from "./handlers";
+import { handlers } from "./handlers"
 // import { interpretHumanAnswers } from "./next"
 
 // export async function runAgent({
@@ -18,20 +18,17 @@ export async function runAgent({
   agentId,
   store,
 }: {
-  initialContext: AgentContext;
-  agentId: string;
-  store: AgentStore;
+  initialContext: AgentContext
+  agentId: string
+  store: AgentStore
 }) {
   // const persisted = await store.load(agentId);
   // const ctx = persisted?.context ?? initialContext;
-  const ctx = initialContext;
+  const ctx = initialContext
   //ßlet state = ctx.state
 
   while (true) {
-    logger.info(
-      { state: ctx.state /*, evaluation: ctx.evaluation, risks: ctx.risks*/ },
-      "Agent step",
-    );
+    logger.info({ state: ctx.state /*, evaluation: ctx.evaluation, risks: ctx.risks*/ }, "Agent step")
 
     // if (state === "WAIT_FOR_HUMAN") {
     //   if (ctx.humanInput?.answers) {
@@ -57,14 +54,14 @@ export async function runAgent({
     //   return
     // }
 
-    ctx.state = await handlers[ctx.state](ctx);
+    ctx.state = await handlers[ctx.state](ctx)
 
     await store.save({
       id: agentId,
       // state,
       context: ctx,
       // updatedAt: new Date().toISOString(),
-    });
+    })
 
     // const handler = handlers[state]
     // if (!handler) {
@@ -77,8 +74,8 @@ export async function runAgent({
 
     // // terminal states
     if (ctx.state === "DONE" || ctx.state === "FAILED") {
-      console.log("FINITTTO");
-      break;
+      console.log("FINITTTO")
+      break
     }
 
     // // terminal states
@@ -105,11 +102,11 @@ export async function runAgent({
       //   state,
       //   context: ctx,
       // })
-      console.log("Waiting for an answer. Agent ID:", agentId);
+      console.log("Waiting for an answer. Agent ID:", agentId)
       // return
       // exit()
       // break;
-      process.exit(0);
+      process.exit(0)
     }
   }
 

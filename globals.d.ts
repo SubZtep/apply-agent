@@ -8,60 +8,60 @@ type AgentState =
   | "WAIT_FOR_HUMAN"
   | "PLAN"
   | "DONE"
-  | "FAILED";
+  | "FAILED"
 
 interface AgentQuestion {
   /** Policy hook */
-  id: "HARD_GAPS_PROCEED" | "LEADERSHIP_REFRAME" | "LOW_CONFIDENCE_STRATEGY";
-  text: string;
+  id: "HARD_GAPS_PROCEED" | "LEADERSHIP_REFRAME" | "LOW_CONFIDENCE_STRATEGY"
+  text: string
 }
 
 /** Questionnaire of the WAIT_FOR_HUMAN state. */
 interface HumanInput {
   /** Step to PLAN state, no questions asked. */
-  forceProceed?: boolean;
+  forceProceed?: boolean
   /** Questions and answers for DECIDE state. */
-  answers?: Partial<Record<AgentQuestion["id"], string>>;
+  answers?: Partial<Record<AgentQuestion["id"], string>>
 }
 
 interface AgentContext {
   /** Default is strict. */
-  mode: "strict" | "exploratory";
-  state: AgentState;
+  mode: "strict" | "exploratory"
+  state: AgentState
 
   // raw inputs
-  jobText?: string;
-  profileText?: string;
+  jobText?: string
+  profileText?: string
 
   // normalized data
-  job?: JobSpec;
+  job?: JobSpec
 
   // evaluation results
-  evaluation?: Evaluation;
+  evaluation?: Evaluation
 
   // challenge phase output
-  risks?: RiskAssessment;
+  risks?: RiskAssessment
 
-  questions?: AgentQuestion[];
+  questions?: AgentQuestion[]
 
   // human decision
-  humanInput?: HumanInput;
+  humanInput?: HumanInput
 
   // final output
-  plan?: ActionPlan;
+  plan?: ActionPlan
 
   // meta
-  errors?: string[];
+  errors?: string[]
 }
 
 interface PersistedAgent {
-  id: string;
+  id: string
   // state: AgentState
-  context: AgentContext;
+  context: AgentContext
   // updatedAt: string;
 }
 
 interface AgentStore {
-  save(agent: PersistedAgent): Promise<void>;
-  load(id: string): Promise<PersistedAgent | null>;
+  save(agent: PersistedAgent): Promise<void>
+  load(id: string): Promise<PersistedAgent | null>
 }

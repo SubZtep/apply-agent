@@ -1,15 +1,8 @@
 import { generateText, Output } from "ai"
-import { ZodError, z } from "zod"
+import { ZodError } from "zod"
+import { type JobSpec, JobSpecSchema } from "#/schemas/job"
 import { lmstudio } from "../lib/ai"
 import { logger } from "../lib/logger"
-
-const JobSpec = z.object({
-  skills: z.array(z.string()),
-  responsibilities: z.array(z.string()),
-  senioritySignals: z.array(z.string()),
-})
-
-export type JobSpec = z.infer<typeof JobSpec>
 
 const SYSTEM_PROMPT = `
 You extract structured job requirements.
@@ -47,8 +40,8 @@ export async function normalizeWithRetry(prompt: string, maxAttempts = 3): Promi
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const result = await generateText({
-        model: lmstudio(process.env.NORMALIZE_MODEL!),
-        output: Output.object({ schema: JobSpec }),
+        model: lmstudio(process.env.MODEL_NAME),
+        output: Output.object({ schema: JobSpecSchema }),
         system: SYSTEM_PROMPT,
         prompt: buildNormalizePrompt(prompt),
       })

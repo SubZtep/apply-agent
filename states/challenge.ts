@@ -1,32 +1,23 @@
-import { generateText, Output } from "ai";
-import { ZodError, z } from "zod";
+import { generateText, Output } from "ai"
+import { ZodError } from "zod"
 // import type { AgentContext } from ".."
-import { lmstudio } from "../lib/ai";
-import { logger } from "../lib/logger";
-
-export const RiskAssessment = z.object({
-  hardGaps: z.array(z.string().min(1)).max(5),
-  softGaps: z.array(z.string().min(1)).max(5),
-  mitigations: z.array(z.string().min(1)).max(5),
-});
-
-export type RiskAssessment = z.infer<typeof RiskAssessment>;
+import { lmstudio } from "#/lib/ai"
+import { type RiskAssessment, RiskAssessmentSchema } from "#/schemas/risk"
+import { logger } from "../lib/logger"
 
 interface ChallengeError {
-  reason: "SCHEMA_INVALID" | "MODEL_ERROR" | "LOW_QUALITY";
-  rawOutput?: unknown;
-  message: string;
+  reason: "SCHEMA_INVALID" | "MODEL_ERROR" | "LOW_QUALITY"
+  rawOutput?: unknown
+  message: string
 }
 
-type ChallengeResult =
-  | { ok: true; data: RiskAssessment }
-  | { ok: false; error: ChallengeError };
+type ChallengeResult = { ok: true; data: RiskAssessment } | { ok: false; error: ChallengeError }
 
 const SYSTEM_PROMPT = `
 You identify risks and gaps in a job application strategy.
 You do not decide whether to proceed.
 You do not rewrite experience.
-`;
+`
 
 function buildChallengePrompt(ctx: AgentContext) {
   return `
@@ -44,7 +35,7 @@ OUTPUT RULES:
 - Soft gaps are weaker or indirect matches
 - Mitigations are possible framing strategies
 - Be specific and concise
-`;
+`
 }
 
 /**
@@ -53,26 +44,23 @@ OUTPUT RULES:
  * - Avoids overwhelming soft-gap noise
  */
 function hasUsableRisks(risks: RiskAssessment): boolean {
-  return risks.hardGaps.length > 0 || risks.softGaps.length > 1;
+  return risks.hardGaps.length > 0 || risks.softGaps.length > 1
 }
 
-export async function challengeWithRetry(
-  ctx: AgentContext,
-  maxAttempts = 3,
-): Promise<ChallengeResult> {
-  let rawOutput: unknown = undefined;
+export async function challengeWithRetry(ctx: AgentContext, maxAttempts = 3): Promise<ChallengeResult> {
+  let rawOutput: unknown = undefined
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const result = await generateText({
-        model: lmstudio(process.env.CHALLENGE_MODEL),
-        output: Output.object({ schema: RiskAssessment }),
+        model: lmstudio(process.env.MODEL_NAME),
+        output: Output.object({ schema: RiskAssessmentSchema }),
         system: SYSTEM_PROMPT,
         prompt: buildChallengePrompt(ctx),
-      });
+      })
 
-      rawOutput = result.output;
-      const risks = RiskAssessment.parse(result.output);
+      rawOutput = result.output
+      const risks = RiskAssessmentSchema.parse(result.output)
 
       if (!hasUsableRisks(risks)) {
         // TODO: Retry once with a stricter prompt or downgrade to FAILED immediately
@@ -83,12 +71,12 @@ export async function challengeWithRetry(
             message: "Risk assessment lacks actionable signal",
             rawOutput,
           },
-        };
+        }
       }
 
-      return { ok: true, data: risks };
+      return { ok: true, data: risks }
     } catch (err) {
-      logger.warn({ attempt, err }, "CHALLENGE attempt failed");
+      logger.warn({ attempt, err }, "CHALLENGE attempt failed")
 
       if (attempt === maxAttempts) {
         return {
@@ -98,7 +86,7 @@ export async function challengeWithRetry(
             message: "Failed to assess risks",
             rawOutput,
           },
-        };
+        }
       }
     }
   }
@@ -109,5 +97,5 @@ export async function challengeWithRetry(
       reason: "MODEL_ERROR",
       message: "Unexpected challenge failure",
     },
-  };
+  }
 }
