@@ -1,4 +1,9 @@
-type AgentState =
+import type { Evaluation } from "#/schemas/evalution"
+import type { JobSpec } from "#/schemas/job"
+import type { RiskAssessment } from "#/schemas/risk"
+import type { ActionPlan } from "#/states/plan"
+
+export type AgentState =
   | "IDLE"
   | "INGEST"
   | "NORMALIZE"
@@ -10,7 +15,7 @@ type AgentState =
   | "DONE"
   | "FAILED"
 
-interface AgentQuestion {
+export interface AgentQuestion {
   /** Policy hook */
   id: "HARD_GAPS_PROCEED" | "LEADERSHIP_REFRAME" | "LOW_CONFIDENCE_STRATEGY"
   text: string
@@ -24,7 +29,7 @@ interface HumanInput {
   answers?: Partial<Record<AgentQuestion["id"], string>>
 }
 
-interface AgentContext {
+export interface AgentContext {
   /** Default is strict. */
   mode: "strict" | "exploratory"
   state: AgentState
@@ -54,14 +59,14 @@ interface AgentContext {
   errors?: string[]
 }
 
-interface PersistedAgent {
+export interface PersistedAgent {
   id: string
-  // state: AgentState
+  state: AgentState
   context: AgentContext
-  // updatedAt: string;
+  updatedAt: number
 }
 
-interface AgentStore {
-  save(agent: PersistedAgent): Promise<void>
+export interface AgentStore {
+  save(agent: Omit<PersistedAgent, "id" | "updatedAt"> & { id?: string; updatedAt?: number }): Promise<PersistedAgent>
   load(id: string): Promise<PersistedAgent | null>
 }

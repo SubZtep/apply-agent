@@ -1,8 +1,27 @@
 import { join } from "node:path"
-import { file, randomUUIDv7 } from "bun"
-import { getInitValues } from "./lib/input"
-import { FileAgentStore } from "./lib/persistence"
+import { FileAgentStore } from "./lib/store"
+// import { file, randomUUIDv7 } from "bun"
+// import { getInitValues } from "./lib/input"
+// import { FileAgentStore } from "./lib/persistence"
 import { runAgent } from "./machine/runner"
+import type { AgentContext } from "./machine/types"
+
+// import type { Evaluation } from "./schemas/evalution"
+// import type { JobSpec } from "./schemas/job"
+// import type { RiskAssessment } from "./schemas/risk"
+// import type { ActionPlan } from "./states/plan"
+// import type { export AgentContext } from "./machine/types"
+
+const ctx: AgentContext = {
+  mode: "strict",
+  state: "IDLE",
+  jobText: await Bun.file(join(import.meta.dirname, "data", "job.md")).text(),
+  profileText: await Bun.file(join(import.meta.dirname, "data", "cv.md")).text(),
+}
+
+const store = new FileAgentStore()
+
+await runAgent(ctx, store)
 
 // import type { RiskAssessment } from "./states/challenge";
 // import type { Evaluation } from "./states/evaluate";
@@ -17,23 +36,23 @@ import { runAgent } from "./machine/runner"
 // process.exit();
 // const persisted = await getInitValues(store)
 
-await runAgent(
-  persisted.id
-    ? {
-        agentId: persisted.id,
-        initialContext: persisted.context,
-        store,
-      }
-    : {
-        agentId: randomUUIDv7(),
-        initialContext: {
-          mode: persisted.mode ?? "strict",
-          state: "IDLE",
-          // state: "IDLE",
-          // ...inputContext,
-          jobText: await file(join(import.meta.dirname, "data", "job.md")).text(),
-          profileText: await file(join(import.meta.dirname, "data", "cv.md")).text(),
-        },
-        store,
-      },
-)
+// await runAgent(
+//   persisted.id
+//     ? {
+//         agentId: persisted.id,
+//         initialContext: persisted.context,
+//         store,
+//       }
+//     : {
+//         agentId: randomUUIDv7(),
+//         initialContext: {
+//           mode: persisted.mode ?? "strict",
+//           state: "IDLE",
+//           // state: "IDLE",
+//           // ...inputContext,
+//           jobText: await file(join(import.meta.dirname, "data", "job.md")).text(),
+//           profileText: await file(join(import.meta.dirname, "data", "cv.md")).text(),
+//         },
+//         store,
+//       },
+// )

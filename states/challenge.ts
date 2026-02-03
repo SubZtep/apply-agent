@@ -1,7 +1,7 @@
 import { generateText, Output } from "ai"
 import { ZodError } from "zod"
-// import type { AgentContext } from ".."
 import { lmstudio } from "#/lib/ai"
+import type { AgentContext } from "#/machine/types"
 import { type RiskAssessment, RiskAssessmentSchema } from "#/schemas/risk"
 import { logger } from "../lib/logger"
 
@@ -48,8 +48,6 @@ function hasUsableRisks(risks: RiskAssessment): boolean {
 }
 
 export async function challengeWithRetry(ctx: AgentContext, maxAttempts = 3): Promise<ChallengeResult> {
-  let rawOutput: unknown = undefined
-
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const result = await generateText({
@@ -59,7 +57,6 @@ export async function challengeWithRetry(ctx: AgentContext, maxAttempts = 3): Pr
         prompt: buildChallengePrompt(ctx),
       })
 
-      rawOutput = result.output
       const risks = RiskAssessmentSchema.parse(result.output)
 
       if (!hasUsableRisks(risks)) {
@@ -69,7 +66,6 @@ export async function challengeWithRetry(ctx: AgentContext, maxAttempts = 3): Pr
           error: {
             reason: "LOW_QUALITY",
             message: "Risk assessment lacks actionable signal",
-            rawOutput,
           },
         }
       }
@@ -84,18 +80,11 @@ export async function challengeWithRetry(ctx: AgentContext, maxAttempts = 3): Pr
           error: {
             reason: err instanceof ZodError ? "SCHEMA_INVALID" : "MODEL_ERROR",
             message: "Failed to assess risks",
-            rawOutput,
           },
         }
       }
     }
   }
 
-  return {
-    ok: false,
-    error: {
-      reason: "MODEL_ERROR",
-      message: "Unexpected challenge failure",
-    },
-  }
+  throw new Error("Unreachable")
 }

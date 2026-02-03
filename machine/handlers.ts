@@ -1,15 +1,15 @@
-// import type { AgentContext, AgentState } from ".."
 import { logger } from "../lib/logger"
 import { challengeWithRetry } from "../states/challenge"
 import { evaluateWithRetry } from "../states/evaluate"
 import { normalizeWithRetry } from "../states/normalize"
 import { generatePlan } from "../states/plan"
 import { decideNextState } from "./next"
+import type { AgentContext, AgentState } from "./types"
 
 export type StateHandler = (ctx: AgentContext) => Promise<AgentState>
 
 export const handlers: Record<AgentState, StateHandler> = {
-  IDLE: async _ctx => "INGEST",
+  IDLE: async () => "INGEST",
 
   INGEST: async ctx => {
     if (!ctx.jobText || !ctx.profileText) {
@@ -61,7 +61,7 @@ export const handlers: Record<AgentState, StateHandler> = {
     return decision.nextState
   },
 
-  WAIT_FOR_HUMAN: async _ctx => {
+  WAIT_FOR_HUMAN: async () => {
     // stop execution here
     return "WAIT_FOR_HUMAN"
   },
@@ -77,10 +77,7 @@ export const handlers: Record<AgentState, StateHandler> = {
     // "DONE"
   },
 
-  FAILED: async _ctx => {
-    // logger.error(ctx, "Agent failed")
-    // console.log("Failed, big time.")
-    // return Promise.reject()
+  FAILED: async () => {
     return "FAILED"
   },
 }

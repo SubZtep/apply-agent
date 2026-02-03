@@ -1,9 +1,9 @@
 import { generateText, Output } from "ai"
 import { ZodError } from "zod"
+import { lmstudio } from "#/lib/ai"
+import { logger } from "#/lib/logger"
+import type { AgentContext } from "#/machine/types"
 import { type Evaluation, EvaluationSchema } from "#/schemas/evalution"
-// import type { AgentContext } from ".."
-import { lmstudio } from "../lib/ai"
-import { logger } from "../lib/logger"
 
 const SYSTEM_PROMPT = `
 You assess how well a candidate matches job requirements.
@@ -43,8 +43,6 @@ OUTPUT RULES:
 }
 
 export async function evaluateWithRetry(ctx: AgentContext, maxAttempts = 3): Promise<EvaluateResult> {
-  let rawOutput: unknown = undefined
-
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const result = await generateText({
@@ -53,7 +51,6 @@ export async function evaluateWithRetry(ctx: AgentContext, maxAttempts = 3): Pro
         system: SYSTEM_PROMPT,
         prompt: buildEvaluationPrompt(ctx),
       })
-      rawOutput = result.output
 
       if (!hasSufficientSignal(result.output)) {
         return {
@@ -61,7 +58,6 @@ export async function evaluateWithRetry(ctx: AgentContext, maxAttempts = 3): Pro
           error: {
             reason: "INSUFFICIENT_SIGNAL",
             message: "Evaluation lacks decision signal",
-            rawOutput,
           },
         }
       }
@@ -76,18 +72,11 @@ export async function evaluateWithRetry(ctx: AgentContext, maxAttempts = 3): Pro
           error: {
             reason: err instanceof ZodError ? "SCHEMA_INVALID" : "MODEL_ERROR",
             message: "Failed to evaluate job fit",
-            rawOutput,
           },
         }
       }
     }
   }
 
-  return {
-    ok: false,
-    error: {
-      reason: "MODEL_ERROR",
-      message: "Unexpected evaluation failure",
-    },
-  }
+  throw new Error("Unreachable")
 }

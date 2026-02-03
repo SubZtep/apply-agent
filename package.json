@@ -2,6 +2,10 @@
   "name": "apply-agent",
   "type": "module",
   "private": true,
+  "scripts": {
+    "runx": "bun run index.ts",
+    "resume": "bun run index.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "pino-pretty": "^13.1.3"

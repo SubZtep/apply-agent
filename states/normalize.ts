@@ -1,8 +1,8 @@
 import { generateText, Output } from "ai"
 import { ZodError } from "zod"
+import { lmstudio } from "#/lib/ai"
+import { logger } from "#/lib/logger"
 import { type JobSpec, JobSpecSchema } from "#/schemas/job"
-import { lmstudio } from "../lib/ai"
-import { logger } from "../lib/logger"
 
 const SYSTEM_PROMPT = `
 You extract structured job requirements.
@@ -36,7 +36,6 @@ interface NormalizeError {
 type NormalizeResult = { ok: true; data: JobSpec } | { ok: false; error: NormalizeError }
 
 export async function normalizeWithRetry(prompt: string, maxAttempts = 3): Promise<NormalizeResult> {
-  let rawOutput: unknown = undefined
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const result = await generateText({
@@ -45,31 +44,22 @@ export async function normalizeWithRetry(prompt: string, maxAttempts = 3): Promi
         system: SYSTEM_PROMPT,
         prompt: buildNormalizePrompt(prompt),
       })
-      rawOutput = result.output
       return { ok: true, data: result.output }
-    } catch (err: any) {
+    } catch (err) {
       logger.warn({ attempt, err }, "NORMALIZE attempt failed")
+
       if (attempt === maxAttempts) {
         logger.error(err, "Normalize failed")
         return {
           ok: false,
           error: {
             reason: err instanceof ZodError ? "SCHEMA_INVALID" : "MODEL_ERROR",
-            message: err.message,
-            rawOutput,
+            message: err instanceof Error ? err.message : String(err),
           },
         }
       }
     }
   }
 
-  // unreachable, but TS likes it
-  return {
-    ok: false,
-    error: {
-      reason: "MODEL_ERROR",
-      message: "Unexpected normalize failure",
-      rawOutput,
-    },
-  }
+  throw new Error("Unreachable")
 }
