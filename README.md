@@ -9,6 +9,7 @@ data/jobs/
   inbox/          # raw scraped jobs (unscored)
   screened_out/   # rejected by batch scoring
   shortlisted/    # passed batch scoring
+  awaiting_input/ # agent needs human input
   declined/       # rejected by agent reasoning
   approved/       # agent-approved jobs
 ```
@@ -27,20 +28,18 @@ data/jobs/
 
 :pray::whale:
 
-## Scripts
+## Run scripts
 
 Run the scripts from the project root directory (just in case).
 
 ### Installation
 
-Clone the project and enter into that folder.
+First of all, clone the project. Create the `data/cv.md` file with your data, ~~config,~~ run the following scripts.
 
 ```bash
 bun install
 ./tools/install.sh
 ```
-
-Create the `data/csv.md` file with your data.
 
 ### Retrieve fresh jobs
 
@@ -50,7 +49,7 @@ Scrape the configured search on selected job boards and for new listings.
 ./tools/scrape.sh
 ```
 
-Create the jobs in the `data/jobs/inbox` folder. 
+It creates the jobs in the `data/jobs/inbox` folder. 
 
 ### Run batch scorer
 
@@ -60,22 +59,28 @@ Quickly filter out the obvious no-gos.
 bun run score_batch
 ```
 
-Move the possible jobs to the `data/jobs/shortlisted` folder, and the others to the `data/jobs/screened_out` one.
+It moves the possible jobs to the `data/jobs/shortlisted` folder, and the others to the `data/jobs/screened_out` one.
 
 ### Run the agent
 
-```
+```bash
 bun start run
 ```
 
-Answer questions to resolve ambiguous job posts. The id parameter will. be the output of the _run_ script. Use `--force-proceed` to auto-accept the answers.
+If the agens is ambiguous about a job post, it will set some questions and move the job to the `data/jobs/awaiting_input` folder. Answer questions to resolve ambiguous job posts.
 
+The id parameter will be the output of the _run_ script. Use `--force-proceed` to auto-accept the answers to approve.
+
+```bash
 bun start resume <id> [--force-proceed]
 ```
 
 Move the potential jobs to `data/jobs/approved`, and the less interesting ones to `data/jobs/declined`.
 
 ## Data flow
+
+```
+[ Python scraper ]
         ↓
   (job records)
         ↓
