@@ -23,6 +23,7 @@
       },
       "correctness": {
         "noUnreachable": "warn",
+        "noUnusedImports": "warn",
         "noUnusedVariables": "warn"
       },
       "suspicious": {
