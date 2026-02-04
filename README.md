@@ -2,6 +2,7 @@
 
 Find your perfect job offers based on your CV.
 
+```
 data/jobs/
   inbox/             # raw scraped jobs (unscored)
   screened_out/      # rejected by batch scoring
@@ -9,10 +10,10 @@ data/jobs/
   awaiting_input/    # agent needs human input
   declined/          # rejected by agent reasoning
   approved/          # agent-approved jobs
+```
 
 > Batch reject: _“Not worth thinking about”_ \
 > Agent reject: _“Thought about it carefully and decided no”_
-
 
 ## Requirements
 
