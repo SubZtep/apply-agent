@@ -3,7 +3,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start": "bun run cli.ts"
+    "start": "bun run cli/run.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",

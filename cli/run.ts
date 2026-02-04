@@ -1,16 +1,16 @@
 import { join } from "node:path"
-import { logger } from "./lib/logger"
-import { FileAgentStore } from "./lib/store"
-import { runAgent } from "./machine/runner"
-import type { AgentContext } from "./machine/types"
+import { logger } from "#/lib/logger"
+import { FileAgentStore } from "#/lib/store"
+import { runAgent } from "#/machine/runner"
+import type { AgentContext } from "#/machine/types"
 
 const store = new FileAgentStore()
 
 async function cmdRun() {
   const context: AgentContext = {
     mode: "strict",
-    jobText: await Bun.file(join(import.meta.dirname, "data", "job.md")).text(),
-    profileText: await Bun.file(join(import.meta.dirname, "data", "cv.md")).text(),
+    jobText: await Bun.file(join(import.meta.dirname, "..", "data", "job.md")).text(),
+    profileText: await Bun.file(join(import.meta.dirname, "..", "data", "cv.md")).text(),
   }
   const id = Bun.randomUUIDv7()
   logger.info({ id }, "Starting new agent")
@@ -18,8 +18,10 @@ async function cmdRun() {
 
   const persisted = await store.load(id)
   if (persisted?.state === "WAIT_FOR_HUMAN") {
-    console.log("Agent paused. Questions to answer:")
-    persisted.context.questions?.forEach(q => void console.log(`  - [${q.id}] ${q.text}`))
+    console.log("\n⏸ Agent paused — input required\n")
+    persisted.context.questions?.forEach((q, i) => {
+      console.log(`${i + 1}. ${q.text}`)
+    })
     console.log(`\nRun: bun start answer ${id}`)
   }
 }
@@ -34,6 +36,7 @@ async function cmdAnswer(agentId: string, forceProceed = false) {
     const answers: Record<string, string> = {}
 
     console.log("\nAnswer the questions:")
+    console.log("(Press Enter to skip a question)\n")
     for (const q of persisted.context.questions || []) {
       const answer = prompt(`${q.text}\n> `)
       answers[q.id] = answer ?? ""
@@ -60,4 +63,5 @@ if (command === "run") {
   process.exit(0)
 }
 
+console.log("")
 process.exit()
