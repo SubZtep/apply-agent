@@ -1,9 +1,9 @@
 import { generateText, Output } from "ai"
 import { ZodError } from "zod"
 import { lmstudio } from "#/lib/ai"
+import { logger } from "#/lib/logger"
 import type { AgentContext } from "#/machine/types"
 import { type RiskAssessment, RiskAssessmentSchema } from "#/schemas/risk"
-import { logger } from "../lib/logger"
 
 interface ChallengeError {
   reason: "SCHEMA_INVALID" | "MODEL_ERROR" | "LOW_QUALITY"

@@ -30,9 +30,7 @@ interface HumanInput {
 }
 
 export interface AgentContext {
-  /** Default is strict. */
   mode: "strict" | "exploratory"
-  state: AgentState
 
   // raw inputs
   jobText?: string
