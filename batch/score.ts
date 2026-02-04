@@ -6,6 +6,7 @@ import type { BatchJob, JobScore } from "./types"
 
 const limit = pLimit(5) // FIXME: Adjust concurrency based on model provider limits
 
+/** Scores the batch */
 export async function scoreJobs(jobs: BatchJob[], profileText: string) {
   return Promise.all(jobs.map(job => limit(() => scoreSingleJob(job, profileText))))
 }

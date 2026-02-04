@@ -1,4 +1,6 @@
 node_modules/
 .env.local
 .DS_Store
-/data/
+/data/*
+!/data/agent/.gitkeep
+!/data/jobs/*/.gitkeep

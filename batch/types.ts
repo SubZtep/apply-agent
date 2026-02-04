@@ -2,7 +2,7 @@ export interface BatchJob {
   id: string
   title: string
   description: string
-  source?: string
+  // source?: string
 }
 
 export interface JobScore {
