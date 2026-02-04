@@ -1,6 +1,6 @@
 # :construction_worker:
 
-Find your perfect job offers based on your CV.
+Self-hosted job scraper with LLM-powered CV matching. Filters out unrealistic listings automatically.
 
 ```
 data/jobs/
@@ -18,7 +18,7 @@ data/jobs/
 ## Requirements
 
 - Bun (latest?)
-- Python 3.10+
+- Python 3.10+ (for [the scraper](https://github.com/speedyapply/JobSpy))
 - [LM Studio](https://lmstudio.ai/), required (CPU friendly) models:
   - qwen/qwen3-4b-2507
   - qwen3-0.6b-mlx
