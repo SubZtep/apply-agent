@@ -1,15 +1,15 @@
-import type { AgentContext, AgentState } from ".."
-import { logger } from "../lib/logger"
-import { challengeWithRetry } from "../states/challenge"
-import { evaluateWithRetry } from "../states/evaluate"
-import { normalizeWithRetry } from "../states/normalize"
-import { generatePlan } from "../states/plan"
-import { decideNextState } from "./next"
+import { logger } from "#/lib/logger"
+import { decideNextState } from "#/machine/next"
+import { challengeWithRetry } from "#/states/challenge"
+import { evaluateWithRetry } from "#/states/evaluate"
+import { normalizeWithRetry } from "#/states/normalize"
+import { generatePlan } from "#/states/plan"
+import type { AgentContext, AgentState } from "./types"
 
-export type StateHandler = (ctx: AgentContext) => Promise<AgentState>
+type StateHandler = (ctx: AgentContext) => Promise<AgentState>
 
 export const handlers: Record<AgentState, StateHandler> = {
-  IDLE: async _ctx => "INGEST",
+  IDLE: async () => "INGEST",
 
   INGEST: async ctx => {
     if (!ctx.jobText || !ctx.profileText) {
@@ -61,7 +61,7 @@ export const handlers: Record<AgentState, StateHandler> = {
     return decision.nextState
   },
 
-  WAIT_FOR_HUMAN: async _ctx => {
+  WAIT_FOR_HUMAN: async () => {
     // stop execution here
     return "WAIT_FOR_HUMAN"
   },
@@ -71,10 +71,11 @@ export const handlers: Record<AgentState, StateHandler> = {
     return "DONE"
   },
 
-  DONE: async () => "DONE",
+  DONE: async () => {
+    return Promise.reject()
+  },
 
-  FAILED: async ctx => {
-    logger.error(ctx, "Agent failed")
+  FAILED: async () => {
     return "FAILED"
   },
 }

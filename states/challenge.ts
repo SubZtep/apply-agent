@@ -1,16 +1,9 @@
 import { generateText, Output } from "ai"
-import { ZodError, z } from "zod"
-import type { AgentContext } from ".."
-import { lmstudio } from "../lib/ai"
-import { logger } from "../lib/logger"
-
-export const RiskAssessment = z.object({
-  hardGaps: z.array(z.string().min(1)).max(5),
-  softGaps: z.array(z.string().min(1)).max(5),
-  mitigations: z.array(z.string().min(1)).max(5),
-})
-
-export type RiskAssessment = z.infer<typeof RiskAssessment>
+import { ZodError } from "zod"
+import { lmstudio } from "#/lib/ai"
+import { logger } from "#/lib/logger"
+import type { AgentContext } from "#/machine/types"
+import { type RiskAssessment, RiskAssessmentSchema } from "#/schemas/risk"
 
 interface ChallengeError {
   reason: "SCHEMA_INVALID" | "MODEL_ERROR" | "LOW_QUALITY"
@@ -20,11 +13,29 @@ interface ChallengeError {
 
 type ChallengeResult = { ok: true; data: RiskAssessment } | { ok: false; error: ChallengeError }
 
-const SYSTEM_PROMPT = "You are the challenge state"
+const SYSTEM_PROMPT = `
+You identify risks and gaps in a job application strategy.
+You do not decide whether to proceed.
+You do not rewrite experience.
+`
 
 function buildChallengePrompt(ctx: AgentContext) {
-  // FIXME: build proper prompt
-  return `Data: ${JSON.stringify(ctx)}`
+  return `
+TASK:
+Identify risks or gaps that could weaken this application.
+
+JOB:
+${JSON.stringify(ctx.job, null, 2)}
+
+EVALUATION:
+${JSON.stringify(ctx.evaluation, null, 2)}
+
+OUTPUT RULES:
+- Hard gaps are missing required experience
+- Soft gaps are weaker or indirect matches
+- Mitigations are possible framing strategies
+- Be specific and concise
+`
 }
 
 /**
@@ -37,19 +48,16 @@ function hasUsableRisks(risks: RiskAssessment): boolean {
 }
 
 export async function challengeWithRetry(ctx: AgentContext, maxAttempts = 3): Promise<ChallengeResult> {
-  let rawOutput: unknown = undefined
-
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const result = await generateText({
-        model: lmstudio(process.env.CHALLENGE_MODEL),
-        output: Output.object({ schema: RiskAssessment }),
+        model: lmstudio(process.env.MODEL_NAME),
+        output: Output.object({ schema: RiskAssessmentSchema }),
         system: SYSTEM_PROMPT,
         prompt: buildChallengePrompt(ctx),
       })
 
-      rawOutput = result.output
-      const risks = RiskAssessment.parse(result.output)
+      const risks = RiskAssessmentSchema.parse(result.output)
 
       if (!hasUsableRisks(risks)) {
         // TODO: Retry once with a stricter prompt or downgrade to FAILED immediately
@@ -58,7 +66,6 @@ export async function challengeWithRetry(ctx: AgentContext, maxAttempts = 3): Pr
           error: {
             reason: "LOW_QUALITY",
             message: "Risk assessment lacks actionable signal",
-            rawOutput,
           },
         }
       }
@@ -73,18 +80,11 @@ export async function challengeWithRetry(ctx: AgentContext, maxAttempts = 3): Pr
           error: {
             reason: err instanceof ZodError ? "SCHEMA_INVALID" : "MODEL_ERROR",
             message: "Failed to assess risks",
-            rawOutput,
           },
         }
       }
     }
   }
 
-  return {
-    ok: false,
-    error: {
-      reason: "MODEL_ERROR",
-      message: "Unexpected challenge failure",
-    },
-  }
+  throw new Error("Unreachable")
 }

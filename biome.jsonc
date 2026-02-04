@@ -5,7 +5,8 @@
     "includes": ["**/*.ts", "*.json", "*.jsonc"]
   },
   "formatter": {
-    "indentStyle": "space"
+    "indentStyle": "space",
+    "indentWidth": 2
   },
   "assist": {
     "actions": {
@@ -21,7 +22,8 @@
         "noUselessUndefinedInitialization": "off"
       },
       "correctness": {
-        "noUnreachable": "warn"
+        "noUnreachable": "warn",
+        "noUnusedVariables": "warn"
       },
       "suspicious": {
         "noExplicitAny": "off",

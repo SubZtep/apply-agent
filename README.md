@@ -1,3 +1,8 @@
+## Scripts
+
+- `run`: runAgent → WAIT_FOR_HUMAN → exit
+- `resume`: resumeAgent → apply answers → runAgent
+
 ## States
 
 ```

@@ -1,5 +1,5 @@
 import { z } from "zod"
-import type { AgentContext } from ".."
+import type { AgentContext } from "#/machine/types"
 
 const testData = {
   talkingPoints: [],
