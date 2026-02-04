@@ -72,9 +72,7 @@ export const handlers: Record<AgentState, StateHandler> = {
   },
 
   DONE: async () => {
-    console.log("Done, yey!")
     return Promise.reject()
-    // "DONE"
   },
 
   FAILED: async () => {

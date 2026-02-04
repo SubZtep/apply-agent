@@ -67,6 +67,6 @@ export interface PersistedAgent {
 }
 
 export interface AgentStore {
-  save(agent: Omit<PersistedAgent, "id" | "updatedAt"> & { id?: string; updatedAt?: number }): Promise<PersistedAgent>
+  save(agent: Omit<PersistedAgent, "updatedAt"> & { updatedAt?: number }): Promise<PersistedAgent>
   load(id: string): Promise<PersistedAgent | null>
 }

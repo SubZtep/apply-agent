@@ -9,7 +9,6 @@ export class FileAgentStore implements AgentStore {
   async save(agent: Parameters<AgentStore["save"]>[0]) {
     const merged: PersistedAgent = {
       ...agent,
-      id: agent.id ?? Bun.randomUUIDv7(),
       updatedAt: agent.updatedAt ?? Date.now(),
     }
     const name = join(STORE_DIR, `${merged.id}.json`)
