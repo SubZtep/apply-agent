@@ -2,17 +2,13 @@
 
 Find your perfect job offers based on your CV.
 
-## Job folders
-
-```
 data/jobs/
-  inbox/          # raw scraped jobs (unscored)
-  screened_out/   # rejected by batch scoring
-  shortlisted/    # passed batch scoring
-  awaiting_input/ # agent needs human input
-  declined/       # rejected by agent reasoning
-  approved/       # agent-approved jobs
-```
+  inbox/             # raw scraped jobs (unscored)
+  screened_out/      # rejected by batch scoring
+  shortlisted/       # passed batch scoring
+  awaiting_input/    # agent needs human input
+  declined/          # rejected by agent reasoning
+  approved/          # agent-approved jobs
 
 > Batch reject: _“Not worth thinking about”_ \
 > Agent reject: _“Thought about it carefully and decided no”_
@@ -115,6 +111,8 @@ DECIDE ───→ WAIT_FOR_HUMAN
 
 ## Mode semantics
 
+The agent runs in strict mode by default. Add the parameter __**x**__ — `bun start run x` — to start in exploratory mode (no questions).
+
 | Strict                                       | Exploratory                               |
 | -------------------------------------------- | ----------------------------------------- |
 | Any unresolved uncertainty → WAIT_FOR_HUMAN  | Hard gaps → ask once, then proceed        |
@@ -122,6 +120,8 @@ DECIDE ───→ WAIT_FOR_HUMAN
 | Low confidence → WAIT_FOR_HUMAN              | LOW_QUALITY → downgrade severity, proceed |
 | LOW_QUALITY from EVALUATE/CHALLENGE → FAILED | Bias toward PLAN                          |
 
+---
+
 ## Notes
 
-If future feature is a CV generation, [pdfmake](https://github.com/bpampuch/pdfmake) or [reactive-resume](https://github.com/amruthpillai/reactive-resume) could be good candidates. :shipit:
+If the future feature is CV generator, [pdfmake](https://github.com/bpampuch/pdfmake) or [reactive-resume](https://github.com/amruthpillai/reactive-resume) could be good candidates. :shipit:

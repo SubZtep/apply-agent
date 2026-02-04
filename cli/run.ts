@@ -6,9 +6,9 @@ import type { AgentContext } from "#/machine/types"
 
 const store = new FileAgentStore()
 
-async function cmdRun() {
+async function cmdRun(isExploratoryMode = false) {
   const context: AgentContext = {
-    mode: "strict",
+    mode: isExploratoryMode ? "exploratory" : "strict",
     jobText: await Bun.file(join(import.meta.dirname, "..", "data", "job.md")).text(),
     profileText: await Bun.file(join(import.meta.dirname, "..", "data", "cv.md")).text(),
   }
@@ -55,7 +55,8 @@ async function cmdAnswer(agentId: string, forceProceed = false) {
 const [, , command, agentId, forceProceed] = Bun.argv
 
 if (command === "run") {
-  await cmdRun()
+  const isExploratoryMode = agentId === "x"
+  await cmdRun(isExploratoryMode)
 } else if (command === "answer" && agentId) {
   await cmdAnswer(agentId, forceProceed === "--force-proceed")
 } else {
