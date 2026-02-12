@@ -8,3 +8,4 @@ node_modules/
 !/data/jobs/awaiting_input/.gitkeep
 !/data/jobs/screened_out/.gitkeep
 !/data/jobs/shortlisted/.gitkeep
+!/data/jobs/agentworks/.gitkeep

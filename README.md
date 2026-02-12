@@ -103,13 +103,12 @@ EVALUATE
   ↓
 CHALLENGE
   ↓
-DECIDE ───→ WAIT_FOR_HUMAN
-  ↓               ↑
- PLAN ────────────┘
-  ↓
- DONE
+DECIDE <───> WAIT_FOR_HUMAN
+  ↓               |
+ PLAN             |
+  ↓               ↓
+ DONE            ERROR
 ```
-
 ## Mode semantics
 
 The agent runs in strict mode by default. Add the parameter __**x**__ — `bun start run x` — to start in exploratory mode (no questions).
@@ -122,7 +121,3 @@ The agent runs in strict mode by default. Add the parameter __**x**__ — `bun s
 | LOW_QUALITY from EVALUATE/CHALLENGE → FAILED | Bias toward PLAN                          |
 
 ---
-
-## Notes
-
-If the future feature is CV generator, [pdfmake](https://github.com/bpampuch/pdfmake) or [reactive-resume](https://github.com/amruthpillai/reactive-resume) could be good candidates. :shipit:

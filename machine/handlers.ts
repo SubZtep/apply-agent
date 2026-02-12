@@ -1,81 +1,88 @@
-import { logger } from "#/lib/logger"
-import { decideNextState } from "#/machine/next"
-import { challengeWithRetry } from "#/states/challenge"
-import { evaluateWithRetry } from "#/states/evaluate"
-import { normalizeWithRetry } from "#/states/normalize"
-import { generatePlan } from "#/states/plan"
-import type { AgentContext, AgentState } from "./types"
+import { logger } from "#/lib/logger";
+import { decideNextState } from "#/machine/next";
+import type { Job } from "#/schemas/job";
+import { challengeWithRetry } from "#/states/challenge";
+import { evaluateWithRetry } from "#/states/evaluate";
+import { normalizeWithRetry } from "#/states/normalize";
+import { generatePlan } from "#/states/plan";
+import type { AgentContext, AgentState } from "./types";
 
-type StateHandler = (ctx: AgentContext) => Promise<AgentState>
+type StateHandler = (ctx: Job) => Promise<AgentState>;
 
 export const handlers: Record<AgentState, StateHandler> = {
   IDLE: async () => "INGEST",
 
-  INGEST: async ctx => {
-    if (!ctx.jobText || !ctx.profileText) {
-      logger.error(ctx, "Missing input")
-      return "FAILED"
+  INGEST: async (job: Job) => {
+    if (!job.job.description || !job.job.description) {
+      logger.error(job, "Missing input");
+      return "FAILED";
     }
-    return "NORMALIZE"
+    return "NORMALIZE";
   },
 
-  NORMALIZE: async ctx => {
-    const result = await normalizeWithRetry(ctx.jobText!)
+  NORMALIZE: async (job: Job) => {
+    const result = await normalizeWithRetry(job.job.description);
 
     if (!result.ok) {
-      ctx.errors = [result.error.message]
-      return "FAILED"
+      logger.error({ job }, result.error.message);
+      // job.j.ctx.errors = [result.error.message];
+      return "FAILED";
     }
 
-    ctx.job = result.data
-    return "EVALUATE"
+    job.job = {
+      ...job.job,
+      ...result.data,
+    };
+    return "EVALUATE";
   },
 
-  EVALUATE: async ctx => {
-    const result = await evaluateWithRetry(ctx)
+  EVALUATE: async (job: Job) => {
+    const result = await evaluateWithRetry(job);
 
     if (!result.ok) {
-      ctx.errors = [result.error.message]
-      return "FAILED"
+      // ctx.errors = [result.error.message];
+      logger.error(job, result.error.message);
+      return "FAILED";
     }
 
-    ctx.evaluation = result.data
-    return "CHALLENGE"
+    // ctx.evaluation = result.data;
+    job.agent!.evaluation = result.data;
+    return "CHALLENGE";
   },
 
-  CHALLENGE: async ctx => {
-    const result = await challengeWithRetry(ctx)
+  CHALLENGE: async (job: Job) => {
+    const result = await challengeWithRetry(ctx);
 
     if (!result.ok) {
-      ctx.errors = [result.error.message]
-      return "FAILED"
+      ctx.errors = [result.error.message];
+      return "FAILED";
     }
 
-    ctx.risks = result.data
-    return "DECIDE"
+    ctx.risks = result.data;
+    return "DECIDE";
   },
 
-  DECIDE: async ctx => {
-    const decision = decideNextState(ctx)
-    ctx.questions = decision.questions
-    return decision.nextState
+  DECIDE: async (ctx) => {
+    const decision = decideNextState(ctx);
+    ctx.questions = decision.questions;
+    return decision.nextState;
   },
 
   WAIT_FOR_HUMAN: async () => {
     // stop execution here
-    return "WAIT_FOR_HUMAN"
+    return "WAIT_FOR_HUMAN";
   },
 
-  PLAN: async ctx => {
-    ctx.plan = await generatePlan(ctx)
-    return "DONE"
+  PLAN: async (ctx) => {
+    ctx.plan = await generatePlan(ctx);
+    return "DONE";
   },
 
   DONE: async () => {
-    return Promise.reject()
+    return Promise.reject();
   },
 
   FAILED: async () => {
-    return "FAILED"
+    return "FAILED";
   },
-}
+};
