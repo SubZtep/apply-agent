@@ -19,7 +19,10 @@
   "private": true,
   "scripts": {
     "start": "bun run cli/run.ts",
-    "score_batch": "bun run batch/run.ts"
+    "score_batch": "bun run batch/run.ts",
+    "lint": "biome check",
+    "lint:fix": "biome check --write",
+    "lint:fix:unsafe": "biome check --write --unsafe"
   },
   "type": "module",
   "optionalDependencies": {

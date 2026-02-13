@@ -1,38 +1,34 @@
-import type { AgentContext, AgentState } from "#/machine/types";
+import type { AgentState } from "#/machine/types"
 
 export function buildExecutionSummary(ctx: Jov, state: AgentState) {
-  const summary: string[] = [];
+  const summary: string[] = []
 
   if (state === "DONE") {
-    summary.push("✅ Job accepted");
+    summary.push("✅ Job accepted")
   }
 
   if (state === "FAILED") {
-    summary.push("❌ Job rejected");
+    summary.push("❌ Job rejected")
   }
 
   if (ctx.risks?.hardGaps.length) {
-    summary.push(`• Hard gaps: ${ctx.risks.hardGaps.join(", ")}`);
+    summary.push(`• Hard gaps: ${ctx.risks.hardGaps.join(", ")}`)
   }
 
   if (ctx.risks?.softGaps.length) {
-    summary.push(`• Soft gaps: ${ctx.risks.softGaps.join(", ")}`);
+    summary.push(`• Soft gaps: ${ctx.risks.softGaps.join(", ")}`)
   }
 
   if (ctx.evaluation) {
-    const low = ctx.evaluation.requirements.filter(
-      (r) => r.confidence < 0.5,
-    ).length;
-    summary.push(
-      `• Low-confidence requirements: ${low}/${ctx.evaluation.requirements.length}`,
-    );
+    const low = ctx.evaluation.requirements.filter(r => r.confidence < 0.5).length
+    summary.push(`• Low-confidence requirements: ${low}/${ctx.evaluation.requirements.length}`)
   }
 
   if (ctx.humanInput?.answers) {
-    summary.push("• Human input influenced decision");
+    summary.push("• Human input influenced decision")
   }
 
-  summary.push(`• Mode: ${ctx.mode}`);
+  summary.push(`• Mode: ${ctx.mode}`)
 
-  return summary;
+  return summary
 }

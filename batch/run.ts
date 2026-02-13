@@ -1,26 +1,26 @@
-import { join } from "node:path";
-import Papa from "papaparse";
-import { logger } from "#/lib/logger";
-import type { Job } from "#/schemas/job";
-import { scoreJobs } from "./score";
-import type { ScrapedJob } from "./types";
-import { DATA_DIR } from "#/lib/store";
+import { join } from "node:path"
+import Papa from "papaparse"
+import { DATA_DIR } from "#/lib/store"
+import type { Job } from "#/schemas/job"
+import { scoreJobs } from "./score"
+import type { ScrapedJob } from "./types"
+
 // import { generateId } from "ai";
 
-const profileText = await Bun.file(join(DATA_DIR, "cv.md")).text();
+const profileText = await Bun.file(join(DATA_DIR, "cv.md")).text()
 
-const JOBS_DIR = join(DATA_DIR, "jobs");
-const csv = Bun.file(join(JOBS_DIR, "inbox", "jobs.csv"));
+const JOBS_DIR = join(DATA_DIR, "jobs")
+const csv = Bun.file(join(JOBS_DIR, "inbox", "jobs.csv"))
 if (!(await csv.exists())) {
-  throw new Error("Please scrape some jobs first.");
+  throw new Error("Please scrape some jobs first.")
 }
 
 const { data: scrapedJobs } = Papa.parse<ScrapedJob>(await csv.text(), {
   header: true,
   skipEmptyLines: true,
-});
+})
 
-const jobs = scrapedJobs.map((scoreJob) => {
+const jobs = scrapedJobs.map(scoreJob => {
   const job: Job = {
     job: {
       id: calculateJobId(scoreJob),
@@ -32,11 +32,11 @@ const jobs = scrapedJobs.map((scoreJob) => {
       url: scoreJob.job_url,
       profileText,
     },
-  };
-  return job;
-});
+  }
+  return job
+})
 
-await scoreJobs(jobs);
+await scoreJobs(jobs)
 
 // return jobs;
 // const res = await scoreJobs(jobs);
@@ -106,7 +106,6 @@ await scoreJobs(jobs);
 // function calculateJobId({ title, company, url }: Job["job"]) {
 
 function calculateJobId({ title, company, job_url: url }: ScrapedJob) {
-  const normalized =
-    `${title.trim()}|${company.trim()}|${url.trim()}`.toLowerCase();
-  return Bun.hash(normalized).toString(16);
+  const normalized = `${title.trim()}|${company.trim()}|${url.trim()}`.toLowerCase()
+  return Bun.hash(normalized).toString(16)
 }

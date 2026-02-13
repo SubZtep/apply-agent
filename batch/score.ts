@@ -1,16 +1,15 @@
-import { generateText, Output } from "ai";
-import pLimit from "p-limit";
-import { lmstudio } from "#/lib/ai";
-import { BatchScoreSchema } from "#/schemas/batch";
-import type { Job } from "#/schemas/job";
-import type { ScrapedJob } from "./types";
+import { generateText, Output } from "ai"
+import pLimit from "p-limit"
+import { lmstudio } from "#/lib/ai"
+import { BatchScoreSchema } from "#/schemas/batch"
+import type { Job } from "#/schemas/job"
 
-const limit = pLimit(2); // FIXME: Adjust concurrency based on model provider limits
+const limit = pLimit(2) // FIXME: Adjust concurrency based on model provider limits
 
 /** Scores the batch */
 // export async function scoreJobs(jobs: Job[]) {
 export async function scoreJobs(jobs: Job[]) {
-  return Promise.all(jobs.map((job) => limit(() => scoreSingleJob(job))));
+  return Promise.all(jobs.map(job => limit(() => scoreSingleJob(job))))
 }
 
 const SYSTEM_PROMPT = `
@@ -61,7 +60,7 @@ The average job should score around 0.4.
 Signals must be concrete evidence, not rubric labels.
 Examples: "typescript", "backend APIs", "fintech domain"
 Invalid: "skill overlap", "good fit"
-`;
+`
 
 export async function scoreSingleJob(job: Job) {
   const result = await generateText({
@@ -83,15 +82,15 @@ Evaluate fit using ONLY:
 - seniority match
 - domain relevance
 `,
-  });
+  })
 
-  const raw = result.output;
+  const raw = result.output
 
   // Normalize model output
-  const normalizedScore = normalizeScore(raw.score);
+  const normalizedScore = normalizeScore(raw.score)
 
   // Enforce penalties deterministically
-  const finalScore = applyRedFlagPenalty(normalizedScore, raw.redFlags);
+  const finalScore = applyRedFlagPenalty(normalizedScore, raw.redFlags)
 
   const batch: Job["batch"] = {
     score: finalScore,
@@ -99,10 +98,10 @@ Evaluate fit using ONLY:
     redFlags: raw.redFlags,
     scoredAt: new Date().toISOString(),
     model: process.env.BATCH_MODEL,
-  };
+  }
 
-  job.batch = batch;
-  return job;
+  job.batch = batch
+  return job
 
   // const job: Job["job"] = {
   //   id: scrapedJob.id,
@@ -120,10 +119,10 @@ Evaluate fit using ONLY:
 
 /** Clamp + round model score */
 function normalizeScore(score: number) {
-  return Math.max(0, Math.min(1, Math.round(score * 100) / 100));
+  return Math.max(0, Math.min(1, Math.round(score * 100) / 100))
 }
 
 function applyRedFlagPenalty(score: number, redFlags: string[]) {
-  const penalty = redFlags.length * 0.1;
-  return Math.max(0, Math.round((score - penalty) * 100) / 100);
+  const penalty = redFlags.length * 0.1
+  return Math.max(0, Math.round((score - penalty) * 100) / 100)
 }

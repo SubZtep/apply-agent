@@ -1,29 +1,26 @@
-import { generateText, Output } from "ai";
-import { ZodError } from "zod";
-import { lmstudio } from "#/lib/ai";
-import { logger } from "#/lib/logger";
-import type { AgentContext } from "#/machine/types";
-import { type Evaluation, EvaluationSchema } from "#/schemas/evalution";
-import type { Job } from "#/schemas/job";
+import { generateText, Output } from "ai"
+import { ZodError } from "zod"
+import { lmstudio } from "#/lib/ai"
+import { logger } from "#/lib/logger"
+import { type Evaluation, EvaluationSchema } from "#/schemas/evalution"
+import type { Job } from "#/schemas/job"
 
 const SYSTEM_PROMPT = `
 You assess how well a candidate matches job requirements.
 You do not decide outcomes.
 You provide evidence-based confidence only.
-`;
+`
 
-type EvaluateResult =
-  | { ok: true; data: Evaluation }
-  | { ok: false; error: EvaluateError };
+type EvaluateResult = { ok: true; data: Evaluation } | { ok: false; error: EvaluateError }
 
 interface EvaluateError {
-  reason: "SCHEMA_INVALID" | "MODEL_ERROR" | "INSUFFICIENT_SIGNAL";
-  rawOutput?: unknown;
-  message: string;
+  reason: "SCHEMA_INVALID" | "MODEL_ERROR" | "INSUFFICIENT_SIGNAL"
+  rawOutput?: unknown
+  message: string
 }
 
 function hasSufficientSignal(evaluation: Evaluation): boolean {
-  return evaluation.requirements.some((r) => r.confidence < 0.5);
+  return evaluation.requirements.some(r => r.confidence < 0.5)
 }
 
 function buildEvaluationPrompt(job: Job) {
@@ -42,13 +39,10 @@ OUTPUT RULES:
 - Use evidence from the profile
 - Do not invent experience
 - If unclear, lower confidence
-`;
+`
 }
 
-export async function evaluateWithRetry(
-  job: Job,
-  maxAttempts = 3,
-): Promise<EvaluateResult> {
+export async function evaluateWithRetry(_job: Job, maxAttempts = 3): Promise<EvaluateResult> {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const result = await generateText({
@@ -56,7 +50,7 @@ export async function evaluateWithRetry(
         output: Output.object({ schema: EvaluationSchema }),
         system: SYSTEM_PROMPT,
         prompt: buildEvaluationPrompt(ctx),
-      });
+      })
 
       if (!hasSufficientSignal(result.output)) {
         return {
@@ -65,12 +59,12 @@ export async function evaluateWithRetry(
             reason: "INSUFFICIENT_SIGNAL",
             message: "Evaluation lacks decision signal",
           },
-        };
+        }
       }
 
-      return { ok: true, data: result.output };
+      return { ok: true, data: result.output }
     } catch (err) {
-      logger.warn({ attempt, err }, "EVALUATE attempt failed");
+      logger.warn({ attempt, err }, "EVALUATE attempt failed")
 
       if (attempt === maxAttempts) {
         return {
@@ -79,10 +73,10 @@ export async function evaluateWithRetry(
             reason: err instanceof ZodError ? "SCHEMA_INVALID" : "MODEL_ERROR",
             message: "Failed to evaluate job fit",
           },
-        };
+        }
       }
     }
   }
 
-  throw new Error("Unreachable");
+  throw new Error("Unreachable")
 }

@@ -1,45 +1,45 @@
-import { mkdir } from "node:fs/promises";
-import { join } from "node:path";
-import type { AgentStore, PersistedAgent } from "#/machine/types";
-import { logger } from "./logger";
+import { mkdir } from "node:fs/promises"
+import { join } from "node:path"
+import type { AgentStore, PersistedAgent } from "#/machine/types"
+import { logger } from "./logger"
 
-export const DATA_DIR = join(import.meta.dirname, "..", "data");
-export const JOBS_DIR = join(DATA_DIR, "jobs");
-const STORE_DIR = join(DATA_DIR, "agent");
+export const DATA_DIR = join(import.meta.dirname, "..", "data")
+export const JOBS_DIR = join(DATA_DIR, "jobs")
+const STORE_DIR = join(DATA_DIR, "agent")
 
 export class FileAgentStore implements AgentStore {
   async save(agent: Parameters<AgentStore["save"]>[0]) {
     const merged: PersistedAgent = {
       ...agent,
       updatedAt: agent.updatedAt ?? Date.now(),
-    };
-    const name = join(STORE_DIR, `${merged.id}.json`);
+    }
+    const name = join(STORE_DIR, `${merged.id}.json`)
     try {
-      await mkdir(STORE_DIR, { recursive: true });
-      await Bun.write(name, JSON.stringify(merged, null, 2));
-      return merged;
+      await mkdir(STORE_DIR, { recursive: true })
+      await Bun.write(name, JSON.stringify(merged, null, 2))
+      return merged
     } catch (error: any) {
-      logger.error({ id: merged.id, error }, "Failed to save agent");
-      throw error;
+      logger.error({ id: merged.id, error }, "Failed to save agent")
+      throw error
     }
   }
 
   async load(id: string) {
-    const file = Bun.file(join(STORE_DIR, `${id}.json`));
+    const file = Bun.file(join(STORE_DIR, `${id}.json`))
     if (!(await file.exists())) {
-      return null;
+      return null
     }
     try {
-      return (await file.json()) as PersistedAgent;
+      return (await file.json()) as PersistedAgent
     } catch (error: any) {
       if (error.code === "ENOENT") {
-        return null;
+        return null
       }
       if (error instanceof SyntaxError) {
-        logger.error({ id, error }, "Corrupted data file for agent");
-        return null;
+        logger.error({ id, error }, "Corrupted data file for agent")
+        return null
       }
-      throw error;
+      throw error
     }
   }
 }

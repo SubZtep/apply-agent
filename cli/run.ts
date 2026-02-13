@@ -1,63 +1,59 @@
-import { readdir } from "node:fs/promises";
-import { join } from "node:path";
-import { logger } from "#/lib/logger";
-import { JOBS_DIR, DATA_DIR, FileAgentStore } from "#/lib/store";
-import { runAgent } from "#/machine/runner";
-import type { AgentContext } from "#/machine/types";
-import type { Job } from "#/schemas/job";
+import { readdir } from "node:fs/promises"
+import { join } from "node:path"
+import { logger } from "#/lib/logger"
+import { DATA_DIR, FileAgentStore, JOBS_DIR } from "#/lib/store"
+import { runAgent } from "#/machine/runner"
+import type { Job } from "#/schemas/job"
 
-const store = new FileAgentStore();
+const store = new FileAgentStore()
 
-const [, , fileName, forceProceed] = Bun.argv;
-const file = Bun.file(join(JOBS_DIR, "agentworks"));
+const [, , fileName, forceProceed] = Bun.argv
+const file = Bun.file(join(JOBS_DIR, "agentworks"))
 
 if (!file.exists()) {
-  logger.error({ fileName }, "Agentwork corrupted");
-  throw new Error("Where is my job?");
+  logger.error({ fileName }, "Agentwork corrupted")
+  throw new Error("Where is my job?")
 }
 
-const job: Job = await file.json();
+const _job: Job = await file.json()
 
-const dir = join(DATA_DIR, "jobs", "shortlisted");
+const dir = join(DATA_DIR, "jobs", "shortlisted")
 
 while (true) {
-  let fileNames: string[] = (await readdir(dir)).filter((f) =>
-    f.endsWith(".json"),
-  );
+  const fileNames: string[] = (await readdir(dir)).filter(f => f.endsWith(".json"))
   if (fileNames.length === 0) {
-    logger.info("No more batched job");
-    break;
+    logger.info("No more batched job")
+    break
   }
 
-  const randomFileName =
-    fileNames[Math.floor(Math.random() * fileNames.length)];
+  const randomFileName = fileNames[Math.floor(Math.random() * fileNames.length)]
   if (!randomFileName) {
-    logger.info("No more batched job suddenly");
-    break;
+    logger.info("No more batched job suddenly")
+    break
   }
 
-  const jobFile = Bun.file(join(dir, randomFileName));
+  const jobFile = Bun.file(join(dir, randomFileName))
   if (!jobFile.exists()) {
-    logger.info("No more batched job very suddenly");
-    break;
+    logger.info("No more batched job very suddenly")
+    break
   }
 
-  const job: Job = await jobFile.json();
+  const job: Job = await jobFile.json()
 
-  console.log(job);
+  console.log(job)
 
   job.agent = {
     mode: forceProceed ? "exploratory" : "strict",
     state: "IDLE",
-  };
+  }
 
   await runAgent(
     // { id: job.job.id, state: "IDLE", context, updatedAt: Date.now() },
     job,
     store,
-  );
+  )
 
-  break;
+  break
 }
 
 // async function cmdRun(isExploratoryMode = false) {
