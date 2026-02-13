@@ -50,11 +50,13 @@ export const handlers: Record<AgentState, StateHandler> = {
     return "CHALLENGE"
   },
 
-  CHALLENGE: async (_job: Job) => {
-    const result = await challengeWithRetry(ctx)
+  CHALLENGE: async (job: Job) => {
+    const ctx = job.agent!
+    const result = await challengeWithRetry(job)
 
     if (!result.ok) {
-      ctx.errors = [result.error.message]
+      // ctx.errors = [result.error.message]
+      console.log("Error", result.error)
       return "FAILED"
     }
 
@@ -63,7 +65,8 @@ export const handlers: Record<AgentState, StateHandler> = {
   },
 
   DECIDE: async ctx => {
-    const decision = decideNextState(ctx)
+    const decision = decideNextState(ctx.agent!)
+    // @ts-ignore
     ctx.questions = decision.questions
     return decision.nextState
   },
@@ -73,7 +76,8 @@ export const handlers: Record<AgentState, StateHandler> = {
     return "WAIT_FOR_HUMAN"
   },
 
-  PLAN: async ctx => {
+  PLAN: async job => {
+    const ctx = job.agent!
     ctx.plan = await generatePlan(ctx)
     return "DONE"
   },

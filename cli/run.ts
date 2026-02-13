@@ -7,16 +7,17 @@ import type { Job } from "#/schemas/job"
 
 const store = new FileAgentStore()
 
-const [, , fileName, forceProceed] = Bun.argv
-const file = Bun.file(join(JOBS_DIR, "agentworks"))
+// const [, , fileName, forceProceed] = Bun.argv
+// const file = Bun.file(join(JOBS_DIR, "agentworks"))
 
-if (!file.exists()) {
-  logger.error({ fileName }, "Agentwork corrupted")
-  throw new Error("Where is my job?")
-}
+// if (!file.exists()) {
+//   logger.error({ fileName }, "Agentwork corrupted")
+//   throw new Error("Where is my job?")
+// }
 
-const _job: Job = await file.json()
+// const _job: Job = await file.json()
 
+const forceProceed = true
 const dir = join(DATA_DIR, "jobs", "shortlisted")
 
 while (true) {
@@ -40,7 +41,7 @@ while (true) {
 
   const job: Job = await jobFile.json()
 
-  console.log(job)
+  // console.log(job)
 
   job.agent = {
     mode: forceProceed ? "exploratory" : "strict",

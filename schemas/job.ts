@@ -16,7 +16,7 @@ export interface Job {
     title: string
     company: string
     description: string
-    profileText: string // belongs to a job, profile can be optimized for the job
+    // profileText: string // belongs to a job, profile can be optimized for the job
     url: string
     location: string
   }
@@ -24,8 +24,8 @@ export interface Job {
     score: number
     signals: string[]
     redFlags: string[]
-    scoredAt: string
-    model: string
+    // scoredAt: string
+    // model: string
   }
   // agent?: null
 
@@ -39,11 +39,11 @@ export interface Job {
 
     // derived artifacts
     /////////// normalized?: NormalizedJob;
-    evaluation?: EvaluationResult
-    risks?: RiskAssessment
+    evaluation?: any // EvaluationResult
+    risks?: any // RiskAssessment
 
     // human loop
-    questions?: AgentQuestion[]
+    questions?: any // AgentQuestion[]
     humanInput?: {
       answers: Record<string, string>
       forceProceed?: boolean

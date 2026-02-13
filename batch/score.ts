@@ -8,8 +8,8 @@ const limit = pLimit(2) // FIXME: Adjust concurrency based on model provider lim
 
 /** Scores the batch */
 // export async function scoreJobs(jobs: Job[]) {
-export async function scoreJobs(jobs: Job[]) {
-  return Promise.all(jobs.map(job => limit(() => scoreSingleJob(job))))
+export async function scoreJobs(jobs: Job[], profileText: string) {
+  return Promise.all(jobs.map(job => limit(() => scoreSingleJob(job, profileText))))
 }
 
 const SYSTEM_PROMPT = `
@@ -62,14 +62,14 @@ Examples: "typescript", "backend APIs", "fintech domain"
 Invalid: "skill overlap", "good fit"
 `
 
-export async function scoreSingleJob(job: Job) {
+export async function scoreSingleJob(job: Job, profileText: string) {
   const result = await generateText({
     model: lmstudio(process.env.BATCH_MODEL),
     output: Output.object({ schema: BatchScoreSchema }),
     system: SYSTEM_PROMPT,
     prompt: `
 PROFILE (summary):
-${job.job.profileText}
+${profileText}
 
 JOB:
 Title: ${job.job.title}
@@ -96,8 +96,8 @@ Evaluate fit using ONLY:
     score: finalScore,
     signals: raw.signals,
     redFlags: raw.redFlags,
-    scoredAt: new Date().toISOString(),
-    model: process.env.BATCH_MODEL,
+    // scoredAt: new Date().toISOString(),
+    // model: process.env.BATCH_MODEL,
   }
 
   job.batch = batch

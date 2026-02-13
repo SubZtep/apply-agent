@@ -2,7 +2,7 @@ import { join } from "node:path"
 import Papa from "papaparse"
 import { DATA_DIR } from "#/lib/store"
 import type { Job } from "#/schemas/job"
-import { scoreJobs } from "./score"
+import { scoreJobs, scoreSingleJob } from "./score"
 import type { ScrapedJob } from "./types"
 
 // import { generateId } from "ai";
@@ -20,23 +20,33 @@ const { data: scrapedJobs } = Papa.parse<ScrapedJob>(await csv.text(), {
   skipEmptyLines: true,
 })
 
-const jobs = scrapedJobs.map(scoreJob => {
-  const job: Job = {
-    job: {
-      id: calculateJobId(scoreJob),
-      title: scoreJob.title,
-      description: scoreJob.description,
-      company: scoreJob.company,
-      location: scoreJob.location,
-      source: scoreJob.site,
-      url: scoreJob.job_url,
-      profileText,
-    },
-  }
-  return job
-})
+const rawJobs = scrapedJobs
+  // .slice(0, 2)
+  .map(scoreJob => {
+    const job: Job = {
+      job: {
+        id: calculateJobId(scoreJob),
+        title: scoreJob.title,
+        description: scoreJob.description,
+        company: scoreJob.company,
+        location: scoreJob.location,
+        source: scoreJob.site,
+        url: scoreJob.job_url,
+        // profileText,
+      },
+    }
+    return job
+  })
 
-await scoreJobs(jobs)
+// console.log(jobs)
+// process.exit()
+
+const jobs = await scoreJobs(rawJobs, profileText)
+// console.log(jobs)
+
+// const job = await scoreSingleJob(jobs[0]!)
+
+// console.log(JSON.stringify(job, null, 2))
 
 // return jobs;
 // const res = await scoreJobs(jobs);
@@ -78,23 +88,23 @@ await scoreJobs(jobs)
 // process.exit(0);
 // const res = await scoreJobs(Object.values(jobs), profileText);
 
-// const res = await scoreJobs()
+// const res = await scoreJobs(jobs)
 
-// for (const { id, ...batch } of res) {
-//   const job = jobs[id];
-//   if (!job) throw new Error(`Disappeared job: ${id}`);
-//   const barchDir = isShortlisted(batch) ? "shortlisted" : "screened_out";
-//   job.batch = batch;
-//   await Bun.write(
-//     join(JOBS_DIR, barchDir, `${id}.json`),
-//     JSON.stringify(job, null, 2),
-//   );
-// }
+for (const job of jobs) {
+  const {
+    job: { id },
+    batch,
+  } = job
+  if (!batch) throw new Error(`Job batching error: ${id}`)
+  const batchDir = isShortlisted(batch) ? "shortlisted" : "screened_out"
+  const jobFileName = join(JOBS_DIR, batchDir, `${id}.json`)
+  await Bun.write(jobFileName, JSON.stringify(job, null, 2))
+}
 
-// function isShortlisted(batch: { score: number }) {
-//   // FIXME: proper check
-//   return batch.score > 0.4;
-// }
+function isShortlisted(batch: { score: number }) {
+  // FIXME: proper check
+  return batch.score > 0.4
+}
 
 // function calculateJobId(title: string, company: string, url: string): string {
 // function calculateJobId({ title, company, url }: Job["job"]): string {
