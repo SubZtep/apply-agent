@@ -1,16 +1,22 @@
 import { buildExecutionSummary } from "#/cli/ux"
+import type { Job } from "#/schemas/job"
 import { handlers } from "./handlers"
-import type { AgentState, AgentStore, PersistedAgent } from "./types"
+import type { AgentState, AgentStore } from "./types"
 
-export async function runAgent(persisted: PersistedAgent, store: AgentStore) {
+// export async function runAgent(persisted: PersistedAgent, store: AgentStore) {
+export async function runAgent(job: Job, store: AgentStore) {
   while (true) {
-    const next = await handlers[persisted.state](persisted.context)
-    persisted.state = next
-    console.log(`\n→ ${persisted.state}`)
-    await store.save(persisted)
+    const next = await handlers[job.agent!.state](job)
+    job.agent!.state = next
+
+    console.log(`\n→ ${job.agent!.state}`)
+    // await store.save(job.job);
 
     if (terminal(next)) {
-      const summary = buildExecutionSummary(persisted.context, next)
+      console.log("SAVE", job)
+      // store.save(job.agent)
+
+      const summary = buildExecutionSummary(job.agent, next)
       console.log("\n=== Execution Summary ===")
       summary.forEach(line => void console.log(line))
       return

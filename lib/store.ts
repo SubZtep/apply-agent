@@ -3,7 +3,9 @@ import { join } from "node:path"
 import type { AgentStore, PersistedAgent } from "#/machine/types"
 import { logger } from "./logger"
 
-const STORE_DIR = join(import.meta.dirname, "..", "data", "agent")
+export const DATA_DIR = join(import.meta.dirname, "..", "data")
+export const JOBS_DIR = join(DATA_DIR, "jobs")
+const STORE_DIR = join(DATA_DIR, "agent")
 
 export class FileAgentStore implements AgentStore {
   async save(agent: Parameters<AgentStore["save"]>[0]) {

@@ -2,7 +2,7 @@ import { generateText, Output } from "ai"
 import { ZodError } from "zod"
 import { lmstudio } from "#/lib/ai"
 import { logger } from "#/lib/logger"
-import type { AgentContext } from "#/machine/types"
+import type { Job } from "#/schemas/job"
 import { type RiskAssessment, RiskAssessmentSchema } from "#/schemas/risk"
 
 interface ChallengeError {
@@ -19,16 +19,16 @@ You do not decide whether to proceed.
 You do not rewrite experience.
 `
 
-function buildChallengePrompt(ctx: AgentContext) {
+function buildChallengePrompt(job: Job) {
   return `
 TASK:
 Identify risks or gaps that could weaken this application.
 
 JOB:
-${JSON.stringify(ctx.job, null, 2)}
+${JSON.stringify(job.job, null, 2)}
 
 EVALUATION:
-${JSON.stringify(ctx.evaluation, null, 2)}
+${JSON.stringify(job.agent!.evaluation, null, 2)}
 
 OUTPUT RULES:
 - Hard gaps are missing required experience
@@ -47,14 +47,14 @@ function hasUsableRisks(risks: RiskAssessment): boolean {
   return risks.hardGaps.length > 0 || risks.softGaps.length > 1
 }
 
-export async function challengeWithRetry(ctx: AgentContext, maxAttempts = 3): Promise<ChallengeResult> {
+export async function challengeWithRetry(job: Job, maxAttempts = 3): Promise<ChallengeResult> {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const result = await generateText({
         model: lmstudio(process.env.AGENT_MODEL),
         output: Output.object({ schema: RiskAssessmentSchema }),
         system: SYSTEM_PROMPT,
-        prompt: buildChallengePrompt(ctx),
+        prompt: buildChallengePrompt(job),
       })
 
       const risks = RiskAssessmentSchema.parse(result.output)

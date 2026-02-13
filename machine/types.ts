@@ -1,7 +1,8 @@
 import type { Evaluation } from "#/schemas/evalution"
-import type { JobSpec } from "#/schemas/job"
 import type { RiskAssessment } from "#/schemas/risk"
 import type { ActionPlan } from "#/states/plan"
+
+export type JobState = "approved" | "awaiting_input" | "declined" | "screened_out" | "shortlisted"
 
 export type AgentState =
   | "IDLE"
@@ -33,11 +34,11 @@ export interface AgentContext {
   mode: "strict" | "exploratory"
 
   // raw inputs
-  jobText?: string
-  profileText?: string
+  // jobText?: string;
+  // profileText?: result.dataresult.datastring;
 
   // normalized data
-  job?: JobSpec
+  // job?: JobSpec;
 
   // evaluation results
   evaluation?: Evaluation

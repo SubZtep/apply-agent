@@ -1,6 +1,6 @@
-import type { AgentContext, AgentState } from "#/machine/types"
+import type { AgentState } from "#/machine/types"
 
-export function buildExecutionSummary(ctx: AgentContext, state: AgentState) {
+export function buildExecutionSummary(ctx: Jov, state: AgentState) {
   const summary: string[] = []
 
   if (state === "DONE") {

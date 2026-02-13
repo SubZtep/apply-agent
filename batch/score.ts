@@ -2,11 +2,13 @@ import { generateText, Output } from "ai"
 import pLimit from "p-limit"
 import { lmstudio } from "#/lib/ai"
 import { BatchScoreSchema } from "#/schemas/batch"
-import type { BatchJob, JobScore } from "./types"
+import type { Job } from "#/schemas/job"
 
-const limit = pLimit(5) // FIXME: Adjust concurrency based on model provider limits
+const limit = pLimit(2) // FIXME: Adjust concurrency based on model provider limits
 
-export async function scoreJobs(jobs: BatchJob[], profileText: string) {
+/** Scores the batch */
+// export async function scoreJobs(jobs: Job[]) {
+export async function scoreJobs(jobs: Job[], profileText: string) {
   return Promise.all(jobs.map(job => limit(() => scoreSingleJob(job, profileText))))
 }
 
@@ -60,7 +62,7 @@ Examples: "typescript", "backend APIs", "fintech domain"
 Invalid: "skill overlap", "good fit"
 `
 
-export async function scoreSingleJob(job: BatchJob, profileText: string) {
+export async function scoreSingleJob(job: Job, profileText: string) {
   const result = await generateText({
     model: lmstudio(process.env.BATCH_MODEL),
     output: Output.object({ schema: BatchScoreSchema }),
@@ -70,10 +72,10 @@ PROFILE (summary):
 ${profileText}
 
 JOB:
-Title: ${job.title}
+Title: ${job.job.title}
 
 Description:
-${job.description}
+${job.job.description}
 
 Evaluate fit using ONLY:
 - skill overlap
@@ -90,12 +92,29 @@ Evaluate fit using ONLY:
   // Enforce penalties deterministically
   const finalScore = applyRedFlagPenalty(normalizedScore, raw.redFlags)
 
-  return {
-    jobId: job.id,
+  const batch: Job["batch"] = {
     score: finalScore,
     signals: raw.signals,
     redFlags: raw.redFlags,
-  } as JobScore
+    // scoredAt: new Date().toISOString(),
+    // model: process.env.BATCH_MODEL,
+  }
+
+  job.batch = batch
+  return job
+
+  // const job: Job["job"] = {
+  //   id: scrapedJob.id,
+  // };
+
+  // return {
+  //   id: job.id,
+  //   score: finalScore,
+  //   signals: raw.signals,
+  //   redFlags: raw.redFlags,
+  //   scoredAt: new Date().toISOString(),
+  //   model: process.env.BATCH_MODEL,
+  // };
 }
 
 /** Clamp + round model score */
