@@ -1,40 +1,100 @@
-# :construction_worker:
+# apply-agent wip
 
-Self-hosted job scraper with LLM-powered CV matching. Filters out unrealistic listings automatically.
+Self-hosted job scraper runner with self-hosted LLM-powered CV matching.
+
+⚠️ It’s possible to filter out legitimate jobs, so use it with caution.
+
+## What’s happening
+
+Helps you find jobs to apply for. 👷💭
+
+### Folder structure
+
+Every job is a _markdown_ file. During the evaluation process, it gets updated with notes and travels between status folders. No database required.
+
+Here is the folder sctructure for `./[job].md` files for further process structure:
 
 ```
 data/jobs/
-  inbox/             # raw scraped jobs (unscored)
-  screened_out/      # rejected by batch scoring
-  shortlisted/       # passed batch scoring
-  awaiting_input/    # agent needs human input
-  declined/          # rejected by agent reasoning
-  approved/          # agent-approved jobs
+     ├── inbox/             # raw scraped jobs (unscored)
+     ├── screened_out/      # rejected by batch scoring
+     ├── shortlisted/       # passed batch scoring
+     ├── awaiting_input/    # agent needs human input
+     ├── declined/          # rejected by agent reasoning
+     └── approved/          # agent-approved jobs
 ```
 
-> Batch reject: _“Not worth thinking about”_ \
-> Agent reject: _“Thought about it carefully and decided no”_
+### What’s **automatised**
 
-## Requirements
+| Get jobs                       | Filter the noise out                 | Challenge a job            |
+| ------------------------------ | ------------------------------------ | -------------------------- |
+| 1️⃣ Visit a jobsite              | 1️⃣ Get a jobs CSV from **inbox**      | Agent compare with yout CV |
+| 2️⃣ Search jobs by criteria      | 2️⃣ Run batch scoring with a light LLM |                            |
+| 3️⃣ Download as CSV to **inbox** | 👎 Unrealistic to **screened_out**    |                            |
+|                                | 👍 Good ones to **shortlisted**       |                            |
 
-- Bun (latest?)
-- Python 3.10+ (for [the scraper](https://github.com/speedyapply/JobSpy))
-- [LM Studio](https://lmstudio.ai/), required (CPU friendly) models:
+
+> Batch reject:\
+> _“**Not worth thinking **about****”_
+> 
+> Agent reject:\
+> _“**Thought about it carefully and decided no**”_
+
+## Run without Docker
+
+This is the hard way, the best for low-level machines. If you're not a developer, probably need to install required dependencies on your machine.
+
+### Requirements
+
+- **Linux**/_Mac_/~~_Windows_~~
+
+  (WSL welcome)
+
+- **Bun JavaScript**
+
+  [Install](https://bun.com/docs/installation#installation) the latest(?) version.
+  Node.js is not supported.
+
+- **Python**
+  
+  Need version 3.10+.
+  Runs the 3rd-party [scraper](https://github.com/speedyapply/JobSpy).
+
+- **LM Studio**
+
+  Default (required) models:
   - qwen/qwen3-4b-2507
   - qwen3-0.6b-mlx
 
-:pray::whale:
+### Custom configuration
 
-## Run scripts
+The predefined LLM API _base URL_ is expecting a local running [LM Studio](https://lmstudio.ai/), with the loadable models. The default models are CPU friendly, selected for bare minimum setup, but the result can be better.
 
-Run the scripts from the project root directory (just in case).
+Actually any [Open AI **compatible**](https://www.npmjs.com/package/@ai-sdk/openai-compatible) host should work, with any LLM models. Change the default configutation to discover.
+
+Create `.env.local` with any of these lines:
+
+```ini
+AI_API_BASE_URL=[open ai api endpoint]
+AGENT_MODEL=[strong model for agentic run]
+BATCH_MODEL=[light model for intanse run]
+```
 
 ### Installation
 
-First of all, clone the project. Create the `data/cv.md` file with your data, ~~config,~~ run the following scripts.
+First of all, clone the project.
+
+Create the `data/cv.md` file with your data.
+
+Install JavaScript dependencies:
 
 ```bash
 bun install
+```
+
+ Activate venv and install Python requirements:
+
+```bash
 ./tools/install.sh
 ```
 
@@ -46,7 +106,7 @@ Scrape the configured search on selected job boards and for new listings.
 ./tools/scrape.sh
 ```
 
-It creates the jobs in the `data/jobs/inbox` folder. 
+It creates the jobs CSV in the `data/jobs/inbox` folder.
 
 ### Run batch scorer
 
@@ -74,7 +134,9 @@ bun start resume <id> [--force-proceed]
 
 Move the potential jobs to `data/jobs/approved`, and the less interesting ones to `data/jobs/declined`.
 
-## Data flow
+## Etc.
+
+### Data flow
 
 ```
 [ Python scraper ]
@@ -90,7 +152,7 @@ Move the potential jobs to `data/jobs/approved`, and the less interesting ones t
 [ agent runs ]
 ```
 
-## Agent states
+### Agent states
 
 ```
 IDLE
@@ -109,7 +171,8 @@ DECIDE <───> WAIT_FOR_HUMAN
   ↓               ↓
  DONE            ERROR
 ```
-## Mode semantics
+
+### Mode semantics
 
 The agent runs in strict mode by default. Add the parameter __**x**__ — `bun start run x` — to start in exploratory mode (no questions).
 
@@ -119,5 +182,3 @@ The agent runs in strict mode by default. Add the parameter __**x**__ — `bun s
 | Hard gaps → WAIT_FOR_HUMAN                   | Low confidence → assume best-case         |
 | Low confidence → WAIT_FOR_HUMAN              | LOW_QUALITY → downgrade severity, proceed |
 | LOW_QUALITY from EVALUATE/CHALLENGE → FAILED | Bias toward PLAN                          |
-
----

@@ -1,5 +1,14 @@
 {
   "name": "apply-agent",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "bun run cli/run.ts",
+    "score_batch": "bun run batch/run.ts",
+    "lint": "biome check",
+    "lint:fix": "biome check --write",
+    "lint:fix:unsafe": "biome check --write --unsafe"
+  },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.26",
     "ai": "^6.0.69",
@@ -16,15 +25,6 @@
   "peerDependencies": {
     "typescript": "^5"
   },
-  "private": true,
-  "scripts": {
-    "start": "bun run cli/run.ts",
-    "score_batch": "bun run batch/run.ts",
-    "lint": "biome check",
-    "lint:fix": "biome check --write",
-    "lint:fix:unsafe": "biome check --write --unsafe"
-  },
-  "type": "module",
   "optionalDependencies": {
     "pdfmake": "^0.3.3"
   }
