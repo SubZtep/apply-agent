@@ -23,5 +23,8 @@ declare module "bun" {
 
     /** Running mode, "strict" is for HITL. */
     MODE?: "exploratory" | "strict"
+
+    /** Job search user config file location in YAML format. */
+    CONFIG_FILE: string
   }
 }
