@@ -2,17 +2,16 @@
 
 Self-hosted job scraper runner with self-hosted LLM-powered CV matching.
 
-> 👷💭 Help to find jobs.
+> **TL;DR**\
+> 👷 _Find Me a Job_ 💭
 
-⚠️ It’s possible to filter out legitimate jobs, so use it with caution.
+## What’s automated
 
-## What’s automatised
-
-| Get jobs                  | Filter the noise out                 | Challenge a job            |
-| ------------------------- | ------------------------------------ | -------------------------- |
-| 1️⃣ Visit a jobsite         | 1️⃣ Process jobs CSV                   | Agent compare with yout CV |
-| 2️⃣ Search jobs by criteria | 2️⃣ Run batch scoring with a light LLM | ...                        |
-| 3️⃣ Download result as CSV  | 3️⃣ Generate appropriate job file      | ...                        |
+| Get jobs                  | Filter the noise out            | Evaluate                     |
+| ------------------------- | ------------------------------- | ---------------------------- |
+| 1️⃣ Visit a jobsite         | 1️⃣ Process jobs CSV              | 1️⃣ Pick a shortlisted job     |
+| 2️⃣ Search by criterias     | 2️⃣ Run batch scoring             | 2️⃣ Put into the state machine |
+| 3️⃣ Download results as CSV | 3️⃣ Generate appropriate job file | 3️⃣ Enjoy approved jobs        |
 
 ### How’s going?
 
@@ -21,6 +20,8 @@ _“**Not worth thinking about**”_
 
 Agent reject:\
 _“**Thought about it carefully and decided no**”_
+
+⚠️ It’s possible to filter out legitimate jobs, so use it with caution.
 
 ## Documentation
 

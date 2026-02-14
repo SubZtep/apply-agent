@@ -4,8 +4,7 @@
   "type": "module",
   "scripts": {
     "postinstall": "scripts/setup.sh",
-    "start": "bun run cli/run.ts",
-    "score_batch": "bun run batch/run.ts",
+    "start": "bun run src/orchestrator.ts",
     "lint": "biome check",
     "lint:fix": "biome check --write",
     "lint:fix:unsafe": "biome check --write --unsafe"

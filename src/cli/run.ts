@@ -3,7 +3,7 @@ import { join } from "node:path"
 import { logger } from "#/lib/logger"
 import { FileAgentStore } from "#/lib/store"
 import { runAgent } from "#/machine/runner"
-import type { Job } from "#/schemas/job"
+import type { JobState } from "#/machine/types"
 
 const store = new FileAgentStore()
 
@@ -18,29 +18,20 @@ const store = new FileAgentStore()
 // const _job: Job = await file.json()
 
 const forceProceed = true
-const dir = join(process.env.JOBS_DIR, "shortlisted")
+const pickDir: JobState = "shortlisted"
+const dir = join(process.env.JOBS_DIR, pickDir)
 
 while (true) {
-  const fileNames: string[] = (await readdir(dir)).filter(f => f.endsWith(".json"))
+  const jobIds: string[] = (await readdir(dir)).filter(f => f.endsWith(".json")).map(f => f.slice(0, -5))
 
-  if (fileNames.length === 0) {
+  if (jobIds.length === 0) {
     logger.info("No more batched job")
     break
   }
 
-  const randomFileName = fileNames[Math.floor(Math.random() * fileNames.length)]
-  if (!randomFileName) {
-    logger.info("No more batched job suddenly")
-    break
-  }
+  const randomJobId = jobIds[Math.floor(Math.random() * jobIds.length)]!
 
-  const jobFile = Bun.file(join(dir, randomFileName))
-  if (!jobFile.exists()) {
-    logger.info("No more batched job very suddenly")
-    break
-  }
-
-  const job: Job = await jobFile.json()
+  const job = (await store.load(randomJobId, pickDir))!
 
   job.agent = {
     mode: forceProceed ? "exploratory" : "strict",
@@ -48,8 +39,6 @@ while (true) {
   }
 
   await runAgent(job, store)
-
-  break
 }
 
 // async function cmdRun(isExploratoryMode = false) {
