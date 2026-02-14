@@ -2,8 +2,6 @@ import * as p from "@clack/prompts"
 import { $ } from "bun"
 import { defineCommand, runMain } from "citty"
 
-// import { z } from "zod"
-
 const cleanup = () => process.exit()
 
 const run = defineCommand({
@@ -14,17 +12,16 @@ const run = defineCommand({
   args: {
     orchestrator: {
       alias: "o",
-      type: "boolean",
-      // description: "Automatically run what needs to be run",
-      description: "Where is the placeholder, here it is",
       default: true,
+      type: "boolean",
+      description: "Automatically run what needs to be run, unless it’s the placeholder, here it is",
       negativeDescription: "Ignore it, always orchestrator for now",
     },
     mode: {
       type: "enum",
-      description: "Exploratory mode is AI friendly, for Human-in-the-Loop go for (the default) strict mode",
-      options: ["exploratory", "strict"],
       default: "strict",
+      options: ["exploratory", "strict"],
+      description: "Exploratory mode is AI friendly, for Human-in-the-Loop go for (the default) strict mode",
     },
   },
   cleanup,
@@ -43,12 +40,14 @@ please update values from .env into .env.local file by hand.`,
   },
   cleanup,
   async run() {
-    p.intro("Configure")
-
-    p.box(JSON.stringify(navigator))
-    // navigator.geolocation.getCurrentPosition(success, error, options)
-
-    p.outro("Bye")
+    p.intro("Configure\n")
+    p.box(
+      `Feel free to update text files manually — like an animal.
+See more details in the repo: docs/config.md`,
+      "While this feature isn’t complete yet,",
+      { titlePadding: 0, contentPadding: 0, rounded: true },
+    )
+    p.cancel("Bye")
   },
 })
 

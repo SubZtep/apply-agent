@@ -27,7 +27,7 @@ while (true) {
 
   if (!job.agent) {
     job.agent = {
-      mode: process.env.FORCE_PROCEED ? "exploratory" : "strict",
+      mode: process.env.MODE ?? (process.env.FORCE_PROCEED ? "exploratory" : "strict"),
       state: "IDLE",
     }
   }

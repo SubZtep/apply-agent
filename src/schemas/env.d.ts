@@ -12,7 +12,7 @@ declare module "bun" {
     /** Container for job status folders. */
     JOBS_DIR: string
 
-    /** Your CV in _markdown_. */
+    /** Your CV in _Markdown_. */
     CV_FILE: string
 
     /**
