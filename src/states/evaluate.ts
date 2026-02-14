@@ -2,17 +2,9 @@ import { generateText, Output } from "ai"
 import { ZodError } from "zod"
 import { lmstudio } from "#/lib/ai"
 import { logger } from "#/lib/logger"
+import { getProfileText } from "#/lib/user"
 import { type Evaluation, EvaluationSchema } from "#/schemas/evalution"
 import type { Job } from "#/schemas/job"
-
-let profileText: string | undefined
-
-async function getProfileText() {
-  if (!profileText) {
-    profileText = await Bun.file(process.env.CV_FILE).text()
-  }
-  return profileText
-}
 
 const SYSTEM_PROMPT = `
 You assess how well a candidate matches job requirements.
@@ -29,8 +21,7 @@ interface EvaluateError {
 }
 
 function hasSufficientSignal(evaluation: Evaluation) {
-  return evaluation.requirements.some(r => r.confidence < 0.8)
-  // return evaluation.requirements.some(r => r.confidence < 0.5)
+  return evaluation.requirements.some(r => r.confidence < 0.5)
 }
 
 function buildEvaluationPrompt(job: Job, profileText: string) {
@@ -54,6 +45,7 @@ OUTPUT RULES:
 
 export async function evaluateWithRetry(job: Job, maxAttempts = 3): Promise<EvaluateResult> {
   const profile = await getProfileText()
+
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const { output } = await generateText({
@@ -62,9 +54,6 @@ export async function evaluateWithRetry(job: Job, maxAttempts = 3): Promise<Eval
         system: SYSTEM_PROMPT,
         prompt: buildEvaluationPrompt(job, profile),
       })
-
-      // console.log("XXX", output)
-      // logger.info(output, "XXXXX")
 
       if (!hasSufficientSignal(output)) {
         return {

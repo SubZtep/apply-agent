@@ -3,6 +3,7 @@ import { join } from "node:path"
 import Papa from "papaparse"
 import { logger } from "#/lib/logger"
 import { FileAgentStore } from "#/lib/store"
+import { getProfileText } from "#/lib/user"
 import type { JobState } from "#/machine/types"
 import { mapScrapedJobToJob } from "./lib"
 import { scoreJobs } from "./score"
@@ -20,9 +21,8 @@ const { data: scrapedJobs } = Papa.parse<ScrapedJob>(await csv.text(), {
   skipEmptyLines: true,
 })
 
-const profileText = await Bun.file(process.env.CV_FILE).text()
 const rawJobs = scrapedJobs.map(mapScrapedJobToJob)
-const jobs = await scoreJobs(rawJobs, profileText)
+const jobs = await scoreJobs(rawJobs, await getProfileText())
 const store = new FileAgentStore()
 
 for (const job of jobs) {
