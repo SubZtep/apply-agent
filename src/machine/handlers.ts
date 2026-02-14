@@ -40,7 +40,7 @@ export const handlers: Record<AgentState, StateHandler> = {
     const result = await evaluateWithRetry(job)
 
     if (!result.ok) {
-      logger.error(job, result.error.message)
+      logger.debug({ job }, result.error.message)
       return "FAILED"
     }
 
@@ -61,7 +61,7 @@ export const handlers: Record<AgentState, StateHandler> = {
   },
 
   DECIDE: async job => {
-    const decision = decideNextState(job.agent!)
+    const decision = decideNextState(job)
     job.agent!.questions = decision.questions
     return decision.nextState
   },

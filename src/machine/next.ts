@@ -1,31 +1,37 @@
 import { logger } from "#/lib/logger"
+import type { Job } from "#/schemas/job"
 import type { AgentContext, AgentQuestion, AgentState } from "./types"
 
-export function decideNextState(ctx: AgentContext): {
+export function decideNextState({ job, agent }: Job): {
   nextState: AgentState
   questions?: AgentQuestion[]
 } {
+  if (!agent) {
+    logger.error({ job, agent }, "Agent report is required for next state decision")
+    throw new Error("Missing agent report")
+  }
+
   const questions: AgentQuestion[] = []
 
-  if (!ctx.evaluation || !ctx.risks) {
+  if (!agent.evaluation || !agent.risks) {
     return { nextState: "FAILED" }
   }
 
   // Rule D — human override
-  if (ctx.humanInput?.forceProceed) {
+  if (agent.humanInput?.forceProceed) {
     return { nextState: "PLAN" }
   }
 
-  const human = interpretHumanAnswers(ctx)
+  const human = interpretHumanAnswers(agent)
 
   // Rule A — hard gaps: answered NO → FAIL
-  if (ctx.risks.hardGaps.length >= 3 && human.hasAnsweredHardGaps && !human.proceedDespiteHardGaps) {
+  if (agent.risks.hardGaps.length >= 3 && human.hasAnsweredHardGaps && !human.proceedDespiteHardGaps) {
     logger.info("User declined proceeding due to hard gaps")
     return { nextState: "FAILED" }
   }
 
   // Rule A — hard gaps: unanswered → ask
-  if (ctx.risks.hardGaps.length >= 3 && !human.hasAnsweredHardGaps) {
+  if (agent.risks.hardGaps.length >= 3 && !human.hasAnsweredHardGaps) {
     questions.push({
       id: "HARD_GAPS_PROCEED",
       text: "This role has multiple hard gaps. Do you want to proceed anyway?",
@@ -34,8 +40,8 @@ export function decideNextState(ctx: AgentContext): {
 
   // Rule B — seniority mismatch
   if (
-    ctx.job?.senioritySignals.includes("leadership") &&
-    ctx.risks.hardGaps.includes("ownership") &&
+    job.senioritySignals?.includes("leadership") &&
+    agent.risks.hardGaps.includes("ownership") &&
     !human.hasAnsweredLeadership
   ) {
     questions.push({
@@ -45,8 +51,8 @@ export function decideNextState(ctx: AgentContext): {
   }
 
   // Rule C — low confidence
-  const lowConfidenceCount = ctx.evaluation.requirements.filter(r => r.confidence < 0.5).length
-  const ratio = lowConfidenceCount / ctx.evaluation.requirements.length
+  const lowConfidenceCount = agent.evaluation.requirements.filter(r => r.confidence < 0.5).length
+  const ratio = lowConfidenceCount / agent.evaluation.requirements.length
   if (ratio > 0.4 && !human.hasAnsweredConfidence) {
     questions.push({
       id: "LOW_CONFIDENCE_STRATEGY",
@@ -55,14 +61,14 @@ export function decideNextState(ctx: AgentContext): {
   }
 
   if (questions.length > 0) {
-    switch (ctx.mode) {
+    switch (agent.mode) {
       case "strict":
         return {
           nextState: "WAIT_FOR_HUMAN",
           questions,
         }
       case "exploratory":
-        logger.info("Exploratory mode: proceeding despite uncertainty")
+        logger.info({ job, questions }, "Exploratory mode: proceeding despite uncertainty")
         return { nextState: "PLAN" }
     }
   }

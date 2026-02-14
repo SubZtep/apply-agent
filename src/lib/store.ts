@@ -20,12 +20,14 @@ export class FileAgentStore implements AgentStore {
     }
 
     if (oldDir) {
-      const oldFileName = join(process.env.JOBS_DIR, oldDir, `${job.job.id}.json`)
-      try {
-        await Bun.file(oldFileName).delete()
-      } catch (error: any) {
-        logger.error({ oldFileName, error, job }, "Failed to clean up old job file")
-        throw error
+      const oldFile = Bun.file(join(process.env.JOBS_DIR, oldDir, `${job.job.id}.json`))
+      if (await oldFile.exists()) {
+        try {
+          await oldFile.delete()
+        } catch (error: any) {
+          logger.error({ file: oldFile, error, job }, "Failed to clean up old job file")
+          throw error
+        }
       }
     }
   }

@@ -14,5 +14,8 @@ declare module "bun" {
 
     /** Your CV in _markdown_. */
     CV_FILE: string
+
+    /** If truthy, it won't ask for human input. */
+    FORCE_PROCEED?: string
   }
 }
