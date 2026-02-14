@@ -1,2 +1,3 @@
-python-jobspy
 numpy>=2.4.1
+python-jobspy
+python-dotenv

@@ -1,8 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-source "$(dirname "$0")/dotenv.sh"
-
+source "scripts/lib/dotenv.sh"
 dotenv_load ".env"
 dotenv_load ".env.local"
 

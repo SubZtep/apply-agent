@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-# dotenv.sh
 # Safe dotenv loader for Bash (Node.js compatible behavior)
 
 dotenv_load() {

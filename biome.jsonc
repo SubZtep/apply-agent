@@ -5,8 +5,7 @@
     "includes": ["**/*.ts", "*.json", "*.jsonc"]
   },
   "formatter": {
-    "indentStyle": "space",
-    "indentWidth": 2
+    "useEditorconfig": true
   },
   "assist": {
     "actions": {

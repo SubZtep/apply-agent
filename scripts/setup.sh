@@ -1,7 +1,7 @@
 #!/bin/bash
 
 output=$(
-  ./tools/scripts/validate.sh 2>&1
+  scripts/lib/validate.sh 2>&1
 )
 status=$?
 if [ $status -eq 0 ]; then
@@ -17,7 +17,7 @@ else
 fi
 
 output=$(
-  ./tools/scripts/install.sh 2>&1
+  scripts/lib/install.sh 2>&1
 )
 status=$?
 if [ $status -eq 0 ]; then

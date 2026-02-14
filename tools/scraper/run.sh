@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Go to project root (parent of tools/)
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 
 # Activate venv (relative to project root)
 source tools/scraper/venv/bin/activate
