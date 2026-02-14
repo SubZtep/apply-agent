@@ -1,0 +1,13 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["docs/etc.md", ".cursor/rules/*.mdc"],
+  "permission": {
+    "read": {
+      "*.env": "allow",
+      "*.env.local": "allow"
+    },
+    "edit": {
+      "*.env.local": "allow"
+    }
+  }
+}
