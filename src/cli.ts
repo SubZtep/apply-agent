@@ -21,20 +21,33 @@ const run = defineCommand({
       default: "strict",
     },
   },
-  async run() {
-    console.log("COPMG YEYEYEYE")
+  setup({ args }) {
+    p.box("Setup", JSON.stringify(args))
+  },
+  cleanup({ args }) {
+    p.box("Cleanup", JSON.stringify(args))
     process.exit()
+  },
+  run({ args }) {
+    p.box("Run", JSON.stringify(args))
   },
 })
 
 const configure = defineCommand({
   meta: {
     name: "configure",
-    description: "Interactive setup and validation",
+    description: `Interactive setup and validation.😖
+For LLM API, the running models, and various path settings,
+please update values from .env into .env.local file by hand.`,
+  },
+  cleanup() {
+    process.exit()
   },
   async run() {
-    console.log("RURURURN YEYEYEYE")
-    process.exit()
+    p.intro("Configure")
+
+    p.outro("Bye")
+    // console.log("RURURURN YEYEYEYE")
   },
 })
 
@@ -49,7 +62,7 @@ const main = defineCommand({
   },
   async run() {
     p.intro("Welcome to a better job centr@!😒")
-    p.note("Please run me again with the --help option\nto see the available commands.")
+    p.note("Please run me again with the --help option\nto see all the available commands.")
     p.cancel("Bye")
   },
 })

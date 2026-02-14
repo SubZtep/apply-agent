@@ -1,16 +1,16 @@
-# apply-agent <abbr title="Find Me a Job">👷💭</abbr> <span style="font-weight:100">noname</span>+**wip** 
+# apply-agent ~~👷💭~~ <span class="f00-light">noname</span>_+_**wip** 
 
-Self-hosted job scraper runner with self-hosted LLM-powered CV matching.
+Self-hosted job scraper runner, with self-hosted LLM-powered CV matching.
 
 ## What’s automated
 
 There are three main processes, and the orchestrator mode runs them automatically.
 
-| Get Jobs                  | Filter Out the Noise | Evaluate                        |
-| ------------------------- | -------------------- | ------------------------------- |
-| 1️⃣ Visit a job site        | 1️⃣ Process jobs CSV   | 1️⃣ Process shortlisted jobs      |
-| 2️⃣ Search by criteria      | 2️⃣ Run batch scoring  | 2️⃣ Put it into the state machine |
-| 3️⃣ Download results as CSV | 3️⃣ Generate job JSONs | 3️⃣ Enjoy approved jobs           |
+| Get Jobs                  | Filter Out the Noise | Evaluate                          |
+| ------------------------- | -------------------- | --------------------------------- |
+| 1️⃣ Visit a job site        | 1️⃣ Process jobs CSV   | 1️⃣ Process shortlisted jobs        |
+| 2️⃣ Search by criteria      | 2️⃣ Run batch scoring  | 2️⃣ Put them into the state machine |
+| 3️⃣ Download results as CSV | 3️⃣ Generate job JSONs | 3️⃣ Enjoy approved jobs             |
 
 ### How’s it going?
 
