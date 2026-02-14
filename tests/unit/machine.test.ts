@@ -125,7 +125,7 @@ describe("decideNextState", () => {
       }
       const { nextState, questions } = decideNextState(job)
       expect(questions).toBeDefined()
-      expect(questions?.some(q => q.id === "HARD_GAPS_PROCEED")).toBe(true)
+      expect(questions?.some(q => q.id === "HARD_GAPS_PROCEED")).toBeTrue()
       expect(nextState).toBe("WAIT_FOR_HUMAN")
     })
 
@@ -213,7 +213,7 @@ describe("decideNextState", () => {
       }
       const { questions } = decideNextState(job)
       // 3 out of 5 = 60% low confidence
-      expect(questions?.some(q => q.id === "LOW_CONFIDENCE_STRATEGY")).toBe(true)
+      expect(questions?.some(q => q.id === "LOW_CONFIDENCE_STRATEGY")).toBeTrue()
     })
 
     it("should not ask when confidence is high", () => {
@@ -335,21 +335,21 @@ describe("runAgent", () => {
     expect(() => runAgent(job, mockStore)).toThrow()
   })
 
-  it("should transition through states: IDLE → INGEST → ...", async () => {
+  it.skip("should transition through states: IDLE → INGEST → ...", async () => {
     const _job = { ...baseJob }
     // Note: This test is incomplete without mocking the handlers
     // Real test would need to mock handlers or provide full job context
   })
 
-  it("should save to declined when reaching FAILED", async () => {
+  it.skip("should save to declined when reaching FAILED", async () => {
     // Test would verify store.save is called with "declined" directory
   })
 
-  it("should save to approved when reaching DONE", async () => {
+  it.skip("should save to approved when reaching DONE", async () => {
     // Test would verify store.save is called with "approved" directory
   })
 
-  it("should save to awaiting_input when reaching WAIT_FOR_HUMAN", async () => {
+  it.skip("should save to awaiting_input when reaching WAIT_FOR_HUMAN", async () => {
     // Test would verify store.save is called with "awaiting_input" directory
   })
 })
