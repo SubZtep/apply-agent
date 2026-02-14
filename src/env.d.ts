@@ -15,7 +15,13 @@ declare module "bun" {
     /** Your CV in _markdown_. */
     CV_FILE: string
 
-    /** If truthy, it won't ask for human input. */
+    /**
+     * If truthy, it won't ask for human input.
+     * @deprecated use `process.env.MODE`
+     */
     FORCE_PROCEED?: string
+
+    /** Running mode, "strict" is for HITL. */
+    MODE?: "exploratory" | "strict"
   }
 }

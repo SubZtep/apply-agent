@@ -16,6 +16,7 @@ output_csv = Path(config.get("JOBS_DIR")) / "inbox" / "jobs.csv"
 
 jobs = scrape_jobs(
     site_name=["linkedin"],
+    # site_name=["indeed"],
     # linkedin_fetch_description=True,
     search_term="rust dev",
     # search_term="typescript",

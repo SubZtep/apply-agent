@@ -1,4 +1,4 @@
-# apply-agent ~~👷💭~~ noname[^1]_+_**wip** 
+# apply-agent ~~👷💭~~ <sup>noname</sup>[^1]_+_<sub>**wip**</sub>
 
 Self-hosted job scraper runner, with self-hosted LLM-powered CV matching.
 
