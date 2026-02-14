@@ -21,7 +21,7 @@ export interface Job {
     description: string
     url: string
     location: string
-  }
+  } & Partial<JobSpec>
   batch?: {
     score: number
     signals: string[]
