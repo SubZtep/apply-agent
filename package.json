@@ -4,13 +4,15 @@
   "type": "module",
   "scripts": {
     "postinstall": "scripts/setup.sh",
-    "start": "bun run src/orchestrator.ts",
+    "start": "bun run src/cli.ts",
     "lint": "biome check",
     "lint:fix": "biome check --write --unsafe"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.30",
+    "@clack/prompts": "^1.0.1",
     "ai": "^6.0.86",
+    "citty": "^0.2.1",
     "p-limit": "^7.3.0",
     "papaparse": "^5.5.3",
     "pino": "^10.3.1",

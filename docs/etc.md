@@ -4,9 +4,9 @@ Notes.
 
 ## Folder structure
 
-Every job is a _markdown_ file. During the evaluation process, it gets updated with notes and travels between status folders. No database required.
+Every job is a _JSON_ file. During the evaluation process, it gets updated with notes and travels between status folders. No database required.
 
-Here is the folder sctructure for `./[job].md` files for further process structure:
+Here is the folder sctructure for `./[job-id].json` files for further process structure:
 
 ```
 data/jobs/
