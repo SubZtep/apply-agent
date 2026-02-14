@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test"
-import { applyRedFlagPenalty, normalizeScore } from "#/batch/score"
+import { applyRedFlagPenalty, normalizeScore } from "#/batch/lib"
 import type { Job } from "#/schemas/job"
 
 describe("Scoring functions", () => {
