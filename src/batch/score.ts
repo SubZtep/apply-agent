@@ -3,6 +3,7 @@ import pLimit from "p-limit"
 import { lmstudio } from "#/lib/ai"
 import { BatchScoreSchema } from "#/schemas/batch"
 import type { Job } from "#/schemas/job"
+import { applyRedFlagPenalty, normalizeScore } from "./lib"
 
 const limit = pLimit(2) // FIXME: Adjust concurrency based on model provider limits
 
@@ -93,15 +94,4 @@ Evaluate fit using ONLY:
   }
 
   return job
-}
-
-/** Clamp + round model score */
-function normalizeScore(score: number) {
-  return Math.max(0, Math.min(1, Math.round(score * 100) / 100))
-}
-
-/** Enforce penalties deterministically */
-function applyRedFlagPenalty(score: number, redFlags: string[]) {
-  const penalty = redFlags.length * 0.1
-  return Math.max(0, Math.round((score - penalty) * 100) / 100)
 }
