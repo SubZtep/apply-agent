@@ -22,7 +22,8 @@ interface EvaluateError {
 }
 
 function hasSufficientSignal(evaluation: Evaluation) {
-  return evaluation.requirements.some(r => r.confidence < 0.5)
+  return evaluation.requirements.some(r => r.confidence < 0.8)
+  // return evaluation.requirements.some(r => r.confidence < 0.5)
 }
 
 function buildEvaluationPrompt(job: Job) {
@@ -54,7 +55,8 @@ export async function evaluateWithRetry(job: Job, maxAttempts = 3): Promise<Eval
         prompt: buildEvaluationPrompt(job),
       })
 
-      console.log("XXX", output)
+      // console.log("XXX", output)
+      // logger.info(output, "XXXXX")
 
       if (!hasSufficientSignal(output)) {
         return {

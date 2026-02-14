@@ -1,4 +1,5 @@
 import type { Evaluation } from "#/schemas/evalution"
+import type { Job } from "#/schemas/job"
 import type { RiskAssessment } from "#/schemas/risk"
 import type { ActionPlan } from "#/states/plan"
 
@@ -58,14 +59,14 @@ export interface AgentContext {
   errors?: string[]
 }
 
-export interface PersistedAgent {
-  id: string
-  state: AgentState
-  context: AgentContext
-  updatedAt: number
-}
+// export interface PersistedAgent {
+//   id: string
+//   state: AgentState
+//   context: AgentContext
+//   updatedAt: number
+// }
 
 export interface AgentStore {
-  save(agent: Omit<PersistedAgent, "updatedAt"> & { updatedAt?: number }): Promise<PersistedAgent>
-  load(id: string): Promise<PersistedAgent | null>
+  save(job: Job, dir?: JobState, oldDir?: JobState): Promise<void>
+  load(id: string, dir: JobState): Promise<Job | null>
 }

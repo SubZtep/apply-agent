@@ -1,19 +1,25 @@
 import { buildExecutionSummary } from "#/cli/ux"
+import { logger } from "#/lib/logger"
 import type { Job } from "#/schemas/job"
 import { handlers } from "./handlers"
-import type { AgentState, AgentStore } from "./types"
+import type { AgentState, AgentStore, JobState } from "./types"
 
-export async function runAgent(job: Job, _store: AgentStore) {
+export async function runAgent(job: Job, store: AgentStore) {
+  if (!job.agent) {
+    logger.warn({ job }, "Try to evaluate job without agent touch")
+    throw new Error("job.agent is missing")
+  }
+  const oldStateDir = stateToDir(job.agent.state)
+
   while (true) {
-    const next = await handlers[job.agent!.state](job)
-    job.agent!.state = next
-
-    console.log(`\n→ ${job.agent!.state}`)
-    // await store.save(job.job);
+    const next = await handlers[job.agent.state](job)
+    job.agent.state = next
+    console.log(`→ ${job.agent.state}`)
 
     if (terminal(next)) {
-      console.log("SAVE", job)
-      // store.save(job.agent)
+      const stateDir = next === "DONE" ? "approved" : "declined"
+      store.save(job, stateDir, oldStateDir)
+      logger.info({ id: job.job.id, dir: stateDir }, "Job saved")
 
       const summary = buildExecutionSummary(job, next)
       console.log("\n=== Execution Summary ===")
@@ -36,4 +42,16 @@ function terminal(state: AgentState) {
       break
   }
   return ["DONE", "FAILED", "WAIT_FOR_HUMAN"].includes(state)
+}
+
+function stateToDir(state?: AgentState) {
+  let dir: JobState
+  switch (state) {
+    case "WAIT_FOR_HUMAN":
+      dir = "awaiting_input"
+      break
+    default:
+      dir = "shortlisted"
+  }
+  return dir
 }
