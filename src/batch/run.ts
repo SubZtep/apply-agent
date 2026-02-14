@@ -4,7 +4,7 @@ import Papa from "papaparse"
 import { logger } from "#/lib/logger"
 import { FileAgentStore } from "#/lib/store"
 import type { JobState } from "#/machine/types"
-import type { Job } from "#/schemas/job"
+import { mapScrapedJobToJob } from "./lib"
 import { scoreJobs } from "./score"
 import type { ScrapedJob } from "./types"
 
@@ -22,20 +22,21 @@ const { data: scrapedJobs } = Papa.parse<ScrapedJob>(await csv.text(), {
 
 const rawJobs = scrapedJobs
   // .slice(0, 2)
-  .map(scoreJob => {
-    const job: Job = {
-      job: {
-        id: calculateJobId(scoreJob),
-        title: scoreJob.title,
-        description: scoreJob.description,
-        company: scoreJob.company,
-        location: scoreJob.location,
-        source: scoreJob.site,
-        url: scoreJob.job_url,
-      },
-    }
-    return job
-  })
+  .map(mapScrapedJobToJob)
+// .map(scoreJob => {
+//   const job: Job = {
+//     job: {
+//       id: calculateJobId(scoreJob),
+//       title: scoreJob.title,
+//       description: scoreJob.description,
+//       company: scoreJob.company,
+//       location: scoreJob.location,
+//       source: scoreJob.site,
+//       url: scoreJob.job_url,
+//     },
+//   }
+//   return job
+// })
 
 const profileText = await Bun.file(process.env.CV_FILE).text()
 const jobs = await scoreJobs(rawJobs, profileText)
@@ -60,9 +61,4 @@ try {
 function isShortlisted(batch: { score: number }) {
   // TODO: proper check
   return batch.score > 0.4
-}
-
-function calculateJobId({ title, company, job_url: url }: ScrapedJob) {
-  const normalized = `${title.trim()}|${company.trim()}|${url.trim()}`.toLowerCase()
-  return Bun.hash(normalized).toString(16)
 }

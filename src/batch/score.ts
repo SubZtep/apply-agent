@@ -96,12 +96,12 @@ Evaluate fit using ONLY:
 }
 
 /** Clamp + round model score */
-function normalizeScore(score: number) {
+export function normalizeScore(score: number) {
   return Math.max(0, Math.min(1, Math.round(score * 100) / 100))
 }
 
 /** Enforce penalties deterministically */
-function applyRedFlagPenalty(score: number, redFlags: string[]) {
+export function applyRedFlagPenalty(score: number, redFlags: string[]) {
   const penalty = redFlags.length * 0.1
   return Math.max(0, Math.round((score - penalty) * 100) / 100)
 }

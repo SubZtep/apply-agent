@@ -36,7 +36,7 @@ export interface Job {
     // human loop
     questions?: AgentQuestion[]
     humanInput?: {
-      answers: Record<string, string>
+      answers?: Record<string, string>
       forceProceed?: boolean
     }
   }
