@@ -1,13 +1,11 @@
-import { join } from "node:path"
 import { generateText, Output } from "ai"
 import { ZodError } from "zod"
 import { lmstudio } from "#/lib/ai"
 import { logger } from "#/lib/logger"
-import { DATA_DIR } from "#/lib/store"
 import { type Evaluation, EvaluationSchema } from "#/schemas/evalution"
 import type { Job } from "#/schemas/job"
 
-const profileText = await Bun.file(join(DATA_DIR, "cv.md")).text()
+const profileText = await Bun.file(process.env.CV_FILE).text()
 
 const SYSTEM_PROMPT = `
 You assess how well a candidate matches job requirements.
@@ -24,8 +22,7 @@ interface EvaluateError {
 }
 
 function hasSufficientSignal(evaluation: Evaluation) {
-  // return evaluation.requirements.some(r => r.confidence < 0.5)
-  return evaluation.requirements.some(r => r.confidence < 0.8)
+  return evaluation.requirements.some(r => r.confidence < 0.5)
 }
 
 function buildEvaluationPrompt(job: Job) {
@@ -50,16 +47,16 @@ OUTPUT RULES:
 export async function evaluateWithRetry(job: Job, maxAttempts = 3): Promise<EvaluateResult> {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const result = await generateText({
+      const { output } = await generateText({
         model: lmstudio(process.env.AGENT_MODEL),
         output: Output.object({ schema: EvaluationSchema }),
         system: SYSTEM_PROMPT,
         prompt: buildEvaluationPrompt(job),
       })
 
-      // console.log("RERERERE", hasSufficientSignal(result.output))
+      console.log("XXX", output)
 
-      if (!hasSufficientSignal(result.output)) {
+      if (!hasSufficientSignal(output)) {
         return {
           ok: false,
           error: {
@@ -69,7 +66,7 @@ export async function evaluateWithRetry(job: Job, maxAttempts = 3): Promise<Eval
         }
       }
 
-      return { ok: true, data: result.output }
+      return { ok: true, data: output }
     } catch (err) {
       logger.warn({ attempt, err }, "EVALUATE attempt failed")
 

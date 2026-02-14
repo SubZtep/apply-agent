@@ -7,7 +7,6 @@ import type { Job } from "#/schemas/job"
 const limit = pLimit(2) // FIXME: Adjust concurrency based on model provider limits
 
 /** Scores the batch */
-// export async function scoreJobs(jobs: Job[]) {
 export async function scoreJobs(jobs: Job[], profileText: string) {
   return Promise.all(jobs.map(job => limit(() => scoreSingleJob(job, profileText))))
 }
@@ -63,7 +62,7 @@ Invalid: "skill overlap", "good fit"
 `
 
 export async function scoreSingleJob(job: Job, profileText: string) {
-  const result = await generateText({
+  const { output } = await generateText({
     model: lmstudio(process.env.BATCH_MODEL),
     output: Output.object({ schema: BatchScoreSchema }),
     system: SYSTEM_PROMPT,
@@ -84,37 +83,16 @@ Evaluate fit using ONLY:
 `,
   })
 
-  const raw = result.output
+  const normalizedScore = normalizeScore(output.score)
+  const finalScore = applyRedFlagPenalty(normalizedScore, output.redFlags)
 
-  // Normalize model output
-  const normalizedScore = normalizeScore(raw.score)
-
-  // Enforce penalties deterministically
-  const finalScore = applyRedFlagPenalty(normalizedScore, raw.redFlags)
-
-  const batch: Job["batch"] = {
+  job.batch = {
     score: finalScore,
-    signals: raw.signals,
-    redFlags: raw.redFlags,
-    // scoredAt: new Date().toISOString(),
-    // model: process.env.BATCH_MODEL,
+    signals: output.signals,
+    redFlags: output.redFlags,
   }
 
-  job.batch = batch
   return job
-
-  // const job: Job["job"] = {
-  //   id: scrapedJob.id,
-  // };
-
-  // return {
-  //   id: job.id,
-  //   score: finalScore,
-  //   signals: raw.signals,
-  //   redFlags: raw.redFlags,
-  //   scoredAt: new Date().toISOString(),
-  //   model: process.env.BATCH_MODEL,
-  // };
 }
 
 /** Clamp + round model score */
@@ -122,6 +100,7 @@ function normalizeScore(score: number) {
   return Math.max(0, Math.min(1, Math.round(score * 100) / 100))
 }
 
+/** Enforce penalties deterministically */
 function applyRedFlagPenalty(score: number, redFlags: string[]) {
   const penalty = redFlags.length * 0.1
   return Math.max(0, Math.round((score - penalty) * 100) / 100)

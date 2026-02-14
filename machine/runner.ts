@@ -3,8 +3,7 @@ import type { Job } from "#/schemas/job"
 import { handlers } from "./handlers"
 import type { AgentState, AgentStore } from "./types"
 
-// export async function runAgent(persisted: PersistedAgent, store: AgentStore) {
-export async function runAgent(job: Job, store: AgentStore) {
+export async function runAgent(job: Job, _store: AgentStore) {
   while (true) {
     const next = await handlers[job.agent!.state](job)
     job.agent!.state = next
@@ -16,7 +15,7 @@ export async function runAgent(job: Job, store: AgentStore) {
       console.log("SAVE", job)
       // store.save(job.agent)
 
-      const summary = buildExecutionSummary(job.agent, next)
+      const summary = buildExecutionSummary(job, next)
       console.log("\n=== Execution Summary ===")
       summary.forEach(line => void console.log(line))
       return

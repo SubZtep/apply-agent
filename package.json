@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "postinstall": "./setup.sh",
     "start": "bun run cli/run.ts",
     "score_batch": "bun run batch/run.ts",
     "lint": "biome check",

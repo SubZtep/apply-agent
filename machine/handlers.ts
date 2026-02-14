@@ -10,9 +10,10 @@ import type { AgentState } from "./types"
 type StateHandler = (ctx: Job) => Promise<AgentState>
 
 export const handlers: Record<AgentState, StateHandler> = {
+  // FIXME: should add errors to the job.agent?
   IDLE: async () => "INGEST",
 
-  INGEST: async (job: Job) => {
+  INGEST: async job => {
     if (!job.job.description || !job.job.description) {
       logger.error(job, "Missing input")
       return "FAILED"
@@ -20,12 +21,11 @@ export const handlers: Record<AgentState, StateHandler> = {
     return "NORMALIZE"
   },
 
-  NORMALIZE: async (job: Job) => {
+  NORMALIZE: async job => {
     const result = await normalizeWithRetry(job.job.description)
 
     if (!result.ok) {
-      logger.error({ job }, result.error.message)
-      // job.j.ctx.errors = [result.error.message];
+      logger.error(job, result.error.message)
       return "FAILED"
     }
 
@@ -36,38 +36,33 @@ export const handlers: Record<AgentState, StateHandler> = {
     return "EVALUATE"
   },
 
-  EVALUATE: async (job: Job) => {
+  EVALUATE: async job => {
     const result = await evaluateWithRetry(job)
 
     if (!result.ok) {
-      // ctx.errors = [result.error.message];
       logger.error(job, result.error.message)
       return "FAILED"
     }
 
-    // ctx.evaluation = result.data;
     job.agent!.evaluation = result.data
     return "CHALLENGE"
   },
 
-  CHALLENGE: async (job: Job) => {
-    const ctx = job.agent!
+  CHALLENGE: async job => {
     const result = await challengeWithRetry(job)
 
     if (!result.ok) {
-      // ctx.errors = [result.error.message]
-      console.log("Error", result.error)
+      logger.error(result.error, "Challenge failed")
       return "FAILED"
     }
 
-    ctx.risks = result.data
+    job.agent!.risks = result.data
     return "DECIDE"
   },
 
-  DECIDE: async ctx => {
-    const decision = decideNextState(ctx.agent!)
-    // @ts-ignore
-    ctx.questions = decision.questions
+  DECIDE: async job => {
+    const decision = decideNextState(job.agent!)
+    job.agent!.questions = decision.questions
     return decision.nextState
   },
 
@@ -77,8 +72,7 @@ export const handlers: Record<AgentState, StateHandler> = {
   },
 
   PLAN: async job => {
-    const ctx = job.agent!
-    ctx.plan = await generatePlan(ctx)
+    job.plan = await generatePlan(job.agent)
     return "DONE"
   },
 

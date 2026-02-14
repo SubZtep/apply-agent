@@ -62,6 +62,8 @@ This is the hard way, the best for low-level machines. If you're not a developer
 
 - **LM Studio**
 
+  Recommended to increase model’s default context window to 8192.
+
   Default (required) models:
   - qwen/qwen3-4b-2507
   - qwen3-0.6b-mlx
@@ -84,19 +86,15 @@ BATCH_MODEL=[light model for intanse run]
 
 First of all, clone the project.
 
-Create the `data/cv.md` file with your data.
-
 Install JavaScript dependencies:
 
 ```bash
 bun install
 ```
 
- Activate venv and install Python requirements:
+The post-install script validates config and install other requirements.
 
-```bash
-./tools/install.sh
-```
+Create the `data/cv.md` file with your data.
 
 ### Retrieve fresh jobs
 

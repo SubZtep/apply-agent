@@ -1,7 +1,7 @@
 import { readdir } from "node:fs/promises"
 import { join } from "node:path"
 import { logger } from "#/lib/logger"
-import { DATA_DIR, FileAgentStore, JOBS_DIR } from "#/lib/store"
+import { FileAgentStore } from "#/lib/store"
 import { runAgent } from "#/machine/runner"
 import type { Job } from "#/schemas/job"
 
@@ -18,10 +18,11 @@ const store = new FileAgentStore()
 // const _job: Job = await file.json()
 
 const forceProceed = true
-const dir = join(DATA_DIR, "jobs", "shortlisted")
+const dir = join(process.env.JOBS_DIR, "shortlisted")
 
 while (true) {
   const fileNames: string[] = (await readdir(dir)).filter(f => f.endsWith(".json"))
+
   if (fileNames.length === 0) {
     logger.info("No more batched job")
     break
@@ -41,18 +42,12 @@ while (true) {
 
   const job: Job = await jobFile.json()
 
-  // console.log(job)
-
   job.agent = {
     mode: forceProceed ? "exploratory" : "strict",
     state: "IDLE",
   }
 
-  await runAgent(
-    // { id: job.job.id, state: "IDLE", context, updatedAt: Date.now() },
-    job,
-    store,
-  )
+  await runAgent(job, store)
 
   break
 }

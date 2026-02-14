@@ -1,5 +1,8 @@
 import z from "zod"
-import type { AgentState } from "#/machine/types"
+import type { AgentQuestion, AgentState } from "#/machine/types"
+import type { ActionPlan } from "#/states/plan"
+import type { Evaluation } from "./evalution"
+import type { RiskAssessment } from "./risk"
 
 export const JobSpecSchema = z.object({
   skills: z.array(z.string()),
@@ -16,7 +19,6 @@ export interface Job {
     title: string
     company: string
     description: string
-    // profileText: string // belongs to a job, profile can be optimized for the job
     url: string
     location: string
   }
@@ -24,33 +26,19 @@ export interface Job {
     score: number
     signals: string[]
     redFlags: string[]
-    // scoredAt: string
-    // model: string
   }
-  // agent?: null
-
-  // ---- agent context (this replaces PersistedAgent) ----
   agent?: {
     mode: "strict" | "exploratory"
     state: AgentState
-
-    // // inputs
-    /////// profileText: string;
-
-    // derived artifacts
-    /////////// normalized?: NormalizedJob;
-    evaluation?: any // EvaluationResult
-    risks?: any // RiskAssessment
+    evaluation?: Evaluation
+    risks?: RiskAssessment
 
     // human loop
-    questions?: any // AgentQuestion[]
+    questions?: AgentQuestion[]
     humanInput?: {
       answers: Record<string, string>
       forceProceed?: boolean
     }
-
-    //////// // bookkeeping
-    //////// history?: AgentEvent[]
-    //////// lastModel?: string
   }
+  plan?: ActionPlan
 }
