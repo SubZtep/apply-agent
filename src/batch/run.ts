@@ -20,25 +20,8 @@ const { data: scrapedJobs } = Papa.parse<ScrapedJob>(await csv.text(), {
   skipEmptyLines: true,
 })
 
-const rawJobs = scrapedJobs
-  // .slice(0, 2)
-  .map(mapScrapedJobToJob)
-// .map(scoreJob => {
-//   const job: Job = {
-//     job: {
-//       id: calculateJobId(scoreJob),
-//       title: scoreJob.title,
-//       description: scoreJob.description,
-//       company: scoreJob.company,
-//       location: scoreJob.location,
-//       source: scoreJob.site,
-//       url: scoreJob.job_url,
-//     },
-//   }
-//   return job
-// })
-
 const profileText = await Bun.file(process.env.CV_FILE).text()
+const rawJobs = scrapedJobs.map(mapScrapedJobToJob)
 const jobs = await scoreJobs(rawJobs, profileText)
 const store = new FileAgentStore()
 
