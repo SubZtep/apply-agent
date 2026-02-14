@@ -1,4 +1,4 @@
-# apply-agent ~~👷💭~~ <span class="f00-light">noname</span>_+_**wip** 
+# apply-agent ~~👷💭~~ noname[^1]_+_**wip** 
 
 Self-hosted job scraper runner, with self-hosted LLM-powered CV matching.
 
@@ -20,7 +20,8 @@ _“**Not worth thinking about.**”_
 Agent reject:\
 _“**Thought about it carefully and decided no.**”_
 
-> ⚠️ It’s possible to filter out legitimate jobs, so use it with caution.
+> [!CAUTION]
+> It’s possible to filter out legitimate jobs, so use it with caution.
 
 ## CLI
 
@@ -31,3 +32,5 @@ bun start --help
 ## Documentation
 
 Go to the [index page](./docs/index.md) (already legacy).
+
+[^1]: <ins>Apply</ins> in the repo name is confusing — it doesn’t actually do anything.
