@@ -5,7 +5,14 @@ import { logger } from "#/lib/logger"
 import { type Evaluation, EvaluationSchema } from "#/schemas/evalution"
 import type { Job } from "#/schemas/job"
 
-const profileText = await Bun.file(process.env.CV_FILE).text()
+let profileText: string | undefined
+
+async function getProfileText() {
+  if (!profileText) {
+    profileText = await Bun.file(process.env.CV_FILE).text()
+  }
+  return profileText
+}
 
 const SYSTEM_PROMPT = `
 You assess how well a candidate matches job requirements.
@@ -26,7 +33,7 @@ function hasSufficientSignal(evaluation: Evaluation) {
   // return evaluation.requirements.some(r => r.confidence < 0.5)
 }
 
-function buildEvaluationPrompt(job: Job) {
+function buildEvaluationPrompt(job: Job, profileText: string) {
   return `
 TASK:
 Evaluate how well the candidate meets each job requirement.
@@ -46,13 +53,14 @@ OUTPUT RULES:
 }
 
 export async function evaluateWithRetry(job: Job, maxAttempts = 3): Promise<EvaluateResult> {
+  const profile = await getProfileText()
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const { output } = await generateText({
         model: lmstudio(process.env.AGENT_MODEL),
         output: Output.object({ schema: EvaluationSchema }),
         system: SYSTEM_PROMPT,
-        prompt: buildEvaluationPrompt(job),
+        prompt: buildEvaluationPrompt(job, profile),
       })
 
       // console.log("XXX", output)
