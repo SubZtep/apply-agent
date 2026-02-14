@@ -22,9 +22,9 @@
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false,
     "paths": {
-      "#/*": ["./*"]
+      "#/*": ["./src/*"]
     }
   },
-  "include": ["**/*.ts"],
+  "include": ["src/**/*.ts", "env.d.ts"],
   "exclude": ["node_modules"]
 }

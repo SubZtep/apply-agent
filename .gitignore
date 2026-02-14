@@ -1,11 +1,4 @@
 node_modules/
 .env.local
 .DS_Store
-/data/*
-!/data/agent/.gitkeep
-!/data/jobs/approved/.gitkeep
-!/data/jobs/declined/.gitkeep
-!/data/jobs/awaiting_input/.gitkeep
-!/data/jobs/screened_out/.gitkeep
-!/data/jobs/shortlisted/.gitkeep
-!/data/jobs/agentworks/.gitkeep
+/data/

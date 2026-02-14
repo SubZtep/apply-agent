@@ -1,0 +1,23 @@
+name: Code quality
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout project source code
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Setup Biome toolchain
+        uses: biomejs/setup-biome@v2
+        with:
+          version: "2.3.13"
+      - name: Run linter and formatter
+        run: biome ci .
