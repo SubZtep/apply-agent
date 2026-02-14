@@ -11,13 +11,13 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Checkout
+      - name: Checkout project source code
         uses: actions/checkout@v6
         with:
           persist-credentials: false
-      - name: Setup Biome
+      - name: Setup Biome toolchain
         uses: biomejs/setup-biome@v2
         with:
           version: "2.3.13"
-      - name: Run Biome
+      - name: Run linter and formatter
         run: biome ci .
