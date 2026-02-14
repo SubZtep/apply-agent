@@ -1,8 +1,9 @@
 ## Index
 
 - [User Configuration](config.md)
-- [Run without docker](run_without_docker.md)
-- [Etc](etc.md)
+- [Folder structure](folders.md)
+- [Job states](states.md)
+- [~~Run without Docker~~](run_without_docker.md)🫧
 
 ## Related Links
 
