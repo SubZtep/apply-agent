@@ -39,12 +39,6 @@ _“**Not worth thinking about.**”_
 Agent reject:\
 _“**Thought about it carefully and decided no.**”_
 
-## CLI
-
-```bash
-bun start --help
-```
-
 ## Documentation
 
 Go to the [index page](./docs/index.md) (already legacy).
