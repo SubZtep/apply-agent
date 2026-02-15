@@ -1,7 +1,7 @@
+import type { ActionPlan } from "#/machine/states/plan"
 import type { Evaluation } from "#/schemas/evalution"
 import type { Job } from "#/schemas/job"
 import type { RiskAssessment } from "#/schemas/risk"
-import type { ActionPlan } from "#/states/plan"
 
 export type JobState = "approved" | "awaiting_input" | "declined" | "screened_out" | "shortlisted"
 

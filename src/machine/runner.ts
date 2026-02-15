@@ -1,4 +1,3 @@
-// import { buildExecutionSummary } from "#/cli/ux"
 import { logger } from "#/lib/logger"
 import type { Job } from "#/schemas/job"
 import { handlers } from "./handlers"
@@ -21,10 +20,6 @@ export async function runAgent(job: Job, store: AgentStore) {
         next === "WAIT_FOR_HUMAN" ? "awaiting_input" : next === "DONE" ? "approved" : "declined"
       store.save(job, stateDir, oldStateDir)
       logger.info({ id: job.job.id, dir: stateDir }, "Job saved")
-
-      // const summary = buildExecutionSummary(job, next)
-      // console.log("\n=== Execution Summary ===")
-      // summary.forEach(line => void console.log(line))
       return
     }
   }

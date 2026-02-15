@@ -1,6 +1,11 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "instructions": ["docs/etc.md", ".cursor/rules/*.mdc"],
+  "instructions": [
+    ".cursor/rules/*.mdc",
+    "docs/config.md",
+    "docs/folders.md",
+    "docs/states.md"
+  ],
   "permission": {
     "read": {
       "*.env": "allow",

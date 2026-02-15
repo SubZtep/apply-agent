@@ -1,10 +1,10 @@
 import { logger } from "#/lib/logger"
 import { decideNextState } from "#/machine/next"
+import { challengeWithRetry } from "#/machine/states/challenge"
+import { evaluateWithRetry } from "#/machine/states/evaluate"
+import { normalizeWithRetry } from "#/machine/states/normalize"
+import { generatePlan } from "#/machine/states/plan"
 import type { Job } from "#/schemas/job"
-import { challengeWithRetry } from "#/states/challenge"
-import { evaluateWithRetry } from "#/states/evaluate"
-import { normalizeWithRetry } from "#/states/normalize"
-import { generatePlan } from "#/states/plan"
 import type { AgentState } from "./types"
 
 type StateHandler = (ctx: Job) => Promise<AgentState>

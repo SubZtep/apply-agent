@@ -6,8 +6,10 @@ const transport =
         transport: {
           target: "pino-pretty",
           options: {
-            ignore: "pid,hostname",
-            singleLine: true,
+            ignore: "pid,hostname,time",
+            levelFirst: true,
+            hideObject: true,
+            colorize: true,
           },
         },
       }

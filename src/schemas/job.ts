@@ -1,6 +1,6 @@
 import z from "zod"
+import type { ActionPlan } from "#/machine/states/plan"
 import type { AgentQuestion, AgentState } from "#/machine/types"
-import type { ActionPlan } from "#/states/plan"
 import type { Evaluation } from "./evalution"
 import type { RiskAssessment } from "./risk"
 
