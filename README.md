@@ -2,8 +2,8 @@
 
 Self-hosted job scraper runner, with self-hosted LLM-powered CV matching.
 
-> [!CAUTION] 🍪
-> It’s possible to filter out legitimate jobs, so use it with caution.
+> [!CAUTION]
+> 🍪 It’s possible to filter out legitimate jobs, so use it with caution.
 
 ## What’s automated
 
