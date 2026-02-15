@@ -91,17 +91,30 @@ bun install                # Install dependencies (runs postinstall setup)
 
 ### Project Structure
 ```
-src/
-├── batch/         # Batch job processing
-├── cli/           # CLI commands
-├── lib/           # Utilities (AI, logging, storage)
-├── machine/       # State machine (handlers, types, runner)
-├── schemas/       # Zod schemas for validation
-└── states/        # State-specific logic (evaluate, plan, normalize)
-tests/
-├── unit/          # Unit tests
-└── integration/   # Integration tests
-data/
-├── cv.md          # Your CV (gitignored)
-└── jobs/          # Job listings directory (gitignored)
+.
+├── data                      # Base folder for app data (gitignored, configurable)
+│   ├── cv.md                 # Your CV
+│   └── jobs                  # Temporary job states folders
+│       ├── approved          # Final job state, ready to apply
+│       ├── awaiting_input    # User input required
+│       ├── declined          # Evaluation rejects
+│       ├── inbox             # Raw job listings
+│       ├── screened_out      # Batch rejects
+│       └── shortlisted       # Batch accepts
+├── docs                      # User documentation
+├── scripts                   # Project setup and validation
+│   └── lib                   # Setup helpers
+├── src
+│   ├── batch                 # Batch job processing
+│   ├── cli                   # CLI runner
+│   │   └── commands          # CLI sub-commands
+│   ├── lib                   # Utilities (AI, logging, storage)
+│   ├── machine               # State machine (handlers, types, runner)
+│   │   └── states            # State-specific logic (evaluate, plan, normalize)
+│   └── schemas               # Zod schemas for validation
+├── tests
+│   ├── integration           # Integration tests
+│   └── unit                  # Unit tests
+└── tools
+    └── scraper               # 3rd-party Python job scraper
 ```

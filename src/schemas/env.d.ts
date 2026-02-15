@@ -12,10 +12,19 @@ declare module "bun" {
     /** Container for job status folders. */
     JOBS_DIR: string
 
-    /** Your CV in _markdown_. */
+    /** Your CV in _Markdown_. */
     CV_FILE: string
 
-    /** If truthy, it won't ask for human input. */
+    /**
+     * If truthy, it won't ask for human input.
+     * @deprecated use `process.env.MODE`
+     */
     FORCE_PROCEED?: string
+
+    /** Running mode, "strict" is for HITL. */
+    MODE?: "exploratory" | "strict"
+
+    /** Job search user config file location in YAML format. */
+    CONFIG_FILE: string
   }
 }

@@ -1,22 +1,6 @@
-Notes.
+## States
 
-## Etc.
-
-## Folder structure
-
-Every job is a _markdown_ file. During the evaluation process, it gets updated with notes and travels between status folders. No database required.
-
-Here is the folder sctructure for `./[job].md` files for further process structure:
-
-```
-data/jobs/
-     ├── inbox/             # raw scraped jobs (unscored)
-     ├── screened_out/      # rejected by batch scoring
-     ├── shortlisted/       # passed batch scoring
-     ├── awaiting_input/    # agent needs human input
-     ├── declined/          # rejected by agent reasoning
-     └── approved/          # agent-approved jobs
-```
+gent runs the state machine – the final step in the data flow.
 
 ### Data flow
 
@@ -65,14 +49,14 @@ flowchart TD
   CHALLENGE --> DECIDE
   DECIDE --> PLAN
   PLAN --> DONE
-  DECIDE -- "WAIT_FOR_HUMAN" --- WAIT_FOR_HUMAN
-  WAIT_FOR_HUMAN -- "|" --> PLAN
+  DECIDE --> WAIT_FOR_HUMAN
+  WAIT_FOR_HUMAN --> PLAN
   WAIT_FOR_HUMAN --> ERROR
 ```
 
 ### Mode semantics
 
-The agent runs in strict mode by default. Add the parameter __**x**__ — `bun start run x` — to start in exploratory mode (no questions).
+The agent runs in strict mode by default. To skip questions, set the mode parameter: `bun start run --mode=exploratory`.
 
 | Strict                                       | Exploratory                               |
 | -------------------------------------------- | ----------------------------------------- |
