@@ -41,7 +41,8 @@
       "lineWidth": 120,
       "quoteStyle": "double",
       "semicolons": "asNeeded",
-      "arrowParentheses": "asNeeded"
+      "arrowParentheses": "asNeeded",
+      "trailingCommas": "none"
     }
   }
 }

@@ -1,24 +1,24 @@
-import { cancel, intro, note } from "@clack/prompts"
+import { intro, outro } from "@clack/prompts"
 import { defineCommand, runMain } from "citty"
+import { logger } from "#/lib/logger"
 import config from "./commands/config"
 import run from "./commands/run"
 import stats from "./commands/stats"
 
+logger.info("Hello, world!")
+
 const main = defineCommand({
   meta: {
     name: "apply-agent",
-    description: "Job finder app",
+    description: "Job finder app"
   },
   subCommands: {
     run,
     stats,
-    config,
-  },
-  async run() {
-    intro("Welcome to a better job centr@!😒")
-    note("Please run me again with the --help option\nto see all the available commands")
-    cancel("Bye")
-  },
+    config
+  }
 })
 
-runMain(main)
+intro("🏁")
+await runMain(main)
+outro("🫧")

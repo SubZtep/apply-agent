@@ -54,7 +54,7 @@ export async function challengeWithRetry(job: Job, maxAttempts = 3): Promise<Cha
         model: lmstudio(process.env.AGENT_MODEL),
         output: Output.object({ schema: RiskAssessmentSchema }),
         system: SYSTEM_PROMPT,
-        prompt: buildChallengePrompt(job),
+        prompt: buildChallengePrompt(job)
       })
 
       const risks = RiskAssessmentSchema.parse(result.output)
@@ -65,8 +65,8 @@ export async function challengeWithRetry(job: Job, maxAttempts = 3): Promise<Cha
           ok: false,
           error: {
             reason: "LOW_QUALITY",
-            message: "Risk assessment lacks actionable signal",
-          },
+            message: "Risk assessment lacks actionable signal"
+          }
         }
       }
 
@@ -79,8 +79,8 @@ export async function challengeWithRetry(job: Job, maxAttempts = 3): Promise<Cha
           ok: false,
           error: {
             reason: err instanceof ZodError ? "SCHEMA_INVALID" : "MODEL_ERROR",
-            message: "Failed to assess risks",
-          },
+            message: "Failed to assess risks"
+          }
         }
       }
     }

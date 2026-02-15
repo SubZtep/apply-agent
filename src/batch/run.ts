@@ -18,7 +18,7 @@ if (!(await csv.exists())) {
 
 const { data: scrapedJobs } = Papa.parse<ScrapedJob>(await csv.text(), {
   header: true,
-  skipEmptyLines: true,
+  skipEmptyLines: true
 })
 
 const rawJobs = scrapedJobs.map(mapScrapedJobToJob)

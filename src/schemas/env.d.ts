@@ -26,5 +26,10 @@ declare module "bun" {
 
     /** Job search user config file location in YAML format. */
     CONFIG_FILE: string
+
+    // logger
+    LOKI_HOST?: string
+    LOKI_USERNAME?: string
+    LOKI_PASSWORD?: string
   }
 }

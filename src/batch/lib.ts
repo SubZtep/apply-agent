@@ -15,8 +15,8 @@ export function mapScrapedJobToJob(scrapedJob: ScrapedJob): Job {
       company: scrapedJob.company,
       location: scrapedJob.location,
       source: scrapedJob.site,
-      url: scrapedJob.job_url,
-    },
+      url: scrapedJob.job_url
+    }
   }
   return job
 }

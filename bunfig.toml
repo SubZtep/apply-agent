@@ -1,0 +1,7 @@
+telemetry = false
+
+[run]
+silent = true
+
+[console]
+depth = 3

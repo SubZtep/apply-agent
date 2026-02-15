@@ -2,14 +2,15 @@ import { readdir } from "node:fs/promises"
 import { join } from "node:path"
 import { box, intro, outro } from "@clack/prompts"
 import { defineCommand } from "citty"
-import { cleanup } from "./lib"
+
+// import { cleanup } from "./lib"
 
 const stats = defineCommand({
   meta: {
     name: "stats",
-    description: "Display job statistics",
+    description: "Display job statistics"
   },
-  cleanup,
+  // cleanup,
   async run() {
     const data = await getJobCountPerFolder()
     intro("Scraped job statistics\n")
@@ -21,11 +22,11 @@ const stats = defineCommand({
         .join("\n"),
       "Number of jobs",
       {
-        rounded: true,
-      },
+        rounded: true
+      }
     )
     outro("Run me for more jobs🔧")
-  },
+  }
 })
 
 export default stats

@@ -52,7 +52,7 @@ export async function evaluateWithRetry(job: Job, maxAttempts = 3): Promise<Eval
         model: lmstudio(process.env.AGENT_MODEL),
         output: Output.object({ schema: EvaluationSchema }),
         system: SYSTEM_PROMPT,
-        prompt: buildEvaluationPrompt(job, profile),
+        prompt: buildEvaluationPrompt(job, profile)
       })
 
       if (!hasSufficientSignal(output)) {
@@ -60,8 +60,8 @@ export async function evaluateWithRetry(job: Job, maxAttempts = 3): Promise<Eval
           ok: false,
           error: {
             reason: "INSUFFICIENT_SIGNAL",
-            message: "Evaluation lacks decision signal",
-          },
+            message: "Evaluation lacks decision signal"
+          }
         }
       }
 
@@ -74,8 +74,8 @@ export async function evaluateWithRetry(job: Job, maxAttempts = 3): Promise<Eval
           ok: false,
           error: {
             reason: err instanceof ZodError ? "SCHEMA_INVALID" : "MODEL_ERROR",
-            message: "Failed to evaluate job fit",
-          },
+            message: "Failed to evaluate job fit"
+          }
         }
       }
     }

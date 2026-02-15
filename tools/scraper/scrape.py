@@ -7,7 +7,6 @@ from csv import QUOTE_NONNUMERIC
 
 base = Path(__file__).parents[2]
 config = {
-    # Order sync behaviour align with setup.sh
     **environ,
     **dotenv_values(base / ".env"),
     **dotenv_values(base / ".env.local"),
@@ -22,4 +21,3 @@ print(f"Found {len(jobs)} jobs")
 if len(jobs) > 0:
     output_csv = Path(config.get("JOBS_DIR")) / "inbox" / "jobs.csv"
     jobs.to_csv(output_csv, quoting=QUOTE_NONNUMERIC, escapechar="\\", index=False)
-    print(jobs.head())

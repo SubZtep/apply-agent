@@ -81,7 +81,7 @@ Evaluate fit using ONLY:
 - skill overlap
 - seniority match
 - domain relevance
-`,
+`
   })
 
   const normalizedScore = normalizeScore(output.score)
@@ -90,7 +90,7 @@ Evaluate fit using ONLY:
   job.batch = {
     score: finalScore,
     signals: output.signals,
-    redFlags: output.redFlags,
+    redFlags: output.redFlags
   }
 
   return job

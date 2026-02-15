@@ -42,7 +42,7 @@ export async function normalizeWithRetry(prompt: string, maxAttempts = 3): Promi
         model: lmstudio(process.env.AGENT_MODEL),
         output: Output.object({ schema: JobSpecSchema }),
         system: SYSTEM_PROMPT,
-        prompt: buildNormalizePrompt(prompt),
+        prompt: buildNormalizePrompt(prompt)
       })
       return { ok: true, data: result.output }
     } catch (err) {
@@ -54,8 +54,8 @@ export async function normalizeWithRetry(prompt: string, maxAttempts = 3): Promi
           ok: false,
           error: {
             reason: err instanceof ZodError ? "SCHEMA_INVALID" : "MODEL_ERROR",
-            message: err instanceof Error ? err.message : String(err),
-          },
+            message: err instanceof Error ? err.message : String(err)
+          }
         }
       }
     }

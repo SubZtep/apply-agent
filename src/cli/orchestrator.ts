@@ -8,7 +8,7 @@ while (true) {
     shortlisted: async () =>
       (await readdir(join(process.env.JOBS_DIR, "shortlisted"))).filter(f => f.endsWith(".json")).length > 0,
     awaiting: async () =>
-      (await readdir(join(process.env.JOBS_DIR, "awaiting_input"))).filter(f => f.endsWith(".json")).length > 0,
+      (await readdir(join(process.env.JOBS_DIR, "awaiting_input"))).filter(f => f.endsWith(".json")).length > 0
   }
 
   if (await hasJob.awaiting()) {

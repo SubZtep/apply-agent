@@ -31,7 +31,7 @@ export const handlers: Record<AgentState, StateHandler> = {
 
     job.job = {
       ...job.job,
-      ...result.data,
+      ...result.data
     }
     return "EVALUATE"
   },
@@ -82,5 +82,5 @@ export const handlers: Record<AgentState, StateHandler> = {
 
   FAILED: async () => {
     return "FAILED"
-  },
+  }
 }
