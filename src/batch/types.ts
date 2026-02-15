@@ -12,14 +12,14 @@ export interface ScrapedJob {
   company: string
   location: string
   job_type: string
-  date_posted: string
-  interval: string
-  min_amount: string
-  max_amount: string
-  currency: string
-  is_remote: string
-  num_urgent_words: string
-  benefits: string
-  emails: string
+  date_posted: number
+  interval: string | null
+  min_amount: string | null
+  max_amount: string | null
+  currency: string | null
+  is_remote: string | null
+  num_urgent_words: number
+  benefits: string | null
+  emails: string | null
   description: string
 }

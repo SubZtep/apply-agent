@@ -19,11 +19,11 @@ if (process.env.LOKI_HOST && process.env.LOKI_USERNAME && process.env.LOKI_PASSW
 
 targets.push({
   target: "pino-pretty",
-  level: "warn",
+  // level: "warn",
   options: {
     ignore: "pid,hostname,time",
     levelFirst: true,
-    hideObject: true,
+    // hideObject: true,
     colorize: true
   }
 })

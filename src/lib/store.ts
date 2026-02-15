@@ -1,10 +1,11 @@
+import { readdir } from "node:fs/promises"
 import { join } from "node:path"
 import type { AgentStore, JobState } from "#/machine/types"
 import type { Job } from "#/schemas/job"
 import { logger } from "./logger"
 
 export class FileAgentStore implements AgentStore {
-  async save(job: Job, dir?: JobState, oldDir?: JobState) {
+  async save(job: Job, dir?: JobState, oldDir?: JobState | "inbox") {
     const stateDir = dir ?? job.agent?.state
     if (!stateDir) {
       logger.error({ job, dir }, "Can't save without state dir")
@@ -32,7 +33,7 @@ export class FileAgentStore implements AgentStore {
     }
   }
 
-  async load(id: string, dir: JobState) {
+  async load(id: string, dir: JobState | "inbox") {
     const file = Bun.file(join(process.env.JOBS_DIR, dir, `${id}.json`))
     if (!(await file.exists())) {
       return null
@@ -50,4 +51,15 @@ export class FileAgentStore implements AgentStore {
       throw error
     }
   }
+}
+
+export async function getAJob(dir: JobState | "inbox") {
+  const jsonFilterFn =
+    dir === "inbox"
+      ? (fn: string) => fn.endsWith(".json") && !fn.startsWith("jobs.")
+      : (fn: string) => fn.endsWith(".json")
+
+  const fn = (await readdir(join(process.env.JOBS_DIR, dir))).filter(jsonFilterFn).pop()
+
+  return { dir, id: fn?.replace(/\.json$/, "") }
 }

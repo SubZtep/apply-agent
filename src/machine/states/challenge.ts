@@ -51,7 +51,7 @@ export async function challengeWithRetry(job: Job, maxAttempts = 3): Promise<Cha
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const result = await generateText({
-        model: lmstudio(process.env.AGENT_MODEL),
+        model: lmstudio()(process.env.AGENT_MODEL),
         output: Output.object({ schema: RiskAssessmentSchema }),
         system: SYSTEM_PROMPT,
         prompt: buildChallengePrompt(job)

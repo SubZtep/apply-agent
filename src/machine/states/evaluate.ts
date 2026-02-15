@@ -49,7 +49,7 @@ export async function evaluateWithRetry(job: Job, maxAttempts = 3): Promise<Eval
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const { output } = await generateText({
-        model: lmstudio(process.env.AGENT_MODEL),
+        model: lmstudio()(process.env.AGENT_MODEL),
         output: Output.object({ schema: EvaluationSchema }),
         system: SYSTEM_PROMPT,
         prompt: buildEvaluationPrompt(job, profile)

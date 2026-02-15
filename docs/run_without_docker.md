@@ -35,7 +35,7 @@ Actually any [Open AI **compatible**](https://ai-sdk.dev/providers/openai-compat
 Create `.env.local` with any of these lines:
 
 ```ini
-AI_API_BASE_URL=[open ai api endpoint]
+OPENAI_API_BASE_URL=[open ai api endpoint]
 AGENT_MODEL=[strong model for agentic run]
 BATCH_MODEL=[light model for intanse run]
 ```

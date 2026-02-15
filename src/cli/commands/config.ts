@@ -1,14 +1,11 @@
 import { box, cancel, intro } from "@clack/prompts"
 import { defineCommand } from "citty"
 
-// import { cleanup } from "./lib"
-
 const config = defineCommand({
   meta: {
     name: "config",
     description: "Interactive setup and validation😖"
   },
-  // cleanup,
   async run() {
     intro("Configure\n")
     box(

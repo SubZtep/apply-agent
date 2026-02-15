@@ -1,6 +1,7 @@
 import z from "zod"
 import type { ActionPlan } from "#/machine/states/plan"
 import type { AgentQuestion, AgentState } from "#/machine/types"
+import type { BatchScore } from "./batch"
 import type { Evaluation } from "./evalution"
 import type { RiskAssessment } from "./risk"
 
@@ -12,6 +13,12 @@ export const JobSpecSchema = z.object({
 
 export type JobSpec = z.infer<typeof JobSpecSchema>
 
+// export interface Batch {
+//   score: number
+//   signals: string[]
+//   redFlags: string[]
+// }
+
 export interface Job {
   job: {
     id: string
@@ -22,11 +29,7 @@ export interface Job {
     url: string
     location: string
   } & Partial<JobSpec>
-  batch?: {
-    score: number
-    signals: string[]
-    redFlags: string[]
-  }
+  batch?: BatchScore
   agent?: {
     mode: "strict" | "exploratory"
     state: AgentState

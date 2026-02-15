@@ -44,6 +44,7 @@ const run = defineCommand({
         break
     }
     const output = await $`${command}`.text()
+    // console.log("COMMAND", command)
     spin.stop(`Processing ${mode}; ${output.trim()} ⛱️`)
   }
 })

@@ -3,7 +3,6 @@ from pathlib import Path
 from yaml import safe_load
 from jobspy import scrape_jobs
 from dotenv import dotenv_values
-from csv import QUOTE_NONNUMERIC
 
 base = Path(__file__).parents[2]
 config = {
@@ -19,5 +18,5 @@ jobs = scrape_jobs(**user_config["jobspy"])
 print(f"Found {len(jobs)} jobs")
 
 if len(jobs) > 0:
-    output_csv = Path(config.get("JOBS_DIR")) / "inbox" / "jobs.csv"
-    jobs.to_csv(output_csv, quoting=QUOTE_NONNUMERIC, escapechar="\\", index=False)
+    output_json = Path(config.get("JOBS_DIR")) / "inbox" / "jobs.json"
+    json_result = jobs.to_json(output_json, orient="records", indent=2)

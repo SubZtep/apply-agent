@@ -3,14 +3,11 @@ import { join } from "node:path"
 import { box, intro, outro } from "@clack/prompts"
 import { defineCommand } from "citty"
 
-// import { cleanup } from "./lib"
-
 const stats = defineCommand({
   meta: {
     name: "stats",
     description: "Display job statistics"
   },
-  // cleanup,
   async run() {
     const data = await getJobCountPerFolder()
     intro("Scraped job statistics\n")

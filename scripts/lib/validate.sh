@@ -8,7 +8,7 @@ dotenv_load ".env.local"
 # Validate config
 
 missing_vars=()
-[[ -z "${AI_API_BASE_URL:-}" ]] && missing_vars+=("AI_API_BASE_URL")
+[[ -z "${OPENAI_API_BASE_URL:-}" ]] && missing_vars+=("OPENAI_API_BASE_URL")
 [[ -z "${AGENT_MODEL:-}" ]] && missing_vars+=("AGENT_MODEL")
 [[ -z "${BATCH_MODEL:-}" ]] && missing_vars+=("BATCH_MODEL")
 [[ -z "${JOBS_DIR:-}" ]] && missing_vars+=("JOBS_DIR")
@@ -36,7 +36,7 @@ fi
 
 # Validate LMM API
 
-API_MODELS_URL="${AI_API_BASE_URL%/}/models"
+API_MODELS_URL="${OPENAI_API_BASE_URL%/}/models"
 
 resp=$(curl -sS --fail "$API_MODELS_URL") || {
   echo "Error: Unable to reach LMM API at $API_MODELS_URL" >&2
