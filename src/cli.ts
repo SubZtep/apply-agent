@@ -10,24 +10,38 @@ const run = defineCommand({
     description: "Run job processing",
   },
   args: {
-    orchestrator: {
-      alias: "o",
-      default: true,
-      type: "boolean",
-      description: "Automatically run what needs to be run, unless it’s the placeholder, here it is",
-      negativeDescription: "Ignore it, always orchestrator for now",
-    },
     mode: {
       type: "enum",
       default: "strict",
       options: ["exploratory", "strict"],
       description: "Exploratory mode is AI friendly, for Human-in-the-Loop go for (the default) strict mode",
     },
+    step: {
+      type: "enum",
+      options: ["scrape", "batch", "evaluate", "answers"],
+      description: "If this optional parameter is missing, the orchestrator runs its scheduled steps",
+    },
   },
   cleanup,
-  async run({ args: { mode } }) {
+  async run({ args: { mode, step } }) {
     process.env.MODE = mode
-    await $`bun run src/orchestrator.ts`
+    switch (step) {
+      case "scrape":
+        await $`tools/scraper/run.sh`
+        break
+      case "batch":
+        await $`bun run src/batch/run.ts`
+        break
+      case "evaluate":
+        await $`bun run src/cli/run.ts`
+        break
+      case "answers":
+        await $`bun run src/cli/answer.ts`
+        break
+      default:
+        await $`bun run src/orchestrator.ts`
+        break
+    }
   },
 })
 

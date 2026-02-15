@@ -2,6 +2,9 @@
 
 Self-hosted job scraper runner, with self-hosted LLM-powered CV matching.
 
+> [!CAUTION]
+> It’s possible to filter out legitimate jobs, so use it with caution.
+
 ## What’s automated
 
 There are three main processes, and the orchestrator mode runs them automatically.
@@ -19,9 +22,6 @@ _“**Not worth thinking about.**”_
 
 Agent reject:\
 _“**Thought about it carefully and decided no.**”_
-
-> [!CAUTION]
-> It’s possible to filter out legitimate jobs, so use it with caution.
 
 ## CLI
 
