@@ -1,13 +1,27 @@
 import { readdir } from "node:fs/promises"
 import { join } from "node:path"
 import { logger } from "#/lib/logger"
-import { FileAgentStore } from "#/lib/store"
-import { runAgent } from "#/machine/runner"
+import { getInitialJobState } from "#/lib/spoilinger"
+import { FileAgentStore, getAJob } from "#/lib/store"
+import { runSateMachine } from "#/machine/runner"
 import type { JobState } from "#/machine/types"
 
-const store = new FileAgentStore()
-const pickDir: JobState = "shortlisted"
-const dir = join(process.env.JOBS_DIR, pickDir)
+const store = new FileAgentStore("shortlisted")
+
+const job = await store.load()
+
+console.log("ccc", job)
+
+if (job) {
+  if (!job.agent) {
+    job.agent = getInitialJobState()
+  }
+
+  await runSateMachine(job, store)
+}
+
+// const pickDir: JobState = "shortlisted"
+// const dir = join(process.env.JOBS_DIR, pickDir)
 
 // while (true) {
 // const jobIds: string[] = (await readdir(dir)).filter(f => f.endsWith(".json")).map(f => f.slice(0, -5))
@@ -31,23 +45,55 @@ const dir = join(process.env.JOBS_DIR, pickDir)
 //   }
 // }
 
-const job = await getJob("shortlisted")
+// console.log("CCC", dir)
+// process.exit()
 
-console.log("DD", job)
+///////
 
-// await runAgent(job, store)
+////
+
+///////
+
+// const { id, dir } = await getAJob("shortlisted")
+// if (dir && id) {
+//   const job = await store.load(id, dir)
+//   if (job) {
+//     //   job.agent = {
+//     //     mode: process.env.MODE ?? (process.env.FORCE_PROCEED ? "exploratory" : "strict"),
+//     //     state: "IDLE"
+//     //   }
+
+//     if (!job.agent) {
+//       job.agent = getInitialJobState()
+//     }
+//     // job.agent = getInitialJobState()
+
+//     console.log("DD", job)
+
+//     // @tsxxx-ignore
+//     await runATick(job, store)
+//   }
 // }
 
-process.exit()
+//////
 
-async function getJob(state: JobState) {
-  const jobId = (await readdir(dir)).filter(f => f.endsWith(".json")).pop()
-  if (jobId) {
-    const job = await store.load(jobId, state)
-    if (job) {
-      return job
-    }
-  }
-  // throw new Error("No job")
-  process.exit()
-}
+///////
+
+/////////
+
+// process.exit()
+
+// async function getJob(state: JobState) {
+//   console.log("CCC", join(process.env.JOBS_DIR, dir))
+//   process.exit()
+//   const jobId = (await readdir(join(process.env.JOBS_DIR, dir))).filter(f => f.endsWith(".json")).pop()
+//   // const jobId = (await readdir(join(process.env.JOBS_DIR, dir))).filter(f => f.endsWith(".json")).pop()
+//   if (jobId) {
+//     const job = await store.load(jobId, state)
+//     if (job) {
+//       return job
+//     }
+//   }
+//   // throw new Error("No job")
+//   process.exit()
+// }

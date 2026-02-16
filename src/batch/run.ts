@@ -1,47 +1,69 @@
-import { rename } from "node:fs/promises"
-import { join } from "node:path"
 import { spinner } from "@clack/prompts"
-import { json } from "zod"
 import { logger } from "#/lib/logger"
 import { isShortlisted } from "#/lib/spoilinger"
-import { FileAgentStore } from "#/lib/store"
+// import { FileAgentStore } from "#/lib/store"
 import { getProfileText } from "#/lib/user"
 import type { JobState } from "#/machine/types"
-import { type BatchScore, ScrapedJobSchema } from "#/schemas/batch"
-import type { Job } from "#/schemas/job"
 import { FileAgentStore, getAJob } from "../lib/store"
-import { mapScrapedJobToJob } from "./lib"
-import { scoreJobs, scoreSingleJob } from "./score"
+import { scoreSingleJob } from "./score"
 
-const { id, dir } = await getAJob("inbox")
-// logger.info({ id, dir }, "Batch scoring")
-if (id && dir) {
-  const sp = spinner({ cancelMessage: "Gimme more GPU!!!" })
+const sp = spinner()
+const cv = await getProfileText()
 
-  const store = new FileAgentStore()
-  const job = await store.load(id, dir)
-  const cv = await getProfileText()
+const dir = "inbox"
+const store = new FileAgentStore(dir)
+const job = await store.load()
 
-  if (job && cv) {
-    // let batch: BatchScore
-    sp.start(`Batch scoring ${dir}`)
-    try {
-      job.batch = await scoreSingleJob(job, cv)
-      sp.stop(`${id} is another success`)
-      // console.log("res", batch)
-      // job.batch = batch
-      // sp.stop(`yey, id ${id}`)
-    } catch (error: any) {
-      console.log("EEE", { error })
-      sp.error(error.messages)
-      logger.error({ error }, "score single job failed")
-      throw error
-    }
+// console.log("SWEF", job)
+// process.exit()
 
-    const nextDir: JobState = isShortlisted(job.batch) ? "shortlisted" : "screened_out"
-    store.save(job, nextDir, "inbox")
+if (job && cv) {
+  sp.start(`Batch scoring ${dir}`)
+
+  try {
+    job.batch = await scoreSingleJob(job, cv)
+    sp.stop(`${job.job.id} is another success`)
+  } catch (error: any) {
+    logger.error({ error }, "Score job")
+    sp.error(error.messages)
+    throw error
   }
+
+  const nextDir: JobState = isShortlisted(job.batch) ? "shortlisted" : "screened_out"
+  store.save(job, nextDir)
 }
+
+// const { id, dir } = await getAJob("inbox")
+// // logger.info({ id, dir }, "Batch scoring")
+// if (id && dir) {
+//   const sp = spinner({ cancelMessage: "Gimme more GPU!!!" })
+
+//   const store = new FileAgentStore()
+//   const job = await store.load(id, dir)
+//   const cv = await getProfileText()
+
+//   if (job && cv) {
+//     // let batch: BatchScore
+//     sp.start(`Batch scoring ${dir}`)
+//     try {
+//       job.batch = await scoreSingleJob(job, cv)
+//       sp.stop(`${id} is another success`)
+//       // console.log("res", batch)
+//       // job.batch = batch
+//       // sp.stop(`yey, id ${id}`)
+//     } catch (error: any) {
+//       console.log("EEE", { error })
+//       sp.error(error.messages)
+//       logger.error({ error }, "score single job failed")
+//       throw error
+//     }
+
+//     const nextDir: JobState = isShortlisted(job.batch) ? "shortlisted" : "screened_out"
+//     store.save(job, nextDir, "inbox")
+//   }
+// }
+
+//// superolds from here
 
 // /** Tells if a job is not worth thinking about. 🦥 */
 // function isShortlisted(batch: { score: number }) {

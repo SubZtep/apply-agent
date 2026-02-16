@@ -1,0 +1,1 @@
+docker build -t jobspy-app:latest .

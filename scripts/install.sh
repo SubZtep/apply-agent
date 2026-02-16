@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# --------------------------------------------------------------
+# 1. Validate env and jobspy config, cv
+# 2. Test LLM connection and setup
+# 3. Create job specific folders to categorise job files
+# --------------------------------------------------------------
+
 output=$(
   scripts/lib/validate.sh 2>&1
 )

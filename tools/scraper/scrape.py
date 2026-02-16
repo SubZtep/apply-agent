@@ -1,22 +1,91 @@
-from os import environ
+from __future__ import annotations
+
+import os
+import sys
+import logging
 from pathlib import Path
-from yaml import safe_load
-from jobspy import scrape_jobs
+from typing import Mapping, Any
+
+import yaml
 from dotenv import dotenv_values
+from jobspy import scrape_jobs
 
-base = Path(__file__).parents[2]
-config = {
-    **environ,
-    **dotenv_values(base / ".env"),
-    **dotenv_values(base / ".env.local"),
-}
 
-with open(base / config.get("CONFIG_FILE"), "r") as file:
-    user_config = safe_load(file)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s – %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+log = logging.getLogger(__name__)
 
-jobs = scrape_jobs(**user_config["jobspy"])
-print(f"Found {len(jobs)} jobs")
 
-if len(jobs) > 0:
-    output_json = Path(config.get("JOBS_DIR")) / "inbox" / "jobs.json"
-    json_result = jobs.to_json(output_json, orient="records", indent=2)
+def load_env_config(root: Path) -> Mapping[str, str]:
+    cfg: dict[str, str] = dict(os.environ)
+    for fname in (".env", ".env.local"):
+        fpath = root / fname
+        if fpath.is_file():
+            cfg.update(dotenv_values(fpath))
+            log.debug("Loaded %s", fpath)
+        else:
+            log.debug("Optional env file %s not present", fpath)
+
+    whitelist = {"CONFIG_FILE", "JOBS_DIR"}  # extend as required
+    cfg = {k: v for k, v in cfg.items() if k in whitelist}
+    return cfg
+
+
+def load_user_config(path: Path) -> dict[str, Any]:
+    """Read a YAML file safely, with helpful error messages."""
+    if not path.is_file():
+        raise FileNotFoundError(f"YAML config not found: {path}")
+
+    try:
+        with path.open("r", encoding="utf-8") as fh:
+            data = yaml.safe_load(fh) or {}
+        if not isinstance(data, dict):
+            raise ValueError("Root of YAML config must be a mapping")
+        return data
+    except yaml.YAMLError as exc:
+        raise ValueError(f"Invalid YAML in {path}: {exc}") from exc
+
+
+def main() -> None:
+    base_dir = Path(__file__).parents[2] # this file is in 2 folders deep
+    cfg = load_env_config(base_dir)
+
+    yaml_path = base_dir / cfg.get("CONFIG_FILE", "config.yaml")
+    user_cfg = load_user_config(yaml_path)
+
+    jobspy_cfg = user_cfg.get("jobspy")
+    if not isinstance(jobspy_cfg, dict):
+        log.error("Missing or malformed `jobspy` section in %s", yaml_path)
+        sys.exit(1)
+
+    try:
+        jobs = scrape_jobs(**jobspy_cfg)
+    except Exception as exc:
+        log.exception("scrape_jobs failed: %s", exc)
+        sys.exit(1)
+
+    if len(jobs) == 0:
+        log.info("No jobs found, exiting.")
+        sys.exit()
+
+    jobs_dir = Path(cfg.get("JOBS_DIR", "jobs")) / "inbox"
+    jobs_dir.mkdir(parents=True, exist_ok=True)
+    out_path = jobs_dir / "jobs.json"
+    try:
+        jobs.to_json(
+            path_or_buf=out_path,
+            orient="records",
+            indent=2,
+            force_ascii=False,
+        )
+        log.info("Wrote %d jobs to %s", len(jobs), out_path)
+    except Exception as exc:
+        log.exception("Failed to write jobs JSON: %s", exc)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

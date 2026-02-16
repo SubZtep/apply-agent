@@ -1,10 +1,11 @@
-import { generateText, Output } from "ai"
-import pLimit from "p-limit"
-import { lmstudio, ollama } from "#/lib/ai"
-import { logger } from "#/lib/logger"
+// import { generateText, Output } from "ai"
+// import pLimit from "p-limit"
+import { ollama } from "#/lib/ai"
+// import { logger } from "#/lib/logger"
 import { type BatchScore, BatchScoreSchema } from "#/schemas/batch"
 import type { Job } from "#/schemas/job"
-import { applyRedFlagPenalty, normalizeScore } from "./lib"
+
+// import { applyRedFlagPenalty, normalizeScore } from "./lib"
 
 // const limit = pLimit(2) // FIXME: Adjust concurrency based on model provider limits
 

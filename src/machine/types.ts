@@ -67,6 +67,7 @@ export interface AgentContext {
 // }
 
 export interface AgentStore {
+  dir: string
   save(job: Job, dir?: JobState, oldDir?: JobState): Promise<void>
   load(id: string, dir: JobState): Promise<Job | null>
 }

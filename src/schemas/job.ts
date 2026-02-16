@@ -19,6 +19,20 @@ export type JobSpec = z.infer<typeof JobSpecSchema>
 //   redFlags: string[]
 // }
 
+export interface JobAgent {
+  mode: "strict" | "exploratory"
+  state: AgentState
+  evaluation?: Evaluation
+  risks?: RiskAssessment
+
+  // human loop
+  questions?: AgentQuestion[]
+  humanInput?: {
+    answers?: Record<string, string>
+    forceProceed?: boolean
+  }
+}
+
 export interface Job {
   job: {
     id: string
@@ -30,18 +44,19 @@ export interface Job {
     location: string
   } & Partial<JobSpec>
   batch?: BatchScore
-  agent?: {
-    mode: "strict" | "exploratory"
-    state: AgentState
-    evaluation?: Evaluation
-    risks?: RiskAssessment
+  agent?: JobAgent
+  // agent?: {
+  //   mode: "strict" | "exploratory"
+  //   state: AgentState
+  //   evaluation?: Evaluation
+  //   risks?: RiskAssessment
 
-    // human loop
-    questions?: AgentQuestion[]
-    humanInput?: {
-      answers?: Record<string, string>
-      forceProceed?: boolean
-    }
-  }
+  //   // human loop
+  //   questions?: AgentQuestion[]
+  //   humanInput?: {
+  //     answers?: Record<string, string>
+  //     forceProceed?: boolean
+  //   }
+  // }
   plan?: ActionPlan
 }

@@ -1,0 +1,23 @@
+# Python cache / virtual‑env artefacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+*.dist-info/
+*.venv/
+env/
+.venv/
+
+# Local development files you don’t want in the image
+.git
+.gitignore
+.dockerignore
+.DS_Store
+*.log
+*.sqlite3
+*.db
+
+# Secret files – you may want to mount them at runtime instead
+.env
+.env.local

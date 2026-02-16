@@ -1,7 +1,7 @@
 import { describe, expect, it, mock } from "bun:test"
 import { handlers } from "#/machine/handlers"
 import { decideNextState } from "#/machine/next"
-import { runAgent } from "#/machine/runner"
+import { runSateMachine } from "#/machine/runner"
 import type { AgentStore } from "#/machine/types"
 import type { Job } from "#/schemas/job"
 
@@ -332,7 +332,7 @@ describe("runAgent", () => {
 
   it("should throw error when job.agent is missing", async () => {
     const job: Job = { ...baseJob, agent: undefined }
-    expect(() => runAgent(job, mockStore)).toThrow()
+    expect(() => runSateMachine(job, mockStore)).toThrow()
   })
 
   it.skip("should transition through states: IDLE → INGEST → ...", async () => {
