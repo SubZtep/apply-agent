@@ -8,4 +8,11 @@ export const lmstudio = () =>
     supportsStructuredOutputs: true
   })
 
-export const ollama = () => new Ollama({ host: process.env.OLLAMA_BASE_URL })
+let ollamaInstance: Ollama
+
+export const ollama = () => {
+  if (!ollamaInstance) {
+    ollamaInstance = new Ollama({ host: process.env.OLLAMA_BASE_URL })
+  }
+  return ollamaInstance
+}

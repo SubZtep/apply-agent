@@ -23,6 +23,7 @@ targets.push({
   options: {
     ignore: "pid,hostname,time",
     levelFirst: true,
+    singleLine: true,
     // hideObject: true,
     colorize: true
   }

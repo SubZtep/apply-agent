@@ -2,8 +2,8 @@
 // import pLimit from "p-limit"
 import { ollama } from "#/lib/ai"
 // import { logger } from "#/lib/logger"
-import { type BatchScore, BatchScoreSchema } from "#/schemas/batch"
-import type { Job } from "#/schemas/job"
+// import { type BatchScore, BatchScoreSchema } from "#/schemas/batch"
+import { type Job, type Score, ScoreSchema } from "#/schemas/job"
 
 // import { applyRedFlagPenalty, normalizeScore } from "./lib"
 
@@ -81,10 +81,10 @@ Invalid: "skill overlap", "good fit"
   `
 }
 
-export async function scoreSingleJob(job: Job, profileText: string): Promise<BatchScore> {
+export async function scoreSingleJob(job: Job, profileText: string): Promise<Score> {
   const res = await ollama().chat({
     model: process.env.BATCH_MODEL,
-    format: BatchScoreSchema.toJSONSchema(),
+    format: ScoreSchema.toJSONSchema(),
     messages: [
       { role: "system", content: prompts.system() },
       { role: "user", content: prompts.prompt(job, profileText) }
@@ -99,7 +99,7 @@ export async function scoreSingleJob(job: Job, profileText: string): Promise<Bat
   //   return null
   // }
 
-  return BatchScoreSchema.parse(JSON.parse(res.message.content))
+  return ScoreSchema.parse(JSON.parse(res.message.content))
   // return BatchScoreSchema.parse(batch)
 
   // console.log("GOING TO PARSE", typeof res.message.content)

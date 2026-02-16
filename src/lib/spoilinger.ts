@@ -1,4 +1,4 @@
-import type { BatchScore } from "#/schemas/batch"
+// import type { BatchScore } from "#/schemas/batch"
 import type { JobAgent } from "#/schemas/job"
 
 /**
