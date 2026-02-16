@@ -8,7 +8,7 @@ tput civis            # Hide cursor
 
 while true; do
     output=$(
-        echo "=== Updated [Live] secs ago [Tree] | $(date +%H:%M:%S) ==="
+        echo "=== [Live] secs ago [Tree] | $(date +%H:%M:%S) ==="
         echo ""
         tree -D --timefmt "%Y-%m-%d %H:%M:%S" -L 2 2>/dev/null | perl -MTime::Piece -pe '
             if (/(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/) {

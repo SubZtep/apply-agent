@@ -7,7 +7,7 @@
     "start": "bun run src/cli/run.ts",
     "lint": "biome check",
     "lint:fix": "biome check --write --unsafe",
-    "lt": "./scripts/live_tree.sh ./data/jobs"
+    "lt": "cd ./data/jobs && ../../scripts/live_tree.sh"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.30",
