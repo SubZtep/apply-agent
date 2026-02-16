@@ -6,17 +6,17 @@ export const ScrapedJobSchema = z.object({
   title: z.string(),
   company: z.string(),
   location: z.string(),
-  job_type: z.string(),
+  job_type: z.string().nullable(),
   date_posted: z.number(),
   interval: z.string().nullable(),
   min_amount: z.string().nullable(),
   max_amount: z.string().nullable(),
   currency: z.string().nullable(),
   is_remote: z.string().nullable(),
-  num_urgent_words: z.number(),
+  num_urgent_words: z.number().nullable(),
   benefits: z.string().nullable(),
   emails: z.string().nullable(),
-  description: z.string()
+  description: z.string().nullable()
 })
 
 export type ScrapedJobZod = z.infer<typeof ScrapedJobSchema>

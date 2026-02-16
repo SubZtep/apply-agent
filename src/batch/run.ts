@@ -1,10 +1,9 @@
 import { spinner } from "@clack/prompts"
 import { logger } from "#/lib/logger"
 import { isShortlisted } from "#/lib/spoilinger"
-// import { FileAgentStore } from "#/lib/store"
 import { getProfileText } from "#/lib/user"
 import type { JobState } from "#/machine/types"
-import { FileAgentStore, getAJob } from "../lib/store"
+import { FileAgentStore } from "../lib/store"
 import { scoreSingleJob } from "./score"
 
 const sp = spinner()
@@ -13,9 +12,6 @@ const cv = await getProfileText()
 const dir = "inbox"
 const store = new FileAgentStore(dir)
 const job = await store.load()
-
-// console.log("SWEF", job)
-// process.exit()
 
 if (job && cv) {
   sp.start(`Batch scoring ${dir}`)
