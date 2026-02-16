@@ -1,9 +1,19 @@
 import z from "zod"
-import type { ActionPlan } from "#/machine/states/plan"
 import type { AgentQuestion, AgentState } from "#/machine/types"
-import type { BatchScore } from "./batch"
 import type { Evaluation } from "./evalution"
 import type { RiskAssessment } from "./risk"
+
+export const JobSchema = z.object({
+  job: z.object({
+    id: z.string().min(1),
+    source: z.string(),
+    url: z.url(),
+    title: z.string().min(1),
+    description: z.string(),
+    company: z.string(),
+    location: z.string()
+  })
+})
 
 export const JobSpecSchema = z.object({
   skills: z.array(z.string()),
@@ -11,6 +21,7 @@ export const JobSpecSchema = z.object({
   senioritySignals: z.array(z.string())
 })
 
+export type Job = z.infer<typeof JobSchema>
 export type JobSpec = z.infer<typeof JobSpecSchema>
 
 // export interface Batch {
@@ -33,30 +44,30 @@ export interface JobAgent {
   }
 }
 
-export interface Job {
-  job: {
-    id: string
-    source: string
-    title: string
-    company: string
-    description: string
-    url: string
-    location: string
-  } & Partial<JobSpec>
-  batch?: BatchScore
-  agent?: JobAgent
-  // agent?: {
-  //   mode: "strict" | "exploratory"
-  //   state: AgentState
-  //   evaluation?: Evaluation
-  //   risks?: RiskAssessment
+// export interface Job {
+//   job: {
+//     id: string
+//     source: string
+//     title: string
+//     company: string
+//     description: string
+//     url: string
+//     location: string
+//   } & Partial<JobSpec>
+//   batch?: BatchScore
+//   agent?: JobAgent
+//   // agent?: {
+//   //   mode: "strict" | "exploratory"
+//   //   state: AgentState
+//   //   evaluation?: Evaluation
+//   //   risks?: RiskAssessment
 
-  //   // human loop
-  //   questions?: AgentQuestion[]
-  //   humanInput?: {
-  //     answers?: Record<string, string>
-  //     forceProceed?: boolean
-  //   }
-  // }
-  plan?: ActionPlan
-}
+//   //   // human loop
+//   //   questions?: AgentQuestion[]
+//   //   humanInput?: {
+//   //     answers?: Record<string, string>
+//   //     forceProceed?: boolean
+//   //   }
+//   // }
+//   plan?: ActionPlan
+// }

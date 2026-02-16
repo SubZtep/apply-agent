@@ -57,11 +57,11 @@ if ! grep -Fxq "$BATCH_MODEL" <<< "$model_ids"; then
   exit 69
 fi
 
-# Create job dirs
+# # Create job dirs
 
-for dir in inbox screened_out shortlisted awaiting_input declined approved; do
-  mkdir -p "${JOBS_DIR}/${dir}" || {
-    echo "Error: Failed to create directory ${JOBS_DIR}/${dir}" >&2
-    exit 1
-  }
-done
+# for dir in inbox screened_out shortlisted awaiting_input declined approved; do
+#   mkdir -p "${JOBS_DIR}/${dir}" || {
+#     echo "Error: Failed to create directory ${JOBS_DIR}/${dir}" >&2
+#     exit 1
+#   }
+# done

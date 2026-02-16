@@ -1,25 +1,25 @@
 import z from "zod"
 
-export const ScrapedJobSchema = z.object({
-  job_url: z.string().url(),
-  site: z.string(),
-  title: z.string(),
-  company: z.string(),
-  location: z.string(),
-  job_type: z.string().nullable(),
-  date_posted: z.number(),
-  interval: z.string().nullable(),
-  min_amount: z.string().nullable(),
-  max_amount: z.string().nullable(),
-  currency: z.string().nullable(),
-  is_remote: z.string().nullable(),
-  num_urgent_words: z.number().nullable(),
-  benefits: z.string().nullable(),
-  emails: z.string().nullable(),
-  description: z.string().nullable()
-})
+// export const ScrapedJobSchema = z.object({
+//   job_url: z.string().url(),
+//   site: z.string(),
+//   title: z.string(),
+//   company: z.string(),
+//   location: z.string(),
+//   job_type: z.string().nullable(),
+//   date_posted: z.number(),
+//   interval: z.string().nullable(),
+//   min_amount: z.string().nullable(),
+//   max_amount: z.string().nullable(),
+//   currency: z.string().nullable(),
+//   is_remote: z.string().nullable(),
+//   num_urgent_words: z.number().nullable(),
+//   benefits: z.string().nullable(),
+//   emails: z.string().nullable(),
+//   description: z.string().nullable()
+// })
 
-export type ScrapedJobZod = z.infer<typeof ScrapedJobSchema>
+// export type ScrapedJobZod = z.infer<typeof ScrapedJobSchema>
 
 export const BatchScoreSchema = z.object({
   score: z.number().min(0).max(1),

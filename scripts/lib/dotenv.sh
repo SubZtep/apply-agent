@@ -48,3 +48,6 @@ dotenv_load() {
     fi
   done < "$file"
 }
+
+dotenv_load ".env"
+dotenv_load ".env.local"
