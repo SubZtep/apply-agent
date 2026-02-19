@@ -6,13 +6,13 @@ apply-agent is a Bun/TypeScript application that automates job application filte
 
 ## Commands
 
-### Running the Application
+<!-- ### Running the Application
 ```bash
 bun start                  # Run the main orchestrator
 tools/scraper/run.sh       # Start to scrape jobs
 bun run src/batch/run.ts   # Batch processing scraped jobs
 bun run src/cli/run.ts     # Evaluate shortlisted jobs
-```
+``` -->
 
 ### Linting & Formatting
 ```bash

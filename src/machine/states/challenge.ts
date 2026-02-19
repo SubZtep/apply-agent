@@ -1,10 +1,7 @@
 import { ZodError } from "zod"
 import { ollama } from "#/lib/ai"
-// import { lmstudio } from "#/lib/ai"
 import { logger } from "#/lib/logger"
 import { type Job, type RiskAssessment, RiskAssessmentSchema } from "#/schemas/job"
-
-// import { generateText, Output } from "ai"
 
 interface ChallengeError {
   reason: "SCHEMA_INVALID" | "MODEL_ERROR" | "LOW_QUALITY"
@@ -51,12 +48,6 @@ function hasUsableRisks(risks: RiskAssessment): boolean {
 export async function challengeWithRetry(job: Job, maxAttempts = 3): Promise<ChallengeResult> {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      // const result = await generateText({
-      //   model: lmstudio()(process.env.AGENT_MODEL),
-      //   output: Output.object({ schema: RiskAssessmentSchema }),
-      //   system: SYSTEM_PROMPT,
-      //   prompt: buildChallengePrompt(job)
-      // })
       const start = performance.now()
       const result = await ollama.chat({
         model: process.env.AGENT_MODEL,

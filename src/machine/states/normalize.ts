@@ -1,4 +1,3 @@
-// import { generateText, Output } from "ai"
 import { ZodError } from "zod"
 import { ollama } from "#/lib/ai"
 import { logger } from "#/lib/logger"
@@ -38,12 +37,6 @@ type NormalizeResult = { ok: true; data: JobSpec } | { ok: false; error: Normali
 export async function normalizeWithRetry(prompt: string, maxAttempts = 3): Promise<NormalizeResult> {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      // const result = await generateText({
-      //   model: lmstudio()(process.env.AGENT_MODEL),
-      //   output: Output.object({ schema: JobSpecSchema }),
-      //   system: SYSTEM_PROMPT,
-      //   prompt: buildNormalizePrompt(prompt)
-      // })
       const start = performance.now()
       const result = await ollama.chat({
         model: process.env.AGENT_MODEL,

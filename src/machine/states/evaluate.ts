@@ -1,4 +1,3 @@
-// import { generateText, Output } from "ai"
 import { ZodError } from "zod"
 import { ollama } from "#/lib/ai"
 import { logger } from "#/lib/logger"
@@ -48,12 +47,6 @@ export async function evaluateWithRetry(job: Job, maxAttempts = 3): Promise<Eval
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const start = performance.now()
-      // const { output } = await generateText({
-      //   model: lmstudio()(process.env.AGENT_MODEL),
-      //   output: Output.object({ schema: EvaluationSchema }),
-      //   system: SYSTEM_PROMPT,
-      //   prompt: buildEvaluationPrompt(job, profile)
-      // })
       const result = await ollama.chat({
         model: process.env.AGENT_MODEL,
         format: EvaluationSchema.toJSONSchema(),

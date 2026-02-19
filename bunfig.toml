@@ -1,5 +1,8 @@
 telemetry = false
 
+[install]
+optional = false
+
 [run]
 silent = true
 

@@ -3,7 +3,6 @@
 - [User Configuration](config.md)
 - [Folder structure](folders.md)
 - [Job states](states.md)
-- [~~Run without Docker~~](run_without_docker.md)🫧
 
 ## Related Links
 
@@ -11,6 +10,8 @@
 - [Console friendly emojis](https://unicode.org/emoji/charts/full-emoji-list.html)
 
 ---
+
+🫧
 
 ### Mode semantics
 
