@@ -10,7 +10,7 @@ You do not decide outcomes.
 You provide evidence-based confidence only.
 `
 
-type EvaluateResult = { ok: true; data: Evaluation } | { ok: false; error: EvaluateError }
+type EvaluateResult = { ok: true; data: Evaluation } | { ok: false; data?: Evaluation; error: EvaluateError }
 
 interface EvaluateError {
   reason: "SCHEMA_INVALID" | "MODEL_ERROR" | "INSUFFICIENT_SIGNAL"
@@ -63,6 +63,7 @@ export async function evaluateWithRetry(job: Job, maxAttempts = 3): Promise<Eval
       if (!hasSufficientSignal(evaluation)) {
         return {
           ok: false,
+          data: evaluation,
           error: {
             reason: "INSUFFICIENT_SIGNAL",
             message: "Evaluation lacks decision signal"
@@ -86,5 +87,5 @@ export async function evaluateWithRetry(job: Job, maxAttempts = 3): Promise<Eval
     }
   }
 
-  throw new Error("Unreachable")
+  throw "Unreachable"
 }

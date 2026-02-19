@@ -14,7 +14,7 @@ export const handlers: Record<AgentState, StateHandler> = {
 
   INGEST: async job => {
     if (!job.job.description || !job.job.description) {
-      logger.error(job, "Missing input")
+      // logger.error(job, "Missing input")
       return "FAILED"
     }
     return "NORMALIZE"
@@ -37,13 +37,13 @@ export const handlers: Record<AgentState, StateHandler> = {
 
   EVALUATE: async job => {
     const result = await evaluateWithRetry(job)
+    job.agent!.evaluation = result.data
 
     if (!result.ok) {
-      logger.debug({ job }, result.error.message)
+      // logger.debug({ id: job.job.id }, result.error.message)
       return "FAILED"
     }
 
-    job.agent!.evaluation = result.data
     return "CHALLENGE"
   },
 
@@ -51,7 +51,7 @@ export const handlers: Record<AgentState, StateHandler> = {
     const result = await challengeWithRetry(job)
 
     if (!result.ok) {
-      logger.error(result.error, "Challenge failed")
+      // logger.error({ id: job.job.id, error: result.error }, "Challenge failed")
       return "FAILED"
     }
 

@@ -6,13 +6,19 @@ import type { JobState } from "./types"
 
 export async function runSateMachine(job: Job & { agent: NonNullable<Job["agent"]> }, store: AgentStore) {
   while (true) {
-    logger.trace({ id: job.job.id, state: job.agent.state }, "Run state")
+    logger.trace({ id: job.job.id, state: job.agent.state }, "State running")
 
     const nextState = await handlers[job.agent.state](job)
     job.agent.state = nextState
 
     const stateDir: JobState =
-      nextState === "WAIT_FOR_HUMAN" ? "awaiting_input" : nextState === "DONE" ? "approved" : "declined"
+      nextState === "WAIT_FOR_HUMAN"
+        ? "awaiting_input"
+        : nextState === "DONE"
+          ? "approved"
+          : nextState === "FAILED"
+            ? "declined"
+            : "shortlisted"
 
     store.save(stateDir, job)
 

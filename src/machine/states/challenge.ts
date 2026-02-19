@@ -89,5 +89,5 @@ export async function challengeWithRetry(job: Job, maxAttempts = 3): Promise<Cha
     }
   }
 
-  throw new Error("Unreachable")
+  throw "Unreachable"
 }

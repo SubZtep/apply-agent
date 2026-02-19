@@ -1,9 +1,7 @@
 import { join } from "node:path"
-import { calculateJobId } from "./lib/job"
+import { jobDir, mapScrapedJobToJob } from "./lib/job"
 import { logger } from "./lib/logger"
-import { jobDir } from "./lib/var"
-import type { Job } from "./schemas/job"
-import { type ScrapedJob, ScrapedJobSchema } from "./schemas/scraped_job"
+import { ScrapedJobSchema } from "./schemas/scraped_job"
 
 const inboxDir = jobDir("inbox")
 const jsonFile = Bun.file(join(inboxDir, "jobs.json"))
@@ -22,21 +20,4 @@ for (const job of jobs) {
   await Bun.write(join(inboxDir, `${job.job.id}.json`), JSON.stringify(job, null, 2))
 }
 
-await jsonFile.unlink()
-
-// -+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-
-
-function mapScrapedJobToJob(scrapedJob: ScrapedJob): Job {
-  const job: Job = {
-    job: {
-      id: calculateJobId(scrapedJob),
-      title: scrapedJob.title,
-      description: scrapedJob.description, // FIXME: skip job if description is empty
-      company: scrapedJob.company,
-      location: scrapedJob.location,
-      source: scrapedJob.site,
-      url: scrapedJob.job_url
-    }
-  }
-  return job
-}
+await jsonFile.delete()
