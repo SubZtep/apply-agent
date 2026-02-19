@@ -1,6 +1,5 @@
 import { logger } from "#/lib/logger"
-import type { Job } from "#/schemas/job"
-import type { AgentContext, AgentQuestion, AgentState } from "./types"
+import type { AgentQuestion, AgentState, Job, JobAgentContext } from "#/schemas/job"
 
 export function decideNextState({ job, agent }: Job): {
   nextState: AgentState
@@ -34,7 +33,7 @@ export function decideNextState({ job, agent }: Job): {
   if (agent.risks.hardGaps.length >= 3 && !human.hasAnsweredHardGaps) {
     questions.push({
       id: "HARD_GAPS_PROCEED",
-      text: "This role has multiple hard gaps. Do you want to proceed anyway?",
+      text: "This role has multiple hard gaps. Do you want to proceed anyway?"
     })
   }
 
@@ -46,7 +45,7 @@ export function decideNextState({ job, agent }: Job): {
   ) {
     questions.push({
       id: "LEADERSHIP_REFRAME",
-      text: "This role expects leadership experience. Should I reframe your experience or treat this as a stretch role?",
+      text: "This role expects leadership experience. Should I reframe your experience or treat this as a stretch role?"
     })
   }
 
@@ -56,7 +55,7 @@ export function decideNextState({ job, agent }: Job): {
   if (ratio > 0.4 && !human.hasAnsweredConfidence) {
     questions.push({
       id: "LOW_CONFIDENCE_STRATEGY",
-      text: "Several matches are uncertain. Should I assume best-case or conservative interpretation?",
+      text: "Several matches are uncertain. Should I assume best-case or conservative interpretation?"
     })
   }
 
@@ -65,7 +64,7 @@ export function decideNextState({ job, agent }: Job): {
       case "strict":
         return {
           nextState: "WAIT_FOR_HUMAN",
-          questions,
+          questions
         }
       case "exploratory":
         logger.info({ job, questions }, "Exploratory mode: proceeding despite uncertainty")
@@ -76,8 +75,8 @@ export function decideNextState({ job, agent }: Job): {
   return { nextState: "PLAN" }
 }
 
-function interpretHumanAnswers(ctx: AgentContext) {
-  const raw = ctx.humanInput?.answers ?? {}
+function interpretHumanAnswers(ctx: JobAgentContext) {
+  const raw: any = ctx.humanInput?.answers ?? {}
 
   const hasHardGapsKey = Object.hasOwn(raw, "HARD_GAPS_PROCEED")
   const hasConfidenceKey = Object.hasOwn(raw, "LOW_CONFIDENCE_STRATEGY")
@@ -95,7 +94,7 @@ function interpretHumanAnswers(ctx: AgentContext) {
     hasAnsweredLeadership: hasLeadershipKey,
 
     confidenceStrategy: confidence ?? "conservative",
-    leadershipMode: leadership ?? "strict",
+    leadershipMode: leadership ?? "strict"
   }
 
   logger.info({ raw, result }, "Human answers interpreted")

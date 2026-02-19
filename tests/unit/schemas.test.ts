@@ -1,6 +1,5 @@
 import { describe, expect, it } from "bun:test"
-import { JobSpecSchema } from "#/schemas/job"
-import { RiskAssessmentSchema } from "#/schemas/risk"
+import { JobSpecSchema, RiskAssessmentSchema } from "#/schemas/job"
 
 describe("RiskAssessmentSchema", () => {
   it("should validate correct risk assessment", () => {

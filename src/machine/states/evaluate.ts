@@ -1,10 +1,9 @@
-import { generateText, Output } from "ai"
+// import { generateText, Output } from "ai"
 import { ZodError } from "zod"
-import { lmstudio } from "#/lib/ai"
+import { ollama } from "#/lib/ai"
 import { logger } from "#/lib/logger"
 import { getProfileText } from "#/lib/user"
-import { type Evaluation, EvaluationSchema } from "#/schemas/evalution"
-import type { Job } from "#/schemas/job"
+import { type Evaluation, EvaluationSchema, type Job } from "#/schemas/job"
 
 const SYSTEM_PROMPT = `
 You assess how well a candidate matches job requirements.
@@ -48,24 +47,37 @@ export async function evaluateWithRetry(job: Job, maxAttempts = 3): Promise<Eval
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const { output } = await generateText({
-        model: lmstudio(process.env.AGENT_MODEL),
-        output: Output.object({ schema: EvaluationSchema }),
-        system: SYSTEM_PROMPT,
-        prompt: buildEvaluationPrompt(job, profile),
+      const start = performance.now()
+      // const { output } = await generateText({
+      //   model: lmstudio()(process.env.AGENT_MODEL),
+      //   output: Output.object({ schema: EvaluationSchema }),
+      //   system: SYSTEM_PROMPT,
+      //   prompt: buildEvaluationPrompt(job, profile)
+      // })
+      const result = await ollama.chat({
+        model: process.env.AGENT_MODEL,
+        format: EvaluationSchema.toJSONSchema(),
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: buildEvaluationPrompt(job, profile) }
+        ]
       })
+      const duration = performance.now() - start
+      logger.debug({ duration }, "Evaluate job")
 
-      if (!hasSufficientSignal(output)) {
+      const evaluation = EvaluationSchema.parse(JSON.parse(result.message.content))
+
+      if (!hasSufficientSignal(evaluation)) {
         return {
           ok: false,
           error: {
             reason: "INSUFFICIENT_SIGNAL",
-            message: "Evaluation lacks decision signal",
-          },
+            message: "Evaluation lacks decision signal"
+          }
         }
       }
 
-      return { ok: true, data: output }
+      return { ok: true, data: evaluation }
     } catch (err) {
       logger.warn({ attempt, err }, "EVALUATE attempt failed")
 
@@ -74,8 +86,8 @@ export async function evaluateWithRetry(job: Job, maxAttempts = 3): Promise<Eval
           ok: false,
           error: {
             reason: err instanceof ZodError ? "SCHEMA_INVALID" : "MODEL_ERROR",
-            message: "Failed to evaluate job fit",
-          },
+            message: "Failed to evaluate job fit"
+          }
         }
       }
     }

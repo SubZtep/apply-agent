@@ -4,8 +4,7 @@ import { challengeWithRetry } from "#/machine/states/challenge"
 import { evaluateWithRetry } from "#/machine/states/evaluate"
 import { normalizeWithRetry } from "#/machine/states/normalize"
 import { generatePlan } from "#/machine/states/plan"
-import type { Job } from "#/schemas/job"
-import type { AgentState } from "./types"
+import type { AgentState, Job } from "#/schemas/job"
 
 type StateHandler = (ctx: Job) => Promise<AgentState>
 
@@ -31,7 +30,7 @@ export const handlers: Record<AgentState, StateHandler> = {
 
     job.job = {
       ...job.job,
-      ...result.data,
+      ...result.data
     }
     return "EVALUATE"
   },
@@ -72,7 +71,10 @@ export const handlers: Record<AgentState, StateHandler> = {
   },
 
   PLAN: async job => {
-    job.plan = await generatePlan(job.agent)
+    if (!job.agent) {
+      throw new Error("Agent context is required to generate a plan")
+    }
+    job.agent.plan = await generatePlan(job.agent)
     return "DONE"
   },
 
@@ -82,5 +84,5 @@ export const handlers: Record<AgentState, StateHandler> = {
 
   FAILED: async () => {
     return "FAILED"
-  },
+  }
 }

@@ -1,7 +1,9 @@
 declare module "bun" {
   interface Env {
     /** Base URL for OpenAI-compatible API endpoint (e.g., LM Studio, Ollama). */
-    AI_API_BASE_URL: string
+    OPENAI_API_BASE_URL: string
+
+    OLLAMA_BASE_URL: string
 
     /** Primary model for agent reasoning and possibly tool use (higher capability). */
     AGENT_MODEL: string
@@ -26,5 +28,10 @@ declare module "bun" {
 
     /** Job search user config file location in YAML format. */
     CONFIG_FILE: string
+
+    // logger
+    LOKI_HOST?: string
+    LOKI_USERNAME?: string
+    LOKI_PASSWORD?: string
   }
 }

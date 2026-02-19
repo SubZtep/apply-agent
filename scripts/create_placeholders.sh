@@ -1,11 +1,11 @@
 #!/bin/bash
 set -euo pipefail
-
 source "scripts/lib/dotenv.sh"
-dotenv_load ".env"
-dotenv_load ".env.local"
 
-# Check config files and set defaults if needed
+# ------------------------------------------------------------------------------
+# Create missing files
+# TODO: Be sure user updates them
+# ------------------------------------------------------------------------------
 
 if [[ ! -f "${CV_FILE}" ]]; then
   echo "CV_FILE '${CV_FILE}' not found. Creating a placeholder CV file."

@@ -1,0 +1,37 @@
+#!/bin/bash
+set -euo pipefail
+
+# ------------------------------------------------------------------------------
+# Validate configuration
+# ------------------------------------------------------------------------------
+
+source "scripts/lib/dotenv.sh"
+
+# Validate config
+
+missing_vars=()
+[[ -z "${OPENAI_API_BASE_URL:-}" ]] && missing_vars+=("OPENAI_API_BASE_URL")
+[[ -z "${AGENT_MODEL:-}" ]] && missing_vars+=("AGENT_MODEL")
+[[ -z "${BATCH_MODEL:-}" ]] && missing_vars+=("BATCH_MODEL")
+[[ -z "${JOBS_DIR:-}" ]] && missing_vars+=("JOBS_DIR")
+[[ -z "${CV_FILE:-}" ]] && missing_vars+=("CV_FILE")
+[[ -z "${CONFIG_FILE:-}" ]] && missing_vars+=("CONFIG_FILE")
+
+if (( ${#missing_vars[@]} > 0 )); then
+  echo "Error: The following required environment variables are not set: ${missing_vars[*]}" >&2
+  exit 78
+fi
+
+# Validate CV file
+
+if [[ ! -f "${CV_FILE}" ]]; then
+  echo "Error: CV_FILE '${CV_FILE}' does not exist." >&2
+  exit 3
+fi
+
+# Validate config file
+
+if [[ ! -f "${CONFIG_FILE}" ]]; then
+  echo "Error: CONFIG_FILE '${CONFIG_FILE}' does not exist." >&2
+  exit 3
+fi

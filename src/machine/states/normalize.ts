@@ -1,6 +1,6 @@
-import { generateText, Output } from "ai"
+// import { generateText, Output } from "ai"
 import { ZodError } from "zod"
-import { lmstudio } from "#/lib/ai"
+import { ollama } from "#/lib/ai"
 import { logger } from "#/lib/logger"
 import { type JobSpec, JobSpecSchema } from "#/schemas/job"
 
@@ -38,13 +38,25 @@ type NormalizeResult = { ok: true; data: JobSpec } | { ok: false; error: Normali
 export async function normalizeWithRetry(prompt: string, maxAttempts = 3): Promise<NormalizeResult> {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const result = await generateText({
-        model: lmstudio(process.env.AGENT_MODEL),
-        output: Output.object({ schema: JobSpecSchema }),
-        system: SYSTEM_PROMPT,
-        prompt: buildNormalizePrompt(prompt),
+      // const result = await generateText({
+      //   model: lmstudio()(process.env.AGENT_MODEL),
+      //   output: Output.object({ schema: JobSpecSchema }),
+      //   system: SYSTEM_PROMPT,
+      //   prompt: buildNormalizePrompt(prompt)
+      // })
+      const start = performance.now()
+      const result = await ollama.chat({
+        model: process.env.AGENT_MODEL,
+        format: JobSpecSchema.toJSONSchema(),
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: buildNormalizePrompt(prompt) }
+        ]
       })
-      return { ok: true, data: result.output }
+      const duration = performance.now() - start
+      logger.debug({ duration }, "Normalize job")
+
+      return { ok: true, data: JobSpecSchema.parse(JSON.parse(result.message.content)) }
     } catch (err) {
       logger.warn({ attempt, err }, "NORMALIZE attempt failed")
 
@@ -54,8 +66,8 @@ export async function normalizeWithRetry(prompt: string, maxAttempts = 3): Promi
           ok: false,
           error: {
             reason: err instanceof ZodError ? "SCHEMA_INVALID" : "MODEL_ERROR",
-            message: err instanceof Error ? err.message : String(err),
-          },
+            message: err instanceof Error ? err.message : String(err)
+          }
         }
       }
     }

@@ -1,53 +1,72 @@
+import { readdir } from "node:fs/promises"
 import { join } from "node:path"
-import type { AgentStore, JobState } from "#/machine/types"
 import type { Job } from "#/schemas/job"
 import { logger } from "./logger"
+import { jobDir } from "./var"
+
+type JobDir = "inbox" | "approved" | "awaiting_input" | "declined" | "screened_out" | "shortlisted"
+
+export interface AgentStore {
+  /** Omit id to pick a random job from the given dir. */
+  load(dir: JobDir, id?: string): Promise<Job | null>
+  save(dir: JobDir, job: Job): Promise<void>
+}
 
 export class FileAgentStore implements AgentStore {
-  async save(job: Job, dir?: JobState, oldDir?: JobState) {
-    const stateDir = dir ?? job.agent?.state
-    if (!stateDir) {
-      logger.error({ job, dir }, "Can't save without state dir")
-      throw new Error("Missing job state")
-    }
+  async load(dir: JobDir, id?: string): Promise<Job | null> {
+    let jobId: string
 
-    const fileName = join(process.env.JOBS_DIR, stateDir, `${job.job.id}.json`)
-    try {
-      await Bun.write(fileName, JSON.stringify(job, null, 2))
-    } catch (error: any) {
-      logger.error({ fileName, error, job }, "Failed to save agent")
-      throw error
-    }
-
-    if (oldDir) {
-      const oldFile = Bun.file(join(process.env.JOBS_DIR, oldDir, `${job.job.id}.json`))
-      if (await oldFile.exists()) {
-        try {
-          await oldFile.delete()
-        } catch (error: any) {
-          logger.error({ file: oldFile, error, job }, "Failed to clean up old job file")
-          throw error
-        }
+    if (!id) {
+      const pid = await this.#pickJobId(dir)
+      if (!pid) {
+        logger.warn({ dir }, "No job found")
+        return null
       }
+      jobId = pid
+    } else {
+      jobId = id
     }
-  }
 
-  async load(id: string, dir: JobState) {
-    const file = Bun.file(join(process.env.JOBS_DIR, dir, `${id}.json`))
+    const fn = join(jobDir(dir), `${jobId}.json`)
+    const file = Bun.file(fn)
+
     if (!(await file.exists())) {
+      logger.warn({ file: fn }, "File not found")
       return null
     }
+
     try {
-      return (await file.json()) as Job
+      const job = (await file.json()) as Job
+      await file.delete()
+      return job
     } catch (error: any) {
       if (error.code === "ENOENT") {
         return null
       }
       if (error instanceof SyntaxError) {
-        logger.error({ id, error }, "Corrupted data file for agent")
+        logger.error({ fn, error }, "Corrupted data file for agent")
         return null
       }
       throw error
     }
+  }
+
+  async save(dir: JobDir, job: Job): Promise<void> {
+    const fn = join(jobDir(dir), `${job.job.id}.json`)
+    try {
+      await Bun.write(fn, JSON.stringify(job, null, 2))
+    } catch (error) {
+      logger.error({ file: fn, error, job }, "Job save failed")
+      throw error
+    }
+  }
+
+  async #pickJobId(dir: JobDir) {
+    const jsonFilterFn: (fn: string) => boolean =
+      dir === "inbox" ? fn => fn.endsWith(".json") && !fn.startsWith("jobs.") : fn => fn.endsWith(".json")
+    return (await readdir(jobDir(dir)))
+      .filter(jsonFilterFn)
+      .pop()
+      ?.replace(/\.json$/, "")
   }
 }

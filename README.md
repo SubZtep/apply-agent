@@ -3,31 +3,41 @@
 Self-hosted job scraper runner, with self-hosted LLM-powered CV matching.
 
 > [!CAUTION]
-> It’s possible to filter out legitimate jobs, so use it with caution.
+> 🍪 It’s possible to filter out legitimate jobs, so use it with caution.
 
 ## What’s automated
 
-There are three main processes, and the orchestrator mode runs them automatically.
+There are three main processes. They can even run in parallel, and if something is ambiguous, the agent asks the user.
 
-| Get Jobs                  | Filter Out the Noise | Evaluate                          |
-| ------------------------- | -------------------- | --------------------------------- |
-| 1️⃣ Visit a job site        | 1️⃣ Process jobs CSV   | 1️⃣ Process shortlisted jobs        |
-| 2️⃣ Search by criteria      | 2️⃣ Run batch scoring  | 2️⃣ Put them into the state machine |
-| 3️⃣ Download results as CSV | 3️⃣ Generate job JSONs | 3️⃣ Enjoy approved jobs             |
+| Get Jobs                | Filter Out the Noise | Evaluate                        |
+| ----------------------- | -------------------- | ------------------------------- |
+| Visit a job site        | Process jobs CSV     | Process shortlisted jobs        |
+| Search by criteria      | Run batch scoring    | Put them into the state machine |
+| Download results as CSV | Generate job JSONs   | Enjoy approved jobs             |
+| `--step=scrape`         | `--step=batch`       | `--step=evaulate`               |
 
-### How’s it going?
+```bash
+$ bun start run --help
+
+USAGE
+  apply-agent run [OPTIONS]
+
+OPTIONS
+  --mode=<exploratory|strict>
+      Exploratory: AI-driven.
+      Strict (default): human-in-the-loop.
+
+  --step=<scrape|batch|evaluate|answers>
+      If omitted, the orchestrator runs all scheduled steps.
+```
+
+## How’s it going?
 
 Batch reject:\
 _“**Not worth thinking about.**”_
 
 Agent reject:\
 _“**Thought about it carefully and decided no.**”_
-
-## CLI
-
-```bash
-bun start --help
-```
 
 ## Documentation
 

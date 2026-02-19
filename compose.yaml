@@ -1,0 +1,11 @@
+services:
+  jobspy:
+    image: jobspy-app:latest
+    build: .
+    environment:
+      CONFIG_FILE: config.yaml
+      JOBS_DIR: /data/jobs
+    volumes:
+      - ./jobs:/data/jobs
+      - ./.env.local:/app/.env.local:ro
+    restart: "no"
