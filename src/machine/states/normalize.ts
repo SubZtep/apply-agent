@@ -66,5 +66,5 @@ export async function normalizeWithRetry(prompt: string, maxAttempts = 3): Promi
     }
   }
 
-  throw new Error("Unreachable")
+  throw "Unreachable"
 }

@@ -17,8 +17,8 @@ echo "🏁 Scrape jobs"
 echo "🏁 Pre-process scraped jobs"
 bun ./src/ingest.ts
 
-echo "🏁 Score jobs"
+echo "🏁 Batch scoring jobs"
 bun ./src/scoring.ts
 
-# echo "🏁 Evaluate a job"
-# bun ./src/evaluate_job.ts
+echo "🏁 Evaluate jobs"
+bun ./src/evaluation.ts

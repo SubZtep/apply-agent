@@ -1,4 +1,5 @@
-import type { JobAgentContext, Score } from "#/schemas/job"
+import { join } from "node:path"
+import type { Job, JobAgentContext, Score } from "#/schemas/job"
 import type { ScrapedJob } from "#/schemas/scraped_job"
 
 export function calculateJobId({ title, company, job_url }: ScrapedJob) {
@@ -13,9 +14,7 @@ export function getInitialJobState() {
   } as JobAgentContext
 }
 
-/**
- * 🦥 Tells if **a job is not worth thinking** about 🐒
- */
+/** 🦥 Tells if **a job is not worth thinking** about 🐒 */
 export function isShortlisted(score: Score) {
   // TODO: add dark magic here
   return score.score > 0.4
@@ -30,4 +29,27 @@ export function normalizeScore(score: number) {
 export function applyRedFlagPenalty(score: number, redFlags: string[]) {
   const penalty = redFlags.length * 0.1
   return Math.max(0, Math.round((score - penalty) * 100) / 100)
+}
+
+/** Job dir in the file system. */
+export function jobDir(dir?: "inbox" | "screened_out" | "shortlisted" | "awaiting_input" | "declined" | "approved") {
+  if (!dir) {
+    return process.env.JOBS_DIR
+  }
+  return join(process.env.JOBS_DIR, dir)
+}
+
+export function mapScrapedJobToJob(scrapedJob: ScrapedJob): Job {
+  const job: Job = {
+    job: {
+      id: calculateJobId(scrapedJob),
+      title: scrapedJob.title,
+      description: scrapedJob.description, // FIXME: skip job if description is empty
+      company: scrapedJob.company,
+      location: scrapedJob.location,
+      source: scrapedJob.site,
+      url: scrapedJob.job_url
+    }
+  }
+  return job
 }

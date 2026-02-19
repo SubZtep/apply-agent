@@ -1,8 +1,8 @@
 import { readdir } from "node:fs/promises"
 import { join } from "node:path"
 import type { Job } from "#/schemas/job"
+import { jobDir } from "./job"
 import { logger } from "./logger"
-import { jobDir } from "./var"
 
 type JobDir = "inbox" | "approved" | "awaiting_input" | "declined" | "screened_out" | "shortlisted"
 
