@@ -1,14 +1,10 @@
-import { readdir } from "node:fs/promises"
-import { join } from "node:path"
-import { logger } from "#/lib/logger"
 import { getInitialJobState } from "#/lib/spoilinger"
-import { FileAgentStore, getAJob } from "#/lib/store"
+import { FileAgentStore } from "#/lib/store"
 import { runSateMachine } from "#/machine/runner"
-import type { JobState } from "#/machine/types"
 
-const store = new FileAgentStore("shortlisted")
+const store = new FileAgentStore()
 
-const job = await store.load()
+const job = await store.load("shortlisted")
 
 console.log("ccc", job)
 
@@ -17,6 +13,7 @@ if (job) {
     job.agent = getInitialJobState()
   }
 
+  // @ts-expect-error
   await runSateMachine(job, store)
 }
 

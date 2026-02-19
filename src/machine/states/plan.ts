@@ -1,5 +1,4 @@
-import { z } from "zod"
-import type { AgentContext } from "#/machine/types"
+import { type ActionPlan, ActionPlanSchema, type JobAgentContext } from "#/schemas/job"
 
 const testData = {
   talkingPoints: [],
@@ -7,14 +6,6 @@ const testData = {
   cvTweaks: []
 } as ActionPlan
 
-const ActionPlan = z.object({
-  talkingPoints: z.array(z.string()),
-  prepTasks: z.array(z.string()),
-  cvTweaks: z.array(z.string())
-})
-
-export type ActionPlan = z.infer<typeof ActionPlan>
-
-export function generatePlan(_ctx?: AgentContext) {
-  return Promise.resolve(ActionPlan.parse(testData))
+export function generatePlan(_ctx?: JobAgentContext) {
+  return Promise.resolve(ActionPlanSchema.parse(testData))
 }

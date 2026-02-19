@@ -1,9 +1,9 @@
 import { spinner } from "@clack/prompts"
 import { logger } from "#/lib/logger"
 import { isShortlisted } from "#/lib/spoilinger"
+import { FileAgentStore } from "#/lib/store"
 import { getProfileText } from "#/lib/user"
 import type { JobState } from "#/machine/types"
-import { FileAgentStore } from "../lib/store"
 import { scoreSingleJob } from "./score"
 
 const sp = spinner()

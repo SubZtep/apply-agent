@@ -1,46 +1,73 @@
 #!/bin/bash
+set -euo pipefail
 
-# --------------------------------------------------------------
-# 1. Validate env and jobspy config, cv
-# 2. Test LLM connection and setup
-# 3. Create job specific folders to categorise job files
-# --------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Environment validation and setup script
+# Validates directories, configuration, dependencies, and LLM connectivity
+# ------------------------------------------------------------------------------
 
-output=$(
-  scripts/lib/validate.sh 2>&1
-)
-status=$?
-if [ $status -eq 0 ]; then
-  echo "✅ Setup OK"
-else
-  echo "❌ Setup NOT OK"
-  case $status in
-    3) echo -e "Missing config file\n$output" ;;
-    69) echo -e "API unreachable\n$output\nPlease try again later..."; exit $status ;;
-    78) echo -e "Missing configuration\n$output"; exit $status ;;
-    *) echo "$output"; exit 1 ;;
-  esac
-fi
+# Exit codes from validate_config.sh:
+#   3  - Missing config files (creates placeholders)
+#   78 - Missing environment variables (fatal)
 
-output=$(
-  scripts/lib/check.sh 2>&1
-)
-status=$?
-if [ $status -eq 0 ]; then
-  echo "✅Config OK"
-else
-  echo -e "❌ Config NOT OK\n$output"
-  exit 1
-fi
+# Exit code from validate_llm.sh:
+#   1  - Missing configured model(s) (fatal) # TODO: download
+#   69 - Unavailable LLM service (fatal)
 
-output=$(
-  scripts/lib/install.sh 2>&1
-)
-status=$?
-if [ $status -eq 0 ]; then
-  echo "✅ Tools OK"
-else
-  echo "❌ Tools NOT OK"
+readonly SCRIPTS_DIR="scripts"
+
+require_script() {
+  if [ ! -f "$1" ]; then
+    echo "❌ Missing required script: $1" >&2
+    exit 1
+  fi
+}
+
+run_validation() {
+  local name="$1"
+  local script="$2"
+  local output
+  local status
+
+  require_script "$script"
+
+  # Capture both stdout and stderr for error reporting
+  output=$(bash "$script" 2>&1) || status=$?
+  status=${status:-0}
+
+  if [ "$status" -eq 0 ]; then
+    echo "✅ $name OK"
+    return 0
+  fi
+
+  echo "❌ $name NOT OK"
+
+  # Handle specific exit codes for config validation
+  if [ "$name" = "Setup" ]; then
+    case $status in
+      3)
+        echo -e "Missing config file(s)\\n$output"
+        echo "Creating placeholder files..."
+        bash "$SCRIPTS_DIR/create_placeholders.sh"
+        return 0  # Continue after creating placeholders
+        ;;
+      78)
+        echo -e "Missing environment variables\\n$output"
+        exit "$status"
+        ;;
+    esac
+  fi
+
   echo "$output"
   exit 1
-fi
+}
+
+# Run validations
+
+run_validation "Job dirs" "$SCRIPTS_DIR/create_job_dirs.sh"
+run_validation "Setup" "$SCRIPTS_DIR/validate_config.sh"
+run_validation "Tools" "$SCRIPTS_DIR/install_tools.sh"
+run_validation "LLM" "$SCRIPTS_DIR/validate_llm.sh"
+
+echo
+echo "🎉 All validations passed!"

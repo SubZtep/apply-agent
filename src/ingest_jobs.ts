@@ -14,6 +14,7 @@ if (!(await jsonFile.exists())) {
 }
 
 const scrapedJobsRaw = await jsonFile.json()
+
 const scrapedJobs = ScrapedJobSchema.array().parse(scrapedJobsRaw)
 const jobs = scrapedJobs.map(mapScrapedJobToJob)
 
@@ -30,7 +31,7 @@ function mapScrapedJobToJob(scrapedJob: ScrapedJob): Job {
     job: {
       id: calculateJobId(scrapedJob),
       title: scrapedJob.title,
-      description: scrapedJob.description,
+      description: scrapedJob.description, // FIXME: skip job if description is empty
       company: scrapedJob.company,
       location: scrapedJob.location,
       source: scrapedJob.site,

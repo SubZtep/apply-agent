@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-# Safe dotenv loader for Bash (Node.js compatible behavior)
+# ------------------------------------------------------------------------------
+# Safe dotenv loader (Node.js compatible behavior)
+# ------------------------------------------------------------------------------
 
 dotenv_load() {
   local file="$1"

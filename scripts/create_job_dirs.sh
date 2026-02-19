@@ -1,5 +1,10 @@
 #!/bin/bash
 set -euo pipefail
+
+# ------------------------------------------------------------------------------
+# Create required directiories
+# ------------------------------------------------------------------------------
+
 source "scripts/lib/dotenv.sh"
 
 JOB_DIRS=(inbox screened_out shortlisted awaiting_input declined approved)

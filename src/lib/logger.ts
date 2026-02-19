@@ -19,15 +19,14 @@ if (process.env.LOKI_HOST && process.env.LOKI_USERNAME && process.env.LOKI_PASSW
 
 targets.push({
   target: "pino-pretty",
-  // level: "warn",
+  level: "trace",
   options: {
     ignore: "pid,hostname,time",
     levelFirst: true,
     singleLine: true,
-    // hideObject: true,
     colorize: true
   }
 })
 
 const transport = pino.transport({ targets })
-export const logger = pino(transport)
+export const logger = pino({ level: "trace" }, transport)

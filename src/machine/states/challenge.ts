@@ -1,9 +1,10 @@
-import { generateText, Output } from "ai"
 import { ZodError } from "zod"
-import { lmstudio } from "#/lib/ai"
+import { ollama } from "#/lib/ai"
+// import { lmstudio } from "#/lib/ai"
 import { logger } from "#/lib/logger"
-import type { Job } from "#/schemas/job"
-import { type RiskAssessment, RiskAssessmentSchema } from "#/schemas/risk"
+import { type Job, type RiskAssessment, RiskAssessmentSchema } from "#/schemas/job"
+
+// import { generateText, Output } from "ai"
 
 interface ChallengeError {
   reason: "SCHEMA_INVALID" | "MODEL_ERROR" | "LOW_QUALITY"
@@ -50,14 +51,25 @@ function hasUsableRisks(risks: RiskAssessment): boolean {
 export async function challengeWithRetry(job: Job, maxAttempts = 3): Promise<ChallengeResult> {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const result = await generateText({
-        model: lmstudio()(process.env.AGENT_MODEL),
-        output: Output.object({ schema: RiskAssessmentSchema }),
-        system: SYSTEM_PROMPT,
-        prompt: buildChallengePrompt(job)
+      // const result = await generateText({
+      //   model: lmstudio()(process.env.AGENT_MODEL),
+      //   output: Output.object({ schema: RiskAssessmentSchema }),
+      //   system: SYSTEM_PROMPT,
+      //   prompt: buildChallengePrompt(job)
+      // })
+      const start = performance.now()
+      const result = await ollama.chat({
+        model: process.env.AGENT_MODEL,
+        format: RiskAssessmentSchema.toJSONSchema(),
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: buildChallengePrompt(job) }
+        ]
       })
+      const duration = performance.now() - start
+      logger.debug({ duration }, "Challenge job")
 
-      const risks = RiskAssessmentSchema.parse(result.output)
+      const risks = RiskAssessmentSchema.parse(JSON.parse(result.message.content))
 
       if (!hasUsableRisks(risks)) {
         // TODO: Retry once with a stricter prompt or downgrade to FAILED immediately

@@ -1,9 +1,9 @@
-export interface JobScore {
-  jobId: string
-  score: number
-  signals: string[]
-  redFlags: string[]
-}
+// export interface JobScore {
+//   jobId: string
+//   score: number
+//   signals: string[]
+//   redFlags: string[]
+// }
 
 // export interface ScrapedJob {
 //   job_url: string

@@ -2,8 +2,8 @@ import { describe, expect, it, mock } from "bun:test"
 import { handlers } from "#/machine/handlers"
 import { decideNextState } from "#/machine/next"
 import { runSateMachine } from "#/machine/runner"
-import type { AgentStore } from "#/machine/types"
 import type { Job } from "#/schemas/job"
+import type { AgentStore } from "#/lib/store"
 
 describe("decideNextState", () => {
   const baseJob: Job = {

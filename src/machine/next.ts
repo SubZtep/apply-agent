@@ -1,6 +1,5 @@
 import { logger } from "#/lib/logger"
-import type { Job } from "#/schemas/job"
-import type { AgentContext, AgentQuestion, AgentState } from "./types"
+import type { AgentQuestion, AgentState, Job, JobAgentContext } from "#/schemas/job"
 
 export function decideNextState({ job, agent }: Job): {
   nextState: AgentState
@@ -76,7 +75,7 @@ export function decideNextState({ job, agent }: Job): {
   return { nextState: "PLAN" }
 }
 
-function interpretHumanAnswers(ctx: AgentContext) {
+function interpretHumanAnswers(ctx: JobAgentContext) {
   const raw = ctx.humanInput?.answers ?? {}
 
   const hasHardGapsKey = Object.hasOwn(raw, "HARD_GAPS_PROCEED")

@@ -1,73 +1,52 @@
-import type { ActionPlan } from "#/machine/states/plan"
-import type { Evaluation } from "#/schemas/evalution"
-import type { Job } from "#/schemas/job"
-import type { RiskAssessment } from "#/schemas/risk"
+// import type { ActionPlan, AgentQuestion, Evaluation, HumanInput, Job, RiskAssessment } from "#/schemas/job"
 
 export type JobState = "approved" | "awaiting_input" | "declined" | "screened_out" | "shortlisted"
 
-export type AgentState =
-  | "IDLE"
-  | "INGEST"
-  | "NORMALIZE"
-  | "EVALUATE"
-  | "CHALLENGE"
-  | "DECIDE"
-  | "WAIT_FOR_HUMAN"
-  | "PLAN"
-  | "DONE"
-  | "FAILED"
+// // /** Questionnaire of the WAIT_FOR_HUMAN state. */
+// // interface HumanInput {
+// //   /** Step to PLAN state, no questions asked. */
+// //   forceProceed?: boolean
+// //   /** Questions and answers for DECIDE state. */
+// //   answers?: Partial<Record<AgentQuestion["id"], string>>
+// // }
 
-export interface AgentQuestion {
-  /** Policy hook */
-  id: "HARD_GAPS_PROCEED" | "LEADERSHIP_REFRAME" | "LOW_CONFIDENCE_STRATEGY"
-  text: string
-}
+// export interface AgentContext {
+//   mode: "strict" | "exploratory"
 
-/** Questionnaire of the WAIT_FOR_HUMAN state. */
-interface HumanInput {
-  /** Step to PLAN state, no questions asked. */
-  forceProceed?: boolean
-  /** Questions and answers for DECIDE state. */
-  answers?: Partial<Record<AgentQuestion["id"], string>>
-}
+//   // raw inputs
+//   // jobText?: string;
+//   // profileText?: result.dataresult.datastring;
 
-export interface AgentContext {
-  mode: "strict" | "exploratory"
+//   // normalized data
+//   // job?: JobSpec;
 
-  // raw inputs
-  // jobText?: string;
-  // profileText?: result.dataresult.datastring;
+//   // evaluation results
+//   evaluation?: Evaluation
 
-  // normalized data
-  // job?: JobSpec;
+//   // challenge phase output
+//   risks?: RiskAssessment
 
-  // evaluation results
-  evaluation?: Evaluation
+//   questions?: AgentQuestion[]
 
-  // challenge phase output
-  risks?: RiskAssessment
+//   // human decision
+//   humanInput?: HumanInput
 
-  questions?: AgentQuestion[]
+//   // final output
+//   plan?: ActionPlan
 
-  // human decision
-  humanInput?: HumanInput
-
-  // final output
-  plan?: ActionPlan
-
-  // meta
-  errors?: string[]
-}
-
-// export interface PersistedAgent {
-//   id: string
-//   state: AgentState
-//   context: AgentContext
-//   updatedAt: number
+//   // meta
+//   errors?: string[]
 // }
 
-export interface AgentStore {
-  dir: string
-  save(job: Job, dir?: JobState, oldDir?: JobState): Promise<void>
-  load(id: string, dir: JobState): Promise<Job | null>
-}
+// // export interface PersistedAgent {
+// //   id: string
+// //   state: AgentState
+// //   context: AgentContext
+// //   updatedAt: number
+// // }
+
+// // export interface AgentStore {
+// //   dir: string
+// //   save(job: Job, dir?: JobState, oldDir?: JobState): Promise<void>
+// //   load(id: string, dir: JobState): Promise<Job | null>
+// // }

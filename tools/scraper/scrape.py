@@ -67,6 +67,10 @@ def main() -> None:
         log.exception("scrape_jobs failed: %s", exc)
         sys.exit(1)
 
+    # Filter out jobs where description is None or empty string
+    if hasattr(jobs, "to_dict"):  # jobs is likely a pandas.DataFrame
+        jobs = jobs[jobs["description"].notnull() & (jobs["description"].str.strip() != "")]
+
     if len(jobs) == 0:
         log.info("No jobs found, exiting.")
         sys.exit()
