@@ -10,7 +10,11 @@ source "scripts/lib/dotenv.sh"
 # Validate config
 
 missing_vars=()
-[[ -z "${OPENAI_API_BASE_URL:-}" ]] && missing_vars+=("OPENAI_API_BASE_URL")
+if [[ -z "${OLLAMA_BASE_URL:-}" ]]; then
+  missing_vars+=("OLLAMA_BASE_URL")
+elif [[ "${OLLAMA_BASE_URL}" == */ ]]; then
+  missing_vars+=("OLLAMA_BASE_URL (must not be empty or end with /)")
+fi
 [[ -z "${AGENT_MODEL:-}" ]] && missing_vars+=("AGENT_MODEL")
 [[ -z "${BATCH_MODEL:-}" ]] && missing_vars+=("BATCH_MODEL")
 [[ -z "${JOBS_DIR:-}" ]] && missing_vars+=("JOBS_DIR")

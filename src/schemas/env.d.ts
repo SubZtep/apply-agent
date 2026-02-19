@@ -1,8 +1,6 @@
 declare module "bun" {
   interface Env {
-    /** Base URL for OpenAI-compatible API endpoint (e.g., LM Studio, Ollama). */
-    OPENAI_API_BASE_URL: string
-
+    /** Ollama API base URL */
     OLLAMA_BASE_URL: string
 
     /** Primary model for agent reasoning and possibly tool use (higher capability). */

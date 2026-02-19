@@ -10,9 +10,7 @@
     "lt": "cd ./data/jobs && ../../scripts/live_tree.sh"
   },
   "dependencies": {
-    "@ai-sdk/openai-compatible": "^2.0.30",
     "@clack/prompts": "^1.0.1",
-    "ai": "^6.0.86",
     "citty": "^0.2.1",
     "ollama": "^0.6.3",
     "p-limit": "^7.3.0",

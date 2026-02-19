@@ -7,14 +7,14 @@ set -euo pipefail
 
 source "scripts/lib/dotenv.sh"
 
-API_MODELS_URL="${OPENAI_API_BASE_URL%/}/models"
+API_MODELS_URL="${OLLAMA_BASE_URL%/}/api/tags"
 
 resp=$(curl -sSfm 3 "$API_MODELS_URL") || {
   echo "Error: Unable to reach LMM API at $API_MODELS_URL" >&2
   exit 69
 }
 
-model_ids=$(echo "$resp" | jq -r '.data[]?.id')
+model_ids=$(echo "$resp" | jq -r '.models[]?.name')
 
 if ! grep -Fxq "$AGENT_MODEL" <<< "$model_ids"; then
   echo "Error: AGENT_MODEL '$AGENT_MODEL' not found..." >&2
