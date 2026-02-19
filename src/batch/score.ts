@@ -1,15 +1,9 @@
-// import { generateText, Output } from "ai"
-// import pLimit from "p-limit"
 import { ollama } from "#/lib/ai"
 import { logger } from "#/lib/logger"
-// import { logger } from "#/lib/logger"
-// import { type BatchScore, BatchScoreSchema } from "#/schemas/batch"
 import { type Job, type Score, ScoreSchema } from "#/schemas/job"
-
-// import { applyRedFlagPenalty, normalizeScore } from "./lib"
+import { applyRedFlagPenalty, normalizeScore } from "./lib"
 
 // const limit = pLimit(2) // FIXME: Adjust concurrency based on model provider limits
-
 // /** Scores the batch */
 // export async function scoreJobs(jobs: Job[], profileText: string) {
 //   return Promise.all(jobs.map(job => limit(() => scoreSingleJob(job, profileText))))
@@ -82,7 +76,7 @@ Invalid: "skill overlap", "good fit"
   `
 }
 
-export async function scoreSingleJob(job: Job, profileText: string): Promise<Score | undefined> {
+export async function scoreSingleJob(job: Job, profileText: string) {
   const start = performance.now()
   const result = await ollama.chat({
     model: process.env.BATCH_MODEL,
@@ -95,53 +89,20 @@ export async function scoreSingleJob(job: Job, profileText: string): Promise<Sco
   const duration = performance.now() - start
   logger.debug({ duration }, "Score job")
 
-  let score: Score
+  let output: Score
   try {
-    score = JSON.parse(result.message.content)
+    output = JSON.parse(result.message.content)
   } catch (error) {
     logger.error({ error, result }, "JSON Parse batch scoring result")
     return
   }
 
-  return ScoreSchema.parse(score)
-  // return ScoreSchema.parse(JSON.parse(res.message.content))
-  // return BatchScoreSchema.parse(batch)
+  const normalizedScore = normalizeScore(output.score)
+  const finalScore = applyRedFlagPenalty(normalizedScore, output.redFlags)
 
-  // console.log("GOING TO PARSE", typeof res.message.content)
-  // console.log()
-  // const parsed = BatchScoreSchema.safeParse(res.message.content)
-  // console.log("PARSED", parsed)
-  // return res as any
-
-  //   const { output } = await generateText({
-  //     model: lmstudio(process.env.BATCH_MODEL),
-  //     output: Output.object({ schema: BatchScoreSchema }),
-  //     system: SYSTEM_PROMPT,
-  //     prompt: `
-  // PROFILE (summary):
-  // ${profileText}
-
-  // JOB:
-  // Title: ${job.job.title}
-
-  // Description:
-  // ${job.job.description}
-
-  // Evaluate fit using ONLY:
-  // - skill overlap
-  // - seniority match
-  // - domain relevance
-  // `
-  //   })
-
-  //   const normalizedScore = normalizeScore(output.score)
-  //   const finalScore = applyRedFlagPenalty(normalizedScore, output.redFlags)
-
-  //   job.batch = {
-  //     score: finalScore,
-  //     signals: output.signals,
-  //     redFlags: output.redFlags
-  //   }
-
-  // return job
+  return {
+    score: finalScore,
+    signals: output.signals,
+    redFlags: output.redFlags
+  }
 }

@@ -1,5 +1,4 @@
 import z from "zod"
-// import { ActionPlan } from "#/machine/states/plan"
 
 export const ScoreSchema = z.object({
   score: z.number().min(0).max(1),
@@ -108,51 +107,3 @@ export type ActionPlan = z.infer<typeof ActionPlanSchema>
 export type HumanInput = z.infer<
   typeof JobAgentContextSchema.shape.humanInput extends z.ZodOptional<infer U> ? U : never
 >
-
-// export interface Batch {
-//   score: number
-//   signals: string[]
-//   redFlags: string[]
-// }
-
-// export interface JobAgent {
-//   mode: "strict" | "exploratory"
-//   state: AgentState
-//   evaluation?: Evaluation
-//   risks?: RiskAssessment
-
-//   // human loop
-//   questions?: AgentQuestion[]
-//   humanInput?: {
-//     answers?: Record<string, string>
-//     forceProceed?: boolean
-//   }
-// }
-
-// export interface Job {
-//   job: {
-//     id: string
-//     source: string
-//     title: string
-//     company: string
-//     description: string
-//     url: string
-//     location: string
-//   } & Partial<JobSpec>
-//   batch?:
-//   agent?: JobAgent
-//   // agent?: {
-//   //   mode: "strict" | "exploratory"
-//   //   state: AgentState
-//   //   evaluation?: Evaluation
-//   //   risks?: RiskAssessment
-
-//   //   // human loop
-//   //   questions?: AgentQuestion[]
-//   //   humanInput?: {
-//   //     answers?: Record<string, string>
-//   //     forceProceed?: boolean
-//   //   }
-//   // }
-//   plan?: ActionPlan
-// }

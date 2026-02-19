@@ -5,27 +5,10 @@ import { handlers } from "./handlers"
 import type { JobState } from "./types"
 
 export async function runSateMachine(job: Job & { agent: NonNullable<Job["agent"]> }, store: AgentStore) {
-  // export async function runSateMachine(job: Job, store: AgentStore) {
-  // if (!job.agent) throw new Error("job.agent is missing")
-
-  // console.log("123", { job, store })
-  // return
-
-  // const oldStateDir = stateToDir(job.agent.state)
-
-  // console.log("XXXXX", [oldStateDir, job.agent.state])
-  // process.exit()
-
   while (true) {
-    // const nextState = await handlers[store.dir](job)
     logger.trace({ id: job.job.id, state: job.agent.state }, "Run state")
-    // @ts-ignore
+
     const nextState = await handlers[job.agent.state](job)
-    // const nextState = await handlers[oldStateDir](job)
-
-    //console.log("XXXeXX", nextState)
-    //process.exit()
-
     job.agent.state = nextState
 
     const stateDir: JobState =

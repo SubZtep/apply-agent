@@ -1,6 +1,6 @@
 import { scoreSingleJob } from "#/batch/score"
+import { isShortlisted } from "#/lib/job"
 import { logger } from "#/lib/logger"
-import { isShortlisted } from "#/lib/spoilinger"
 import { FileAgentStore } from "#/lib/store"
 import { getProfileText } from "#/lib/user"
 

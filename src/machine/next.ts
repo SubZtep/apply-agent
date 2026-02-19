@@ -76,7 +76,7 @@ export function decideNextState({ job, agent }: Job): {
 }
 
 function interpretHumanAnswers(ctx: JobAgentContext) {
-  const raw = ctx.humanInput?.answers ?? {}
+  const raw: any = ctx.humanInput?.answers ?? {}
 
   const hasHardGapsKey = Object.hasOwn(raw, "HARD_GAPS_PROCEED")
   const hasConfidenceKey = Object.hasOwn(raw, "LOW_CONFIDENCE_STRATEGY")
