@@ -1,13 +1,7 @@
 import { ollama } from "#/lib/ai"
+import { applyRedFlagPenalty, normalizeScore } from "#/lib/job"
 import { logger } from "#/lib/logger"
 import { type Job, type Score, ScoreSchema } from "#/schemas/job"
-import { applyRedFlagPenalty, normalizeScore } from "./lib"
-
-// const limit = pLimit(2) // FIXME: Adjust concurrency based on model provider limits
-// /** Scores the batch */
-// export async function scoreJobs(jobs: Job[], profileText: string) {
-//   return Promise.all(jobs.map(job => limit(() => scoreSingleJob(job, profileText))))
-// }
 
 const prompts = {
   system: () => `
@@ -94,7 +88,7 @@ export async function scoreSingleJob(job: Job, profileText: string) {
     output = JSON.parse(result.message.content)
   } catch (error) {
     logger.error({ error, result }, "JSON Parse batch scoring result")
-    return
+    throw error
   }
 
   const normalizedScore = normalizeScore(output.score)
