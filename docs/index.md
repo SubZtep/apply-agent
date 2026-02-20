@@ -1,10 +1,10 @@
 ## Index
 
+- [Job states **diagram**](states.md)
 - [User Configuration](config.md)
-- [Job folders](folders.md)
-- [Job states diagram](states.md)
-- [Data flow](flow.md)
+- [Data flow – and how to run it](flow.md)
 - [Run manually](run.md)
+- [Job folders](folders.md)
 
 ## Related Links 🫧
 
