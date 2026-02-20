@@ -106,3 +106,13 @@ function normalizeAnswer(value?: string): string | undefined {
   const trimmed = value.trim().toLowerCase()
   return trimmed === "" ? undefined : trimmed
 }
+
+/**
+ * Determines whether the agent is in a terminal state.
+ *
+ * @param state - The current agent state.
+ * @returns True if the state ends the workflow.
+ */
+export function terminal(state: AgentState) {
+  return ["DONE", "FAILED", "WAIT_FOR_HUMAN"].includes(state)
+}

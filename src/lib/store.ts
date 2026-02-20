@@ -1,15 +1,13 @@
 import { readdir } from "node:fs/promises"
 import { join } from "node:path"
-import type { Job } from "#/schemas/job"
+import type { AgentState, Job, JobDir } from "#/schemas/job"
 import { jobDir } from "./job"
 import { logger } from "./logger"
-
-type JobDir = "inbox" | "approved" | "awaiting_input" | "declined" | "screened_out" | "shortlisted"
 
 export interface AgentStore {
   /** Omit id to pick a random job from the given dir. */
   load(dir: JobDir, id?: string): Promise<Job | null>
-  save(dir: JobDir, job: Job): Promise<void>
+  save(job: Job, dir?: JobDir): Promise<void>
 }
 
 export class FileAgentStore implements AgentStore {
@@ -51,8 +49,11 @@ export class FileAgentStore implements AgentStore {
     }
   }
 
-  async save(dir: JobDir, job: Job): Promise<void> {
-    const fn = join(jobDir(dir), `${job.job.id}.json`)
+  async save(job: Job, dir?: JobDir): Promise<void> {
+    if (!dir && !job.agent?.state) {
+      throw new Error("Unable to save job without state")
+    }
+    const fn = join(jobDir(dir ?? this.#stateToDir(job.agent!.state)), `${job.job.id}.json`)
     try {
       await Bun.write(fn, JSON.stringify(job, null, 2))
     } catch (error) {
@@ -68,5 +69,15 @@ export class FileAgentStore implements AgentStore {
       .filter(jsonFilterFn)
       .pop()
       ?.replace(/\.json$/, "")
+  }
+
+  #stateToDir(state: AgentState) {
+    return state === "WAIT_FOR_HUMAN"
+      ? "awaiting_input"
+      : state === "DONE"
+        ? "approved"
+        : state === "FAILED"
+          ? "declined"
+          : "shortlisted"
   }
 }

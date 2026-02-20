@@ -2,7 +2,7 @@ import { readdir } from "node:fs/promises"
 import { join } from "node:path"
 import { logger } from "#/lib/logger"
 import { FileAgentStore } from "#/lib/store"
-import type { JobState } from "#/machine/types"
+import type { JobState } from "#/schemas/job"
 
 const store = new FileAgentStore()
 const pickDir: JobState = "awaiting_input"

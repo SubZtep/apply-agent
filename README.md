@@ -7,28 +7,28 @@ Self-hosted job scraper runner, with self-hosted LLM-powered CV matching.
 
 ## What’s automated
 
-There are three main processes. They can even run in parallel, and if something is ambiguous, the agent asks the user.
+There are three main processes (+user answer). They can even run in parallel, and if something is ambiguous, the agent asks the user.
 
 | Get Jobs                | Filter Out the Noise | Evaluate                        |
 | ----------------------- | -------------------- | ------------------------------- |
 | Visit a job site        | Process jobs CSV     | Process shortlisted jobs        |
 | Search by criteria      | Run batch scoring    | Put them into the state machine |
 | Download results as CSV | Generate job JSONs   | Enjoy approved jobs             |
-| `--step=scrape`         | `--step=batch`       | `--step=evaulate`               |
 
 ```bash
-$ bun start run --help
+$ bun cli
+Run a single step.
 
 USAGE
-  apply-agent run [OPTIONS]
+  bun cli <answer|evalution|ingest|scoring> [job-id]
+```
 
-OPTIONS
-  --mode=<exploratory|strict>
-      Exploratory: AI-driven.
-      Strict (default): human-in-the-loop.
+### Run orchestrator
 
-  --step=<scrape|batch|evaluate|answers>
-      If omitted, the orchestrator runs all scheduled steps.
+Runs indefinitely, except for the answers step.
+
+```bash
+bun start
 ```
 
 ## How’s it going?

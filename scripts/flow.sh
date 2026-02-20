@@ -15,10 +15,10 @@ echo "🏁 Scrape jobs"
 ./tools/scraper/run.sh
 
 echo "🏁 Pre-process scraped jobs"
-bun ./src/ingest.ts
+bun cli ingest
 
 echo "🏁 Batch scoring jobs"
-bun ./src/scoring.ts
+bun cli scoring
 
 echo "🏁 Evaluate jobs"
-bun ./src/evaluation.ts
+bun cli evalution

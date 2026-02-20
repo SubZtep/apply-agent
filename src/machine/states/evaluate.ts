@@ -41,9 +41,9 @@ OUTPUT RULES:
 `
 }
 
-export async function evaluateWithRetry(job: Job, maxAttempts = 3): Promise<EvaluateResult> {
-  const profile = await getProfileText()
+const profile = await getProfileText()
 
+export async function evaluateWithRetry(job: Job, maxAttempts = 3): Promise<EvaluateResult> {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const start = performance.now()
