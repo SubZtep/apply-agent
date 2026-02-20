@@ -7,6 +7,6 @@ pandas>=2.1.0,<3.0.0          # required by python‑jobspy (≤ 2.x)
 # --------------------------------------------------------------
 # Project‑specific dependencies
 # --------------------------------------------------------------
-python-jobspy==1.1.13         # the latest stable release at the time of writing
+python-jobspy==1.1.79         # the latest stable release at the time of writing
 python-dotenv>=1.0.0
 PyYAML>=6.0
