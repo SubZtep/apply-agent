@@ -6,7 +6,7 @@ on:
       - main
     paths-ignore:
       - ".cursor/**"
-      - ".github/**"
+      # - ".github/**"
       - ".vscode/**"
       - "docs/**"
       - "tests/**"
@@ -31,7 +31,7 @@ jobs:
 
       - name: Create release PR or publish
         uses: changesets/action@v1
-        with:
-          version: bun version
+        # with:
+        #   version: bun version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
