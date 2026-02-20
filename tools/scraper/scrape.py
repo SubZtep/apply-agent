@@ -80,6 +80,8 @@ def main() -> None:
         log.error("Missing or malformed `jobspy` section in %s", yaml_path)
         sys.exit(1)
 
+    log.info("JobSpy config: %s", jobspy_cfg)
+
     try:
         jobs = scrape_jobs(**jobspy_cfg)
     except Exception as exc:

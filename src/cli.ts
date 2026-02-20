@@ -14,7 +14,7 @@ switch (command) {
   case "scoring":
     await scoring(store, id)
     break
-  case "evalution":
+  case "evaluation":
     await evaluation(store, id)
     break
   case "answer":
@@ -22,7 +22,7 @@ switch (command) {
     break
   default:
     console.log(`Run a single step.\n\nUSAGE
-  bun cli <ingest|scoring|evalution|answer> [job-id]\n`)
+  bun cli <ingest|scoring|evaluation|answer> [job-id]\n`)
 }
 
 process.exit()
