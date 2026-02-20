@@ -6,6 +6,22 @@ There are three config files the user can configure. Running `./scripts/install.
 
 The original [`.env`](../.env) file with the project’s environment variables is part of the repository and contains sensible defaults for LLM APIs and local paths. To override any value, create a `.env.local` file with your local configuration.
 
+### Models
+
+Running LLMs on CPU won’t provide optimal performance. If you have access to a properly configured Ollama server, set the `OLLAMA_BASE_URL=http://_/"-._/"-._:11434` environment variable accordingly.
+
+Otherwise, you can adjust the models by choosing a lighter `BATCH_MODEL` and a stronger `AGENT_MODEL`.
+
+| Model            | Size   | Notes                                    |
+| ---------------- | ------ | ---------------------------------------- |
+| SmolLM2 1.7B     | ~1.7 B | Compact, efficient general LLM           |
+| Qwen3-1.7B       | ~1.7 B | Similar balance of performance/size      |
+| TinyLlama 1.1B   | ~1.1 B | Slightly smaller, faster                 |
+| Llama3.2 1B      | ~1 B   | Meta model with good instruction ability |
+| Gemma3 1B        | ~1 B   | Lightweight, strong CPU performance      |
+| DeepSeek-R1 1.5B | ~1.5 B | Another mid-size small model             |
+
+
 ## ⛓️ config.yaml
 
 Job search parameters live under the **`jobspy` root node**.
