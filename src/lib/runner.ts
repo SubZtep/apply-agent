@@ -37,7 +37,7 @@ export async function scoring(store: AgentStore, id?: string) {
     const job = await store.load("inbox", id === "x" ? undefined : id)
     if (!job) process.exit(0)
     try {
-      job.batch = await scoreSingleJob(job, cv)
+      job.batch = await scoreSingleJob(job.job, cv)
     } catch (error: any) {
       logger.error({ job, error }, "Score job")
       process.exit(1)

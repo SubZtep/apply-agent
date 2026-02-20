@@ -80,15 +80,20 @@ export const JobSpecSchema = z.object({
   senioritySignals: z.array(z.string())
 })
 
-export const JobSchema = z.object({
-  job: z.object({
-    id: z.string().min(1).describe("Calculated ID"),
+export const JobDataSchema = z
+  .object({
     source: z.string(),
     url: z.url(),
     title: z.string().min(1),
     description: z.string(),
     company: z.string(),
-    location: z.string(),
+    location: z.string()
+  })
+  .describe("Values from the web scraper")
+
+export const JobSchema = z.object({
+  job: JobDataSchema.extend({
+    id: z.string().min(1).describe("Calculated ID"),
     ...JobSpecSchema.partial().shape
   }),
   batch: ScoreSchema.optional(),
@@ -96,6 +101,7 @@ export const JobSchema = z.object({
 })
 
 export type Job = z.infer<typeof JobSchema>
+export type JobData = z.infer<typeof JobDataSchema>
 export type JobSpec = z.infer<typeof JobSpecSchema>
 export type Score = z.infer<typeof ScoreSchema>
 export type JobAgentContext = z.infer<typeof JobAgentContextSchema>
