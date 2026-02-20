@@ -2,4 +2,5 @@
 venv/
 node_modules/
 .env.local
+.env.test
 .DS_Store

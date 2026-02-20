@@ -48,7 +48,6 @@ function hasUsableRisks(risks: RiskAssessment): boolean {
 export async function challengeWithRetry(job: Job, maxAttempts = 3): Promise<ChallengeResult> {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const start = performance.now()
       const result = await ollama.chat({
         model: process.env.AGENT_MODEL,
         format: RiskAssessmentSchema.toJSONSchema(),
@@ -57,8 +56,6 @@ export async function challengeWithRetry(job: Job, maxAttempts = 3): Promise<Cha
           { role: "user", content: buildChallengePrompt(job) }
         ]
       })
-      const duration = performance.now() - start
-      logger.debug({ duration }, "Challenge job")
 
       const risks = RiskAssessmentSchema.parse(JSON.parse(result.message.content))
 

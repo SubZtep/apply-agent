@@ -20,13 +20,11 @@ export async function batchScoringJobs(store: AgentStore, profileText: string, l
     return
   }
 
-  logger.info({ count: jobs.length }, "Batch scoring jobs from inbox")
-
   const rateLimiter = pLimit(limit)
 
   const results = await Promise.allSettled(
     jobs.map(async job => {
-      const batch = await rateLimiter(() => scoreSingleJob(job, profileText))
+      const batch = await rateLimiter(() => scoreSingleJob(job.job, profileText))
       const nextDir = batch && isShortlisted(batch) ? "shortlisted" : "screened_out"
       const updatedJob = { ...job, batch }
       store.save(updatedJob, nextDir)

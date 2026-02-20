@@ -29,7 +29,8 @@
       "suspicious": {
         "noExplicitAny": "off",
         "noImplicitAnyLet": "off",
-        "noTsIgnore": "off"
+        "noTsIgnore": "off",
+        "useIterableCallbackReturn": "off"
       },
       "style": {
         "noNonNullAssertion": "off"

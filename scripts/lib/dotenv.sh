@@ -40,18 +40,18 @@ dotenv_load() {
       [[ "$_ORIGINAL_ENV" == *":${key}:"* ]] && continue
 
       # Remove inline comment for unquoted values
-      if [[ ! "$value" =~ ^\".*\"$ && ! "$value" =~ ^\'.*\'$ ]]; then
+      if [[ ! "$value" =~ ^".*"$ && ! "$value" =~ ^\'.*\'$ ]]; then
         value="${value%%#*}"
         value="${value%"${value##*[![:space:]]}"}"
       fi
 
       # Remove surrounding quotes
-      if [[ "$value" =~ ^\"(.*)\"$ ]]; then
+      if [[ "$value" =~ ^"(.*)"$ ]]; then
         value="${BASH_REMATCH[1]}"
         value="${value//\\n/$'\n'}"
         value="${value//\\r/$'\r'}"
         value="${value//\\t/$'\t'}"
-        value="${value//\\\"/\"}"
+        value="${value//\\"/"}"
         value="${value//\\\\/\\}"
       elif [[ "$value" =~ ^\'(.*)\'$ ]]; then
         value="${BASH_REMATCH[1]}"

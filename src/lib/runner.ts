@@ -37,7 +37,7 @@ export async function scoring(store: AgentStore, id?: string) {
     const job = await store.load("inbox", id === "x" ? undefined : id)
     if (!job) process.exit(0)
     try {
-      job.batch = await scoreSingleJob(job, cv)
+      job.batch = await scoreSingleJob(job.job, cv)
     } catch (error: any) {
       logger.error({ job, error }, "Score job")
       process.exit(1)
@@ -55,14 +55,10 @@ export async function evaluation(store: AgentStore, id?: string) {
   let job: Job | null
   do {
     job = await store.load("shortlisted", id)
-
     if (job) {
-      logger.trace({ id: job.job.id }, "Evaluate job")
-
       if (!job.agent) {
         job.agent = getInitialJobState()
       }
-
       // @ts-expect-error job.agent exists
       await runSateMachine(job, store)
     }
@@ -73,10 +69,8 @@ export async function answer(store: AgentStore, id?: string) {
   let job: Job | null
   do {
     job = await store.load("awaiting_input", id)
-
     if (job) {
       logger.trace({ id: job.job.id }, "Answer question")
-
       console.log(`\nAnswer the questions for ${job.job.title}:`)
       console.log("(Press Enter to skip a question)\n")
 

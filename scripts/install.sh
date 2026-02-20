@@ -70,7 +70,7 @@ run_validation() {
         for model in "${required_models[@]}"; do
           if ! grep -Fxq "$model" <<< "$models"; then
             echo "Pulling missing model: $model"
-            curl -sS "${OLLAMA_BASE_URL%/}/api/pull" -d "{\"model\":\"$model\"}"
+            curl -sS "${OLLAMA_BASE_URL%/}/api/pull" -d "{"model":"$model"}"
           fi
         done
         return 0  # Continue after pulled required models
