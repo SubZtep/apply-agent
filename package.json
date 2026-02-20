@@ -12,8 +12,6 @@
     "lt": "cd ./data/jobs && ../../scripts/live_tree.sh"
   },
   "dependencies": {
-    "@clack/prompts": "^1.0.1",
-    "citty": "^0.2.1",
     "ollama": "^0.6.3",
     "p-limit": "^7.3.0",
     "pino": "^10.3.1",

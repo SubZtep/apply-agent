@@ -3,7 +3,7 @@ import { answer, evaluation, ingest, scoring } from "./lib/runner"
 import { FileAgentStore } from "./lib/store"
 
 const [, , command, id] = Bun.argv
-logger.info({ command, id }, "CLI running")
+logger.trace({ command, id }, "CLI running")
 
 const store = new FileAgentStore()
 

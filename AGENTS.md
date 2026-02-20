@@ -6,18 +6,19 @@ apply-agent is a Bun/TypeScript application that automates job application filte
 
 ## Commands
 
-<!-- ### Running the Application
+### Running the Application
 ```bash
 bun start                  # Run the main orchestrator
 tools/scraper/run.sh       # Start to scrape jobs
-bun run src/batch/run.ts   # Batch processing scraped jobs
-bun run src/cli/run.ts     # Evaluate shortlisted jobs
-``` -->
+bun cli ingest             # Ingest scraped jobs
+bun cli scoring            # Batch scoring ingested jobs
+bun cli evalution          # Evaluate shortlisted jobs
+```
 
 ### Linting & Formatting
 ```bash
-bun run lint               # Check code with Biome
-bun run lint:fix           # Auto-fix linting issues
+bun lint               # Check code with Biome
+bun lint:fix           # Auto-fix linting issues
 ```
 
 ### Testing
@@ -103,11 +104,9 @@ bun install                # Install dependencies (runs postinstall setup)
 │       └── shortlisted       # Batch accepts
 ├── docs                      # User documentation
 ├── scripts                   # Project setup and validation
-│   └── lib                   # Setup helpers
+│   └── lib                   # Script helpers
 ├── src
-│   ├── batch                 # Batch job processing
-│   ├── cli                   # CLI runner
-│   │   └── commands          # CLI sub-commands
+│   ├── score                 # Batch job processing
 │   ├── lib                   # Utilities (AI, logging, storage)
 │   ├── machine               # State machine (handlers, types, runner)
 │   │   └── states            # State-specific logic (evaluate, plan, normalize)
