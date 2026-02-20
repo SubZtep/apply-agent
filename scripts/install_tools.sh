@@ -5,9 +5,15 @@ set -euo pipefail
 # Setup Python virtual environment and install dependencies
 # ------------------------------------------------------------------------------
 
-# Jump to the folder where this script lives (tools/), then into scraper/
-cd "$(dirname "$0")/../tools/scraper"
+cd "$(dirname "$0")/.."
 
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+# Ensure Python venv exists inside tools/scraper/venv
+if [ ! -d "tools/scraper/venv" ]; then
+  python3.12 -m venv tools/scraper/venv
+fi
+
+# Activate the virtual environment
+source tools/scraper/venv/bin/activate
+
+# Install Python dependencies into the venv
+pip install -r tools/scraper/requirements.txt

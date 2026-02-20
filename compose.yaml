@@ -1,6 +1,5 @@
 services:
-  jobspy:
-    image: jobspy-app:latest
+  agent:
     build: .
     environment:
       CONFIG_FILE: config.yaml

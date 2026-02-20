@@ -29,10 +29,22 @@ There are three main automated processes. They can run in parallel. If something
     ./scripts/install.sh
     ```
 
+    - Install Python requirements venv
+
+      ```bash
+      ./scripts/install_tools.sh
+      ```
+
 3. Scrape jobs
 
+    - Enable virtual environment locally
+
+      ```bash
+      source tools/scraper/venv/bin/activate
+      ```
+
     ```bash
-    ./tools/scraper/run.sh
+    python tools/scraper/scrape.py
     ```
 
 4. Pre-process scraped jobs

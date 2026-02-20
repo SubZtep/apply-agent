@@ -3,8 +3,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "xpostinstall": "scripts/install.sh",
-    "xstart": "bun run src/cli/run.ts",
     "start": "bun src/orchestrator.ts",
     "cli": "bun src/cli.ts",
     "lint": "biome check",

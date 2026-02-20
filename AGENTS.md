@@ -8,11 +8,11 @@ apply-agent is a Bun/TypeScript application that automates job application filte
 
 ### Running the Application
 ```bash
-bun start                  # Run the main orchestrator
-tools/scraper/run.sh       # Start to scrape jobs
-bun cli ingest             # Ingest scraped jobs
-bun cli scoring            # Batch scoring ingested jobs
-bun cli evalution          # Evaluate shortlisted jobs
+bun start                           # Run the main orchestrator
+python tools/scraper/scrape.py      # Start to scrape jobs
+bun cli ingest                      # Ingest scraped jobs
+bun cli scoring                     # Batch scoring ingested jobs
+bun cli evalution                   # Evaluate shortlisted jobs
 ```
 
 ### Linting & Formatting
