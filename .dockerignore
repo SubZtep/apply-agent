@@ -10,7 +10,6 @@ node_modules/
 venv/
 .dockerignore
 .editorconfig
-# .env
 # .env.local
 .gitignore
 biome.jsonc

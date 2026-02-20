@@ -7,7 +7,6 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
     python3-dev \
-    libpq-dev \
     libssl-dev \
     jq \
     curl \
@@ -26,7 +25,8 @@ ENV PATH="/home/appuser/.bun/bin:${PATH}"
 COPY --chown=appuser:appgroup . .
 
 RUN bun install && \
-    pip install --no-cache-dir --disable-pip-version-check -r tools/scraper/requirements.txt && \
+    pip install --no-cache-dir --disable-pip-version-check --no-warn-script-location \
+    -r tools/scraper/requirements.txt && \
     ./scripts/install.sh
 
 FROM python:3.12-slim AS runtime
