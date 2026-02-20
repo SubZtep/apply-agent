@@ -29,7 +29,7 @@ export async function batchScoringJobs(store: AgentStore, profileText: string, l
       const batch = await rateLimiter(() => scoreSingleJob(job, profileText))
       const nextDir = batch && isShortlisted(batch) ? "shortlisted" : "screened_out"
       const updatedJob = { ...job, batch }
-      store.save(nextDir, updatedJob)
+      store.save(updatedJob, nextDir)
       return { job: updatedJob, nextDir }
     })
   )

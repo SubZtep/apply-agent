@@ -3,15 +3,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "xpostinstall": "scripts/install.sh",
-    "start": "bun run src/cli/run.ts",
+    "start": "bun src/orchestrator.ts",
+    "cli": "bun src/cli.ts",
     "lint": "biome check",
     "lint:fix": "biome check --write --unsafe",
     "lt": "cd ./data/jobs && ../../scripts/live_tree.sh"
   },
   "dependencies": {
-    "@clack/prompts": "^1.0.1",
-    "citty": "^0.2.1",
     "ollama": "^0.6.3",
     "p-limit": "^7.3.0",
     "pino": "^10.3.1",

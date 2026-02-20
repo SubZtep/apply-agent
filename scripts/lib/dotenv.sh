@@ -1,8 +1,17 @@
 #!/usr/bin/env bash
 
 # ------------------------------------------------------------------------------
-# Safe dotenv loader (Node.js compatible behavior)
+# Safe dotenv loader (Node.js compatible parsing)
+# System env vars take precedence over .env files
+# Bash 3.2+ compatible (no associative arrays)
 # ------------------------------------------------------------------------------
+
+# Capture original environment as colon-delimited string
+# Format: :VAR1:VAR2:VAR3: for safe substring matching
+_ORIGINAL_ENV=":"
+while IFS= read -r var; do
+  _ORIGINAL_ENV="${_ORIGINAL_ENV}${var}:"
+done < <(compgen -e)
 
 dotenv_load() {
   local file="$1"
@@ -25,6 +34,10 @@ dotenv_load() {
     if [[ "$line" =~ ^([A-Za-z_][A-Za-z0-9_]*)[[:space:]]*=[[:space:]]*(.*)$ ]]; then
       local key="${BASH_REMATCH[1]}"
       local value="${BASH_REMATCH[2]}"
+
+      # CRITICAL: Skip if this variable was originally set in the system environment
+      # Check if :KEY: exists in our colon-delimited list (prevents partial matches)
+      [[ "$_ORIGINAL_ENV" == *":${key}:"* ]] && continue
 
       # Remove inline comment for unquoted values
       if [[ ! "$value" =~ ^\".*\"$ && ! "$value" =~ ^\'.*\'$ ]]; then
@@ -53,3 +66,6 @@ dotenv_load() {
 
 dotenv_load ".env"
 dotenv_load ".env.local"
+
+# Optional: Clean up
+unset _ORIGINAL_ENV

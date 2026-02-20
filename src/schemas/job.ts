@@ -107,3 +107,6 @@ export type ActionPlan = z.infer<typeof ActionPlanSchema>
 export type HumanInput = z.infer<
   typeof JobAgentContextSchema.shape.humanInput extends z.ZodOptional<infer U> ? U : never
 >
+
+export type JobState = "approved" | "awaiting_input" | "declined" | "screened_out" | "shortlisted"
+export type JobDir = JobState | "inbox"

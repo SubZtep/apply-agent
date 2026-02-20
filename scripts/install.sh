@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+source "$(dirname "$0")/lib/dotenv.sh"
 
 # ------------------------------------------------------------------------------
 # Environment validation and setup script
@@ -58,6 +59,28 @@ run_validation() {
     esac
   fi
 
+  if [ "$name" = "LLM" ]; then
+    case $status in
+      1)
+        source "$SCRIPTS_DIR/lib/dotenv.sh"
+        echo "Ollama base URL: ${OLLAMA_BASE_URL}"
+        resp=$(curl -sSfm 3 "${OLLAMA_BASE_URL%/}/api/tags")
+        models=$(echo "$resp" | jq -r '.models[]?.name')
+        required_models=("$AGENT_MODEL" "$BATCH_MODEL")
+        for model in "${required_models[@]}"; do
+          if ! grep -Fxq "$model" <<< "$models"; then
+            echo "Pulling missing model: $model"
+            curl -sS "${OLLAMA_BASE_URL%/}/api/pull" -d "{\"model\":\"$model\"}"
+          fi
+        done
+        return 0  # Continue after pulled required models
+        ;;
+      69)
+        exit 1
+        ;;
+    esac
+  fi
+
   echo "$output"
   exit 1
 }
@@ -66,7 +89,7 @@ run_validation() {
 
 run_validation "Job dirs" "$SCRIPTS_DIR/create_job_dirs.sh"
 run_validation "Setup" "$SCRIPTS_DIR/validate_config.sh"
-run_validation "Tools" "$SCRIPTS_DIR/install_tools.sh"
+# run_validation "Tools" "$SCRIPTS_DIR/install_tools.sh"
 run_validation "LLM" "$SCRIPTS_DIR/validate_llm.sh"
 
 echo

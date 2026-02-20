@@ -1,5 +1,5 @@
 import { join } from "node:path"
-import type { Job, JobAgentContext, Score } from "#/schemas/job"
+import type { Job, JobAgentContext, JobDir, Score } from "#/schemas/job"
 import type { ScrapedJob } from "#/schemas/scraped_job"
 
 export function calculateJobId({ title, company, job_url }: ScrapedJob) {
@@ -32,7 +32,7 @@ export function applyRedFlagPenalty(score: number, redFlags: string[]) {
 }
 
 /** Job dir in the file system. */
-export function jobDir(dir?: "inbox" | "screened_out" | "shortlisted" | "awaiting_input" | "declined" | "approved") {
+export function jobDir(dir?: JobDir) {
   if (!dir) {
     return process.env.JOBS_DIR
   }

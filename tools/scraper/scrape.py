@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import logging
 import os
 import sys
-import logging
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Mapping, Any
+from typing import Any
 
 import yaml
 from dotenv import dotenv_values
@@ -20,14 +21,32 @@ log = logging.getLogger(__name__)
 
 
 def load_env_config(root: Path) -> Mapping[str, str]:
-    cfg: dict[str, str] = dict(os.environ)
+    # Capture system environment variables before loading any files
+    # These take precedence and cannot be overwritten by .env files
+    system_keys = set(os.environ.keys())
+
+    # Load files in order: .env first, then .env.local
+    # .env.local will override .env for variables not in system environment
+    file_values: dict[str, str] = {}
+
     for fname in (".env", ".env.local"):
         fpath = root / fname
-        if fpath.is_file():
-            cfg.update(dotenv_values(fpath))
-            log.debug("Loaded %s", fpath)
-        else:
+        if not fpath.is_file():
             log.debug("Optional env file %s not present", fpath)
+            continue
+
+        values = dotenv_values(fpath)
+        log.debug("Loaded %s", fpath)
+
+        # Only accept keys not already defined in system environment
+        for key, value in values.items():
+            if key not in system_keys:
+                file_values[key] = value
+
+    # Combine: Start with system environment, then add file-derived values
+    # (Files cannot override system, but .env.local overrides .env)
+    cfg = dict(os.environ)
+    cfg.update(file_values)
 
     whitelist = {"CONFIG_FILE", "JOBS_DIR"}  # extend as required
     cfg = {k: v for k, v in cfg.items() if k in whitelist}
@@ -50,7 +69,7 @@ def load_user_config(path: Path) -> dict[str, Any]:
 
 
 def main() -> None:
-    base_dir = Path(__file__).parents[2] # this file is in 2 folders deep
+    base_dir = Path(__file__).parents[2]  # this file is in 2 folders deep
     cfg = load_env_config(base_dir)
 
     yaml_path = base_dir / cfg.get("CONFIG_FILE", "config.yaml")
@@ -69,7 +88,9 @@ def main() -> None:
 
     # Filter out jobs where description is None or empty string
     if hasattr(jobs, "to_dict"):  # jobs is likely a pandas.DataFrame
-        jobs = jobs[jobs["description"].notnull() & (jobs["description"].str.strip() != "")]
+        jobs = jobs[
+            jobs["description"].notnull() & (jobs["description"].str.strip() != "")
+        ]
 
     if len(jobs) == 0:
         log.info("No jobs found, exiting.")

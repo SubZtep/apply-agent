@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-source "scripts/lib/dotenv.sh"
+source "$(dirname "$0")/lib/dotenv.sh"
 
 # ------------------------------------------------------------------------------
 # Create missing files
