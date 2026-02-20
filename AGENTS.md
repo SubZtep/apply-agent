@@ -12,7 +12,7 @@ bun start                           # Run the main orchestrator
 python tools/scraper/scrape.py      # Start to scrape jobs
 bun cli ingest                      # Ingest scraped jobs
 bun cli scoring                     # Batch scoring ingested jobs
-bun cli evalution                   # Evaluate shortlisted jobs
+bun cli evaluation                  # Evaluate shortlisted jobs
 ```
 
 ### Linting & Formatting

@@ -1,4 +1,21 @@
-## Flow
+
+## Data flow
+
+```
+[ Python scraper ]
+        ↓
+  (job records)
+        ↓
+[ job inbox (files) ]
+        ↓
+[ batch scorer ]
+        ↓
+[ ranked jobs ]
+        ↓
+[ agent runs ]
+```
+
+## Run step by step
 
 1. Clear job folders
 
@@ -45,7 +62,7 @@
 6. Evaluate jobs
 
     ```bash
-    bun cli evalution
+    bun cli evaluation
     ```
 
 7. Answer questions

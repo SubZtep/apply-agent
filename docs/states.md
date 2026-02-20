@@ -46,3 +46,22 @@ stateDiagram-v2
   DONE --> [*]
 ```
 
+## States (text)
+
+```
+IDLE
+  ↓
+INGEST
+  ↓
+NORMALIZE
+  ↓
+EVALUATE
+  ↓
+CHALLENGE
+  ↓
+DECIDE <───> WAIT_FOR_HUMAN
+  ↓               |
+ PLAN             |
+  ↓               ↓
+ DONE            ERROR
+```
