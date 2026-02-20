@@ -81,7 +81,8 @@ export async function scoreSingleJob(job: Job, profileText: string) {
     ]
   })
   const duration = performance.now() - start
-  logger.debug({ duration }, "Score job")
+
+  logger.debug({ duration, id: job.job.id }, "Score job")
 
   let output: Score
   try {

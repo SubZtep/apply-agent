@@ -17,7 +17,7 @@ export class FileAgentStore implements AgentStore {
     if (!id) {
       const pid = await this.#pickJobId(dir)
       if (!pid) {
-        logger.warn({ dir }, "No job found")
+        // logger.warn({ dir }, "No job found") // it's always visible due pick id iteration :\
         return null
       }
       jobId = pid

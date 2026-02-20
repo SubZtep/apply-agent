@@ -20,8 +20,6 @@ export async function batchScoringJobs(store: AgentStore, profileText: string, l
     return
   }
 
-  logger.info({ count: jobs.length }, "Batch scoring jobs from inbox")
-
   const rateLimiter = pLimit(limit)
 
   const results = await Promise.allSettled(

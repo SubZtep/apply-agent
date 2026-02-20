@@ -6,14 +6,17 @@ import { terminal } from "./next"
 
 export async function runSateMachine(job: Job & { agent: NonNullable<Job["agent"]> }, store: AgentStore) {
   while (true) {
-    logger.trace({ id: job.job.id, state: job.agent.state }, "State running")
-
+    const start = performance.now()
     const nextState = await handlers[job.agent.state](job)
+    const duration = performance.now() - start
+
+    logger.trace({ id: job.job.id, from: job.agent.state, to: nextState, duration }, "State handler")
+
     job.agent.state = nextState
     store.save(job)
 
     if (terminal(nextState)) {
-      logger.trace({ id: job.job.id, state: nextState }, "Terminal state machine")
+      // logger.trace({ id: job.job.id, state: nextState }, "Terminal state machine")
       return
     }
   }

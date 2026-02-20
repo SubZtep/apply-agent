@@ -37,7 +37,6 @@ type NormalizeResult = { ok: true; data: JobSpec } | { ok: false; error: Normali
 export async function normalizeWithRetry(prompt: string, maxAttempts = 3): Promise<NormalizeResult> {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const start = performance.now()
       const result = await ollama.chat({
         model: process.env.AGENT_MODEL,
         format: JobSpecSchema.toJSONSchema(),
@@ -46,8 +45,6 @@ export async function normalizeWithRetry(prompt: string, maxAttempts = 3): Promi
           { role: "user", content: buildNormalizePrompt(prompt) }
         ]
       })
-      const duration = performance.now() - start
-      logger.debug({ duration }, "Normalize job")
 
       return { ok: true, data: JobSpecSchema.parse(JSON.parse(result.message.content)) }
     } catch (err) {

@@ -46,7 +46,6 @@ const profile = await getProfileText()
 export async function evaluateWithRetry(job: Job, maxAttempts = 3): Promise<EvaluateResult> {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const start = performance.now()
       const result = await ollama.chat({
         model: process.env.AGENT_MODEL,
         format: EvaluationSchema.toJSONSchema(),
@@ -55,8 +54,8 @@ export async function evaluateWithRetry(job: Job, maxAttempts = 3): Promise<Eval
           { role: "user", content: buildEvaluationPrompt(job, profile) }
         ]
       })
-      const duration = performance.now() - start
-      logger.debug({ duration }, "Evaluate job")
+
+      logger.debug({ result }, "Try to parse")
 
       const evaluation = EvaluationSchema.parse(JSON.parse(result.message.content))
 
