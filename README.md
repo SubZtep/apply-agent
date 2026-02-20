@@ -9,15 +9,15 @@ Self-hosted job scraper runner, with self-hosted LLM-powered CV matching.
 
 There are three main automated processes. They can run in parallel.
 
-| Get Jobs           | Filter Out the Noise       | Evaluate                        |
-| ------------------ | -------------------------- | ------------------------------- |
-| Visit a job site   | Process scraped jobs       | Process shortlisted jobs        |
-| Search by criteria | Run batch scoring          | Put them into the state machine |
-| Download results   | Screen out irrelevant jobs | Enjoy approved jobs             |
+| 1. Get Jobs          | 2. Filter Out the Noise      | 3. Evaluate                       |
+| -------------------- | ---------------------------- | --------------------------------- |
+| ☑️ Visit a job site   | ☑️ Process scraped jobs       | ☑️ Process shortlisted jobs        |
+| ☑️ Search by criteria | ☑️ Run batch scoring          | ☑️ Put them into the state machine |
+| ☑️ Download results   | ☑️ Screen out irrelevant jobs | 🔘 Enjoy approved jobs             |
 
-If something is ambiguous, the user needs to answer a few questions.
+If something is ambiguous during the job categorisation process, the user will need to answer a few questions to clarify it.
 
-## How’s it going?
+### How’s it going?
 
 Batch reject:\
 _“**Not worth thinking about.**”_
@@ -27,7 +27,7 @@ _“**Thought about it carefully and decided no.**”_
 
 ## How to run?
 
-The simplest way to run the project is with [Docker Compose](https://docs.docker.com/compose/install#docker-desktop-recommended). It automatically sets up local LLM models (CPU-only for now) and starts searching for jobs right away. You’ll need about 4 GB of disk space with the default settings. Clone the repository and run:
+The simplest way to run the project is with [Docker Compose](https://docs.docker.com/compose/install#docker-desktop-recommended). It automatically sets up local LLM models (CPU-only for now) and starts searching for jobs right away. You’ll need about 4 GB of disk space with the default settings. Clone the repository and run with the default settings:
 
 1. Clone the repository
 
