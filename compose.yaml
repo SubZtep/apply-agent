@@ -19,7 +19,6 @@ services:
         condition: service_healthy
     environment:
       OLLAMA_BASE_URL: http://ollama:11434
-      OLLAMA_MODELS: /app/data/models
     entrypoint: ["./scripts/start.sh"]
     volumes:
       - ./data:/app/data

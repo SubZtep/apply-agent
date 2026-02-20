@@ -29,9 +29,19 @@ _“**Thought about it carefully and decided no.**”_
 
 The simplest way to run the project is with [Docker Compose](https://docs.docker.com/compose/install#docker-desktop-recommended). It automatically sets up local LLM models (CPU-only for now) and starts searching for jobs right away. You’ll need about 4 GB of disk space with the default settings. Clone the repository and run:
 
-```bash
-docker compose up
-```
+1. Clone the repository
+
+2. Create shared folder
+
+   ```bash
+   mkdir data
+   ```
+
+3. Run Docker Compose
+
+   ```bash
+   docker compose up
+   ```
 
 ## Documentation
 
