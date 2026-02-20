@@ -7,20 +7,68 @@ Self-hosted job scraper runner, with self-hosted LLM-powered CV matching.
 
 ## What’s automated
 
-There are three main processes (+user answer). They can even run in parallel, and if something is ambiguous, the agent asks the user.
+There are three main automated processes. They can run in parallel. If something is ambiguous, the user needs to answer a few questions.
 
-| Get Jobs                | Filter Out the Noise | Evaluate                        |
-| ----------------------- | -------------------- | ------------------------------- |
-| Visit a job site        | Process jobs CSV     | Process shortlisted jobs        |
-| Search by criteria      | Run batch scoring    | Put them into the state machine |
-| Download results as CSV | Generate job JSONs   | Enjoy approved jobs             |
+| Get Jobs           | Filter Out the Noise       | Evaluate                        |
+| ------------------ | -------------------------- | ------------------------------- |
+| Visit a job site   | Process scraped jobs       | Process shortlisted jobs        |
+| Search by criteria | Run batch scoring          | Put them into the state machine |
+| Download results   | Screen out irrelevant jobs | Enjoy approved jobs             |
+
+## Flow
+
+1. Clear job folders
+
+    ```bash
+    rm -rv ./data/jobs/*
+    ```
+
+2. Setup project
+
+    ```bash
+    ./scripts/install.sh
+    ```
+
+3. Scrape jobs
+
+    ```bash
+    ./tools/scraper/run.sh
+    ```
+
+4. Pre-process scraped jobs
+
+    ```bash
+    bun cli ingest
+    ```
+
+5. Batch scoring jobs
+
+    ```bash
+    bun cli scoring
+    ```
+
+6. Evaluate jobs
+
+    ```bash
+    bun cli evalution
+    ```
+
+7. Answer questions
+
+    ```bash
+    bun cli answer
+    ```
+
+    After answering, don’t forget to re-evaluate jobs.
+
+### Run a process
 
 ```bash
 $ bun cli
 Run a single step.
 
 USAGE
-  bun cli <answer|evalution|ingest|scoring> [job-id]
+  bun cli <ingest|scoring|evalution|answer> [job-id]
 ```
 
 ### Run orchestrator

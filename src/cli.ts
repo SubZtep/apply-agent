@@ -22,7 +22,7 @@ switch (command) {
     break
   default:
     console.log(`Run a single step.\n\nUSAGE
-  bun cli <answer|evalution|ingest|scoring> [job-id]\n`)
+  bun cli <ingest|scoring|evalution|answer> [job-id]\n`)
 }
 
 process.exit()
