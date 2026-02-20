@@ -27,7 +27,7 @@ _“**Thought about it carefully and decided no.**”_
 
 ## How to run?
 
-The simplest way to run the project is with [Docker Compose](https://docs.docker.com/compose/install#docker-desktop-recommended). It automatically sets up local LLM models. You’ll need about 4 GB of disk space with the default settings. Clone the repository and run:
+The simplest way to run the project is with [Docker Compose](https://docs.docker.com/compose/install#docker-desktop-recommended). It automatically sets up local LLM models (CPU-only for now) and starts searching for jobs right away. You’ll need about 4 GB of disk space with the default settings. Clone the repository and run:
 
 ```bash
 docker compose up
