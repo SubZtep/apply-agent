@@ -10,11 +10,11 @@ node_modules/
 venv/
 .dockerignore
 .editorconfig
-# .env.local
+.env.local
 .gitignore
 biome.jsonc
 compose.yaml
-# config.yaml
+config.yaml
 Dockerfile
 opencode.json
 .DS_Store

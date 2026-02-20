@@ -1,6 +1,26 @@
 services:
+  ollama:
+    image: ollama/ollama
+    pull_policy: weekly
+    environment:
+      OLLAMA_MODELS: /tmp/models
+    ports:
+      - "11434:11434"
+    healthcheck:
+      test: "bash -c 'cat < /dev/null > /dev/tcp/localhost/11434'"
+      start_period: 3s
+    volumes:
+      - ./data/models:/tmp/models
+
   agent:
     build: .
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODELS: /app/data/models
+    entrypoint: ["./scripts/start.sh"]
     volumes:
       - ./data:/app/data
       - ./.env.local:/app/.env.local:ro

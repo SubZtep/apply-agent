@@ -26,8 +26,7 @@ COPY --chown=appuser:appgroup . .
 
 RUN bun install && \
     pip install --no-cache-dir --disable-pip-version-check --no-warn-script-location \
-    -r tools/scraper/requirements.txt && \
-    ./scripts/install.sh
+    -r tools/scraper/requirements.txt
 
 FROM python:3.12-slim AS runtime
 
@@ -37,9 +36,11 @@ COPY --from=builder /home/appuser /home/appuser
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    ca-certificates \
+    jq \
+    curl \
     libgomp1 \
-    libstdc++6 && \
+    libstdc++6 \
+    ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

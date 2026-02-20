@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+source "$(dirname "$0")/lib/dotenv.sh"
 
 # ------------------------------------------------------------------------------
 # Environment validation and setup script
@@ -54,6 +55,28 @@ run_validation() {
       78)
         echo -e "Missing environment variables\\n$output"
         exit "$status"
+        ;;
+    esac
+  fi
+
+  if [ "$name" = "LLM" ]; then
+    case $status in
+      1)
+        source "$SCRIPTS_DIR/lib/dotenv.sh"
+        echo "Ollama base URL: ${OLLAMA_BASE_URL}"
+        resp=$(curl -sSfm 3 "${OLLAMA_BASE_URL%/}/api/tags")
+        models=$(echo "$resp" | jq -r '.models[]?.name')
+        required_models=("$AGENT_MODEL" "$BATCH_MODEL")
+        for model in "${required_models[@]}"; do
+          if ! grep -Fxq "$model" <<< "$models"; then
+            echo "Pulling missing model: $model"
+            curl -sS "${OLLAMA_BASE_URL%/}/api/pull" -d "{\"model\":\"$model\"}"
+          fi
+        done
+        return 0  # Continue after pulled required models
+        ;;
+      69)
+        exit 1
         ;;
     esac
   fi

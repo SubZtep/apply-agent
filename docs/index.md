@@ -3,6 +3,8 @@
 - [User Configuration](config.md)
 - [Folder structure](folders.md)
 - [Job states](states.md)
+- [Flow](flow.md)
+- [Run](run.md)
 - [Etc.](etc.md)
 
 ## Related Links

@@ -1,13 +1,12 @@
 #!/bin/bash
 set -euo pipefail
+source "$(dirname "$0")/lib/dotenv.sh"
 
 # ------------------------------------------------------------------------------
 # Validate configuration
 # ------------------------------------------------------------------------------
 
-source "scripts/lib/dotenv.sh"
-
-# Validate config
+# Validate env vars
 
 missing_vars=()
 if [[ -z "${OLLAMA_BASE_URL:-}" ]]; then

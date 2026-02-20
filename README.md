@@ -7,7 +7,7 @@ Self-hosted job scraper runner, with self-hosted LLM-powered CV matching.
 
 ## What’s automated
 
-There are three main automated processes. They can run in parallel. If something is ambiguous, the user needs to answer a few questions.
+There are three main automated processes. They can run in parallel.
 
 | Get Jobs           | Filter Out the Noise       | Evaluate                        |
 | ------------------ | -------------------------- | ------------------------------- |
@@ -15,81 +15,7 @@ There are three main automated processes. They can run in parallel. If something
 | Search by criteria | Run batch scoring          | Put them into the state machine |
 | Download results   | Screen out irrelevant jobs | Enjoy approved jobs             |
 
-## Flow
-
-1. Clear job folders
-
-    ```bash
-    rm -rv ./data/jobs/*
-    ```
-
-2. Setup project
-
-    ```bash
-    ./scripts/install.sh
-    ```
-
-    - Install Python requirements venv
-
-      ```bash
-      ./scripts/install_tools.sh
-      ```
-
-3. Scrape jobs
-
-    - Enable virtual environment locally
-
-      ```bash
-      source tools/scraper/venv/bin/activate
-      ```
-
-    ```bash
-    python tools/scraper/scrape.py
-    ```
-
-4. Pre-process scraped jobs
-
-    ```bash
-    bun cli ingest
-    ```
-
-5. Batch scoring jobs
-
-    ```bash
-    bun cli scoring
-    ```
-
-6. Evaluate jobs
-
-    ```bash
-    bun cli evalution
-    ```
-
-7. Answer questions
-
-    ```bash
-    bun cli answer
-    ```
-
-    After answering, don’t forget to re-evaluate jobs.
-
-### Run a process
-
-```bash
-$ bun cli
-Run a single step.
-
-USAGE
-  bun cli <ingest|scoring|evalution|answer> [job-id]
-```
-
-### Run orchestrator
-
-Runs indefinitely, except for the answers step.
-
-```bash
-bun start
-```
+If something is ambiguous, the user needs to answer a few questions.
 
 ## How’s it going?
 
@@ -99,8 +25,16 @@ _“**Not worth thinking about.**”_
 Agent reject:\
 _“**Thought about it carefully and decided no.**”_
 
+## How to run?
+
+The simplest way to run the project is with [Docker Compose](https://docs.docker.com/compose/install#docker-desktop-recommended). It automatically sets up local LLM models. You’ll need about 4 GB of disk space with the default settings. Clone the repository and run:
+
+```bash
+docker compose up
+```
+
 ## Documentation
 
-Go to the [index page](./docs/index.md) (already legacy).
+Go to the [index page](./docs/index.md) (already legacy :trollface:).
 
 [^1]: <ins>Apply</ins> in the repo name is confusing — it doesn’t actually do anything.
