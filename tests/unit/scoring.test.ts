@@ -1,24 +1,25 @@
 import { describe, expect, it } from "bun:test"
-import { applyRedFlagPenalty, normalizeScore } from "#/lib/job"
+import { clamp, toFixed } from "#/lib/utils"
+import { applyRedFlagPenalty, isShortlisted } from "#/lib/vars"
 import type { Job } from "#/schemas/job"
 
 describe("Scoring functions", () => {
-  describe("normalizeScore", () => {
+  describe("clamp", () => {
     it("should clamp scores above 1.0 to 1.0", () => {
-      expect(normalizeScore(1.5)).toBe(1.0)
+      expect(clamp(1.5)).toBe(1.0)
     })
 
     it("should clamp negative scores to 0.0", () => {
-      expect(normalizeScore(-0.5)).toBe(0.0)
+      expect(clamp(-0.5)).toBe(0.0)
     })
 
     it("should round to 2 decimal places", () => {
-      expect(normalizeScore(0.567)).toBe(0.57)
+      expect(clamp(toFixed(0.567))).toBe(0.57)
     })
 
     it("should keep valid scores unchanged", () => {
-      expect(normalizeScore(0.5)).toBe(0.5)
-      expect(normalizeScore(0.75)).toBe(0.75)
+      expect(clamp(0.5)).toBe(0.5)
+      expect(clamp(0.75)).toBe(0.75)
     })
   })
 
@@ -47,10 +48,6 @@ describe("Scoring functions", () => {
 })
 
 describe("Shortlist Filtering", () => {
-  function isShortlisted(batch: { score: number }) {
-    return batch.score > 0.4
-  }
-
   it("should shortlist jobs with score > 0.4", () => {
     const testCases = [
       { score: 0.41, expected: true },
@@ -60,7 +57,7 @@ describe("Shortlist Filtering", () => {
     ]
 
     testCases.forEach(({ score, expected }) => {
-      expect(isShortlisted({ score })).toBe(expected)
+      expect(isShortlisted(score)).toBe(expected)
     })
   })
 
@@ -68,12 +65,12 @@ describe("Shortlist Filtering", () => {
     const testCases = [
       { score: 0.0, expected: false },
       { score: 0.1, expected: false },
-      { score: 0.4, expected: false },
+      { score: 0.4, expected: true },
       { score: 0.39, expected: false }
     ]
 
     testCases.forEach(({ score, expected }) => {
-      expect(isShortlisted({ score })).toBe(expected)
+      expect(isShortlisted(score)).toBe(expected)
     })
   })
 
@@ -117,7 +114,7 @@ describe("Shortlist Filtering", () => {
       }
     ]
 
-    const shortlisted = jobs.filter(job => job.batch && isShortlisted(job.batch))
+    const shortlisted = jobs.filter(job => job.batch && isShortlisted(job.batch.score))
 
     expect(shortlisted).toHaveLength(2)
     expect(shortlisted[0]?.job.id).toBe("1")

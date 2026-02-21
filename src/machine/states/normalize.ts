@@ -1,4 +1,3 @@
-import { ZodError } from "zod"
 import { ollama } from "#/lib/ai"
 import { logger } from "#/lib/logger"
 import { type JobSpec, JobSpecSchema } from "#/schemas/job"
@@ -34,34 +33,30 @@ interface NormalizeError {
 
 type NormalizeResult = { ok: true; data: JobSpec } | { ok: false; error: NormalizeError }
 
-export async function normalizeWithRetry(prompt: string, maxAttempts = 3): Promise<NormalizeResult> {
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      const result = await ollama.chat({
-        model: process.env.AGENT_MODEL,
-        format: JobSpecSchema.toJSONSchema(),
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: buildNormalizePrompt(prompt) }
-        ]
-      })
+export async function normalize(prompt: string): Promise<NormalizeResult> {
+  const result = await ollama.chat({
+    model: process.env.AGENT_MODEL,
+    format: JobSpecSchema.toJSONSchema(),
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: buildNormalizePrompt(prompt) }
+    ]
+  })
 
-      return { ok: true, data: JobSpecSchema.parse(JSON.parse(result.message.content)) }
-    } catch (err) {
-      logger.warn({ attempt, err }, "NORMALIZE attempt failed")
-
-      if (attempt === maxAttempts) {
-        logger.error(err, "Normalize failed")
-        return {
-          ok: false,
-          error: {
-            reason: err instanceof ZodError ? "SCHEMA_INVALID" : "MODEL_ERROR",
-            message: err instanceof Error ? err.message : String(err)
-          }
-        }
-      }
-    }
+  let response
+  try {
+    response = JSON.parse(result.message.content)
+  } catch (error) {
+    logger.error({ error }, "Normalize response parse error")
+    process.exit(1)
   }
 
-  throw "Unreachable"
+  const { success, error, data } = JobSpecSchema.safeParse(response)
+
+  if (!success) {
+    logger.error({ error, response }, "Normalize response schema error")
+    process.exit(1)
+  }
+
+  return { ok: true, data }
 }

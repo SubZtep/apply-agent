@@ -1,4 +1,3 @@
-import { ZodError } from "zod"
 import { ollama } from "#/lib/ai"
 import { logger } from "#/lib/logger"
 import { type Job, type RiskAssessment, RiskAssessmentSchema } from "#/schemas/job"
@@ -45,46 +44,40 @@ function hasUsableRisks(risks: RiskAssessment): boolean {
   return risks.hardGaps.length > 0 || risks.softGaps.length > 1
 }
 
-export async function challengeWithRetry(job: Job, maxAttempts = 3): Promise<ChallengeResult> {
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      const result = await ollama.chat({
-        model: process.env.AGENT_MODEL,
-        format: RiskAssessmentSchema.toJSONSchema(),
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: buildChallengePrompt(job) }
-        ]
-      })
+export async function challenge(job: Job): Promise<ChallengeResult> {
+  const result = await ollama.chat({
+    model: process.env.AGENT_MODEL,
+    format: RiskAssessmentSchema.toJSONSchema(),
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: buildChallengePrompt(job) }
+    ]
+  })
 
-      const risks = RiskAssessmentSchema.parse(JSON.parse(result.message.content))
-
-      if (!hasUsableRisks(risks)) {
-        // TODO: Retry once with a stricter prompt or downgrade to FAILED immediately
-        return {
-          ok: false,
-          error: {
-            reason: "LOW_QUALITY",
-            message: "Risk assessment lacks actionable signal"
-          }
-        }
-      }
-
-      return { ok: true, data: risks }
-    } catch (err) {
-      logger.warn({ attempt, err }, "CHALLENGE attempt failed")
-
-      if (attempt === maxAttempts) {
-        return {
-          ok: false,
-          error: {
-            reason: err instanceof ZodError ? "SCHEMA_INVALID" : "MODEL_ERROR",
-            message: "Failed to assess risks"
-          }
-        }
-      }
-    }
+  let response
+  try {
+    response = JSON.parse(result.message.content)
+  } catch (error) {
+    logger.error({ error, id: job.job.id }, "Challenge reponse parse error")
+    process.exit(1)
   }
 
-  throw "Unreachable"
+  const { success, error, data: risks } = RiskAssessmentSchema.safeParse(response)
+
+  if (!success) {
+    logger.error({ error, id: job.job.id, response }, "Challenge reponse schema error")
+    process.exit(1)
+  }
+
+  if (hasUsableRisks(risks)) {
+    return { ok: true, data: risks }
+  }
+
+  return {
+    ok: false,
+    error: {
+      reason: "LOW_QUALITY",
+      message: "Risk assessment lacks actionable signal"
+    }
+  }
 }

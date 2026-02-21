@@ -10,26 +10,9 @@ export function calculateJobId({ title, company, job_url }: ScrapedJob) {
 
 export function getInitialJobState() {
   return {
-    mode: process.env.MODE ?? (process.env.FORCE_PROCEED ? "exploratory" : "strict"),
+    mode: process.env.MODE,
     state: "IDLE"
   } as JobAgentContext
-}
-
-/** 🦥 Tells if **a job is not worth thinking** about 🐒 */
-export function isShortlisted(score: number) {
-  // TODO: add dark magic here
-  return score >= 0.3
-}
-
-/** Clamp + round model score */
-export function normalizeScore(score: number) {
-  return Math.max(0, Math.min(1, Math.round(score * 100) / 100))
-}
-
-/** Enforce penalties deterministically */
-export function applyRedFlagPenalty(score: number, redFlags: string[]) {
-  const penalty = redFlags.length * 0.1
-  return Math.max(0, Math.round((score - penalty) * 100) / 100)
 }
 
 /** Job dir in the file system. */
@@ -45,7 +28,7 @@ export function mapScrapedJobToJob(scrapedJob: ScrapedJob): Job {
     job: {
       id: calculateJobId(scrapedJob),
       title: scrapedJob.title,
-      description: scrapedJob.description, // FIXME: skip job if description is empty
+      description: scrapedJob.description,
       company: scrapedJob.company,
       location: scrapedJob.location,
       source: scrapedJob.site,
@@ -63,6 +46,7 @@ export async function getAllJobs(store: AgentStore, dir: JobDir = "inbox") {
     if (job) {
       jobs.push(job)
     }
+    // TODO: pagination or something memory efficient
   } while (job)
   return jobs
 }

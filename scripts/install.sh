@@ -89,7 +89,7 @@ run_validation() {
 
 run_validation "Job dirs" "$SCRIPTS_DIR/create_job_dirs.sh"
 run_validation "Setup" "$SCRIPTS_DIR/validate_config.sh"
-# run_validation "Tools" "$SCRIPTS_DIR/install_tools.sh"
+run_validation "Tools" "$SCRIPTS_DIR/install_tools.sh"
 run_validation "LLM" "$SCRIPTS_DIR/validate_llm.sh"
 
 echo

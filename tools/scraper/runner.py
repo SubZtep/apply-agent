@@ -1,5 +1,6 @@
 from __future__ import annotations
 import sys
+import time
 from pathlib import Path
 from logger import log
 from config import jobspy_cfg, cfg
@@ -17,9 +18,8 @@ def main() -> None:
     limit = 10
 
     while offset < 100:
+        log.info("Run JobSpy, limit: %d, offset: %d", limit, offset)
         jobs = scrape.get_jobs(jobspy_cfg, limit, offset)
-
-        log.info("Offset: %d, limit: %d, jobs: %s", offset, limit, jobs)
 
         try:
             jobs.to_json(
@@ -35,6 +35,11 @@ def main() -> None:
             sys.exit(1)
 
         offset += limit
+
+        """
+        Sleep 1-2 seconds like a reasonable scraper.
+        """
+        time.sleep(1 + (time.time() % 1))
 
 
 if __name__ == "__main__":
