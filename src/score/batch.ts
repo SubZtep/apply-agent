@@ -8,8 +8,6 @@ export interface ScoredJob {
   job: Job
   score: number
   contributions: any
-  signals: string[]
-  redFlags: string[]
 }
 
 // Utility to bucket scores

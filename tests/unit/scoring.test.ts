@@ -63,7 +63,7 @@ describe("Shortlist Filtering", () => {
           source: "LinkedIn",
           url: "https://example.com/1"
         },
-        batch: { score: 0.6, signals: [], redFlags: [] }
+        batch: { score: 0.6 }
       },
       {
         job: {
@@ -75,7 +75,7 @@ describe("Shortlist Filtering", () => {
           source: "LinkedIn",
           url: "https://example.com/2"
         },
-        batch: { score: 0.3, signals: [], redFlags: [] }
+        batch: { score: 0.3 }
       },
       {
         job: {
@@ -87,7 +87,7 @@ describe("Shortlist Filtering", () => {
           source: "LinkedIn",
           url: "https://example.com/3"
         },
-        batch: { score: 0.5, signals: [], redFlags: [] }
+        batch: { score: 0.5 }
       }
     ]
 
