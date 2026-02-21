@@ -42,9 +42,3 @@ export function isShortlisted(score: number) {
   // TODO: add dark magic here
   return score >= 0.4
 }
-
-/** Enforce penalties deterministically */
-export function applyRedFlagPenalty(score: number, redFlags: string[]) {
-  const penalty = redFlags.length * 0.1
-  return Math.max(0, Math.round((score - penalty) * 100) / 100)
-}
