@@ -1,4 +1,14 @@
-export const SENIORITY_SIGNALS = ["senior", "principal", "staff", "lead", "architect", "head", "vp", "intern", "junior"]
+export const SENIORITY_LEVELS: Record<string, number> = {
+  intern: 0,
+  junior: 1,
+  senior: 2,
+  staff: 3,
+  principal: 4,
+  lead: 4,
+  architect: 4,
+  head: 5,
+  vp: 6
+}
 
 export const DEFAULT_WEIGHTS = {
   base: 0.2,
@@ -15,11 +25,11 @@ export const SKILL_ALIASES: Record<string, string[]> = {
   typescript: ["typescript", "ts"],
   javascript: ["javascript", "js", "ecmascript"],
   aws: ["aws", "amazon web services"],
-  devops: ["lambda", "serverless", "cloud", "docker", "linux", "terraform", "kubernetes"],
-  react: ["react", "reactjs", "svelte", "vue", "reactjs", "solidjs"],
+  devops: ["lambda", "serverless", "docker", "linux", "terraform", "kubernetes"],
+  react: ["react", "reactjs", "svelte", "vue", "solidjs"],
   ancient: ["cobol", "fortran", "clipper"],
   data: ["mysql", "postgresql", "mongo", "mongodb", "redis", "elasticsearch"],
-  software: ["python", "py", "go", "golang", "rust", "java", ".net"],
+  software: ["python", "py", "go", "golang", "rust", "java", ".net", "asp.net"],
   web: ["html", "xhtml", "html5", "css", "scss", "sass", "tailwind", "tailwindcss"],
   design: ["photoshop", "gimp", "ux", "figma"]
   // c: ["c"] // FIXME: use word boundaries: /\bc\b/
@@ -41,10 +51,4 @@ export const NEGATIVE_PATTERNS = [
 export function isShortlisted(score: number) {
   // TODO: add dark magic here
   return score >= 0.4
-}
-
-/** Enforce penalties deterministically */
-export function applyRedFlagPenalty(score: number, redFlags: string[]) {
-  const penalty = redFlags.length * 0.1
-  return Math.max(0, Math.round((score - penalty) * 100) / 100)
 }

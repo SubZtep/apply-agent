@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test"
 import { clamp, toFixed } from "#/lib/utils"
-import { applyRedFlagPenalty, isShortlisted } from "#/lib/vars"
+import { isShortlisted } from "#/lib/vars"
 import type { Job } from "#/schemas/job"
 
 describe("Scoring functions", () => {
@@ -20,29 +20,6 @@ describe("Scoring functions", () => {
     it("should keep valid scores unchanged", () => {
       expect(clamp(0.5)).toBe(0.5)
       expect(clamp(0.75)).toBe(0.75)
-    })
-  })
-
-  describe("applyRedFlagPenalty", () => {
-    it("should subtract 0.1 per red flag", () => {
-      const score = 0.7
-      const redFlags = ["flag1", "flag2"]
-      expect(applyRedFlagPenalty(score, redFlags)).toBe(0.5)
-    })
-
-    it("should not go below 0.0", () => {
-      const score = 0.15
-      const redFlags = ["flag1", "flag2", "flag3"]
-      expect(applyRedFlagPenalty(score, redFlags)).toBe(0.0)
-    })
-
-    it("should return unchanged score when no red flags", () => {
-      expect(applyRedFlagPenalty(0.6, [])).toBe(0.6)
-    })
-
-    it("should round result to 2 decimal places", () => {
-      // 0.567 - 0.1 = 0.467 → rounds to 0.47
-      expect(applyRedFlagPenalty(0.567, ["flag1"])).toBe(0.47)
     })
   })
 })
@@ -86,7 +63,7 @@ describe("Shortlist Filtering", () => {
           source: "LinkedIn",
           url: "https://example.com/1"
         },
-        batch: { score: 0.6, signals: [], redFlags: [] }
+        batch: { score: 0.6 }
       },
       {
         job: {
@@ -98,7 +75,7 @@ describe("Shortlist Filtering", () => {
           source: "LinkedIn",
           url: "https://example.com/2"
         },
-        batch: { score: 0.3, signals: [], redFlags: [] }
+        batch: { score: 0.3 }
       },
       {
         job: {
@@ -110,7 +87,7 @@ describe("Shortlist Filtering", () => {
           source: "LinkedIn",
           url: "https://example.com/3"
         },
-        batch: { score: 0.5, signals: [], redFlags: [] }
+        batch: { score: 0.5 }
       }
     ]
 

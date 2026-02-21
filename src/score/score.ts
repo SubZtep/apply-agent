@@ -4,7 +4,7 @@ import {
   DOMAIN_MAP,
   NEGATIVE_PATTERNS,
   type ScoreWeights,
-  SENIORITY_SIGNALS,
+  SENIORITY_LEVELS,
   SKILL_ALIASES
 } from "#/lib/vars"
 import type { JobData } from "#/schemas/job"
@@ -20,6 +20,9 @@ export async function scoreSingleJob(
   // Extract skills
   const jobSkills = extractSkills(jobTextLower)
   const profileSkills = extractSkills(profileTextLower)
+
+  const requiredText = extractRequiredSection(jobTextLower)
+  const requiredSkills = extractSkills(requiredText)
 
   // Detect negatives from profile
   const negativeMatches = getNegativeMatches(profileTextLower)
@@ -39,20 +42,23 @@ export async function scoreSingleJob(
   const domainMismatch = jobDomain !== null && profileDomain !== null && jobDomain !== profileDomain
 
   // Seniority
-  let seniorityMatch = false
-  let seniorityMismatch = false
-  for (const signal in SENIORITY_SIGNALS) {
-    if (jobTextLower.includes(signal) && profileTextLower.includes(signal)) seniorityMatch = true
-    if (jobTextLower.includes(signal) && !profileTextLower.includes(signal)) seniorityMismatch = true
-    if (seniorityMatch && seniorityMismatch) break
-  }
+  const jobSeniority = detectSeniority(jobTextLower)
+  const profileSeniority = detectSeniority(profileTextLower)
+  const jobLevel = jobSeniority ? SENIORITY_LEVELS[jobSeniority] : null
+  const profileLevel = profileSeniority ? SENIORITY_LEVELS[profileSeniority] : null
+  const seniorityMatch = jobLevel !== null && profileLevel !== null && profileLevel >= jobLevel
+  const seniorityMismatch = jobLevel !== null && (profileLevel === null || profileLevel < jobLevel)
 
-  const totalSkills = jobSkills.length
-  const coverageRatio = totalSkills === 0 ? 0 : strongMatches.length / totalSkills
+  const requiredMatches = requiredSkills.filter(skill => filteredProfileSkills.includes(skill))
+  const optionalSkills = jobSkills.filter(skill => !requiredSkills.includes(skill))
+  const optionalMatches = optionalSkills.filter(skill => filteredProfileSkills.includes(skill))
+  const requiredRatio = requiredSkills.length === 0 ? 1 : requiredMatches.length / requiredSkills.length
+  const optionalRatio = optionalSkills.length === 0 ? 0 : optionalMatches.length / optionalSkills.length
 
   // Score
   const { score, contributions } = computeScore({
-    coverageRatio,
+    requiredRatio,
+    optionalRatio,
     domainMatch,
     domainMismatch,
     seniorityMatch,
@@ -66,7 +72,8 @@ export async function scoreSingleJob(
     coverage: {
       matched: strongMatches,
       missing: majorMissingSkills,
-      ratio: coverageRatio
+      requiredRatio,
+      optionalRatio
     },
     meta: {
       domainMatch,
@@ -78,7 +85,8 @@ export async function scoreSingleJob(
 }
 
 function computeScore(data: {
-  coverageRatio: number
+  requiredRatio: number
+  optionalRatio: number
   domainMatch: boolean
   domainMismatch: boolean
   seniorityMatch: boolean
@@ -99,9 +107,10 @@ function computeScore(data: {
   let score = w.base
 
   // ---- Skills
-  const skillDelta = data.coverageRatio ** 1.5 * w.skill
-  contributions.skills = toFixed(skillDelta)
-  score += skillDelta
+  const requiredDelta = data.requiredRatio ** 1.5 * (w.skill * 0.7)
+  const optionalDelta = data.optionalRatio ** 1.5 * (w.skill * 0.3)
+  contributions.skills = toFixed(requiredDelta + optionalDelta)
+  score += requiredDelta + optionalDelta
 
   // ---- Domain
   if (data.domainMatch) {
@@ -145,17 +154,56 @@ function extractSkills(text: string): string[] {
   return [...new Set(found)]
 }
 
-// FIXME: Domain Detection Is Too Naive
-// - First match wins
-// - No scoring
-// - No dominance logic
 export function detectDomain(skills: string[]): string | null {
+  if (!skills.length) return null
+
+  const counts: Record<string, number> = {}
+
   for (const [domain, group] of Object.entries(DOMAIN_MAP)) {
-    if (skills.some(skill => group.includes(skill))) {
-      return domain
+    counts[domain] = skills.filter(skill => group.includes(skill)).length
+  }
+
+  let bestDomain: string | null = null
+  let bestScore = 0
+
+  for (const [domain, count] of Object.entries(counts)) {
+    if (count > bestScore) {
+      bestScore = count
+      bestDomain = domain
     }
   }
+
+  return bestScore > 0 ? bestDomain : null
+}
+
+function detectSeniority(text: string): string | null {
+  const lower = text.toLowerCase()
+
+  // Sort by length descending to avoid partial overlaps like "intern" inside "internal"
+  const levels = Object.keys(SENIORITY_LEVELS).sort((a, b) => b.length - a.length)
+
+  for (const level of levels) {
+    const pattern = new RegExp(`\\b${escapeRegex(level)}\\b`, "i")
+    if (pattern.test(lower)) return level
+  }
+
   return null
+}
+
+function extractRequiredSection(text: string): string {
+  const requiredPatterns = [
+    /must\s+have[:\s]+([\s\S]*?)(?:\n\n|nice to have|required|$)/i,
+    /required[:\s]+([\s\S]*?)(?:\n\n|nice to have|$)/i
+  ]
+
+  for (const pattern of requiredPatterns) {
+    const match = text.match(pattern)
+    if (match?.[1]) {
+      return match[1].toLowerCase()
+    }
+  }
+
+  return ""
 }
 
 function getNegativeMatches(textLower: string): string[] {
