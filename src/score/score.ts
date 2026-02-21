@@ -104,8 +104,8 @@ function computeScore(data: {
   // strong matches
   for (const skill of data.strongMatches) {
     const weight = SKILL_WEIGHTS[skill as keyof typeof SKILL_WEIGHTS] ?? 1
-    const delta = toFixed(0.1 * weight)
-    contributions.strongMatches += delta
+    const delta = 0.1 * weight
+    contributions.strongMatches = toFixed(contributions.strongMatches + delta)
     score += delta
   }
 

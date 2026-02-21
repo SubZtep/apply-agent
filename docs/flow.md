@@ -44,7 +44,7 @@
       ```
 
     ```bash
-    python tools/scraper/scrape.py
+    python tools/scraper/runner.py
     ```
 
 4. Pre-process scraped jobs

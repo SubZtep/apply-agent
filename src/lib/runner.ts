@@ -1,4 +1,5 @@
 import { join } from "node:path"
+import { JSONL } from "bun"
 import { getAllJobs, getInitialJobState, isShortlisted, jobDir, mapScrapedJobToJob } from "#/lib/job"
 import { logger } from "#/lib/logger"
 import { runSateMachine } from "#/machine/runner"
@@ -17,9 +18,9 @@ export async function ingest() {
     process.exit()
   }
 
-  const scrapedJobsRaw = await jsonFile.json()
-
-  const scrapedJobs = ScrapedJobSchema.array().parse(scrapedJobsRaw)
+  const scrapedJobsRaw = await jsonFile.text()
+  const scrapedJobsJson = JSONL.parse(scrapedJobsRaw)
+  const scrapedJobs = ScrapedJobSchema.array().parse(scrapedJobsJson)
   const jobs = scrapedJobs.map(mapScrapedJobToJob)
 
   for (const job of jobs) {
