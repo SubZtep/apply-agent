@@ -1,4 +1,5 @@
 import pLimit from "p-limit"
+import { logger } from "#/lib/logger"
 import type { Job } from "#/schemas/job"
 import { scoreSingleJob } from "#/score/score"
 
@@ -17,13 +18,28 @@ function bucketScore(score: number) {
   return ">0.8"
 }
 
-export async function batchScoreJobs(jobs: Job[], profileText: string, options?: { concurrency?: number }) {
+export async function batchScoreJobs(
+  jobs: Job[],
+  profileText: string,
+  options?: {
+    concurrency?: number
+    shortlistThreshold?: number
+    rejectThreshold?: number
+  }
+) {
   const limit = pLimit(options?.concurrency ?? 5)
 
   const tasks = jobs.map(job =>
     limit(async () => {
-      const result = await scoreSingleJob(job.job, profileText)
-      return { job, ...result }
+      const { score, contributions } = await scoreSingleJob(job.job, profileText)
+
+      logger.info({
+        title: job.job.title,
+        score,
+        contributions
+      })
+
+      return { job, score, contributions }
     })
   )
 
@@ -43,5 +59,12 @@ export async function batchScoreJobs(jobs: Job[], profileText: string, options?:
     distribution[bucket]++
   }
 
-  return { scores, distribution }
+  const ranked = [...scores].sort((a, b) => b.score - a.score)
+
+  return {
+    ranked,
+    shortlisted: scores.filter(s => s.score >= (options?.shortlistThreshold ?? 0.6)),
+    rejected: scores.filter(s => s.score < (options?.rejectThreshold ?? 0.4)),
+    distribution
+  }
 }

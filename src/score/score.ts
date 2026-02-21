@@ -1,7 +1,22 @@
-import { clamp, escapeRegex } from "#/lib/utils"
-import type { JobData, Score } from "#/schemas/job"
+import { clamp, escapeRegex, toFixed } from "#/lib/utils"
+import type { JobData } from "#/schemas/job"
 
-export async function scoreSingleJob(job: Pick<JobData, "title" | "description">, profileText: string): Promise<Score> {
+const _DEFAULT_WEIGHTS = {
+  strongMatch: 0.1,
+  partialMatch: 0.05,
+  missingSkill: 0.2,
+  domainMatch: 0.1,
+  domainMismatch: 0.2,
+  seniorityMatch: 0.1,
+  seniorityMismatch: 0.1,
+  base: 0.5
+}
+
+export async function scoreSingleJob(
+  job: Pick<JobData, "title" | "description">,
+  profileText: string
+  // weights: typeof DEFAULT_WEIGHTS
+) {
   const jobTextLower = `${job.title}\n\n${job.description}`.trim().toLowerCase()
   const profileTextLower = profileText.trim().toLowerCase()
 
@@ -32,7 +47,7 @@ export async function scoreSingleJob(job: Pick<JobData, "title" | "description">
   const seniorityMismatch = jobTextLower.includes("senior") && !profileTextLower.includes("senior")
 
   // Score
-  const score = computeScore({
+  const { score, contributions } = computeScore({
     strongMatches,
     partialMatches,
     majorMissingSkills,
@@ -45,7 +60,17 @@ export async function scoreSingleJob(job: Pick<JobData, "title" | "description">
   return {
     score,
     signals: strongMatches,
-    redFlags: majorMissingSkills // FIXME: very missing skill is treated as a red flag, even optional ones
+    redFlags: majorMissingSkills,
+    breakdown: {
+      strongMatches,
+      partialMatches,
+      majorMissingSkills,
+      domainMatch,
+      domainMismatch,
+      seniorityMatch,
+      seniorityMismatch
+    },
+    contributions
   }
 }
 
@@ -63,26 +88,62 @@ function computeScore(data: {
   seniorityMatch: boolean
   seniorityMismatch: boolean
 }) {
-  let score = 0.5
-
-  // Weighted strong matches
-  for (const skill of data.strongMatches) {
-    const weight = SKILL_WEIGHTS[skill as keyof typeof SKILL_WEIGHTS] ?? 1
-    score += 0.1 * weight
+  const contributions = {
+    base: 0.5,
+    strongMatches: 0,
+    partialMatches: 0,
+    domainMatch: 0,
+    seniorityMatch: 0,
+    missingSkills: 0,
+    domainMismatch: 0,
+    seniorityMismatch: 0
   }
 
-  // Partial matches (lighter impact)
-  score += data.partialMatches.length * 0.05
+  let score = contributions.base
 
-  if (data.domainMatch) score += 0.1
-  if (data.seniorityMatch) score += 0.1
+  // strong matches
+  for (const skill of data.strongMatches) {
+    const weight = SKILL_WEIGHTS[skill as keyof typeof SKILL_WEIGHTS] ?? 1
+    const delta = toFixed(0.1 * weight)
+    contributions.strongMatches += delta
+    score += delta
+  }
 
-  score -= data.majorMissingSkills.length * 0.2
+  // partial matches
+  const partialDelta = data.partialMatches.length * 0.05
+  contributions.partialMatches = partialDelta
+  score += partialDelta
 
-  if (data.domainMismatch) score -= 0.2
-  if (data.seniorityMismatch) score -= 0.1
+  // domain match
+  if (data.domainMatch) {
+    contributions.domainMatch = 0.1
+    score += 0.1
+  }
 
-  return clamp(Number(score.toFixed(3)))
+  // seniority match
+  if (data.seniorityMatch) {
+    contributions.seniorityMatch = 0.1
+    score += 0.1
+  }
+
+  // missing skills
+  const missingDelta = data.majorMissingSkills.length * -0.2
+  contributions.missingSkills = missingDelta
+  score += missingDelta
+
+  if (data.domainMismatch) {
+    contributions.domainMismatch = -0.2
+    score -= 0.2
+  }
+
+  if (data.seniorityMismatch) {
+    contributions.seniorityMismatch = -0.1
+    score -= 0.1
+  }
+
+  const finalScore = clamp(toFixed(score))
+
+  return { score: finalScore, contributions }
 }
 
 const SKILL_ALIASES: Record<string, string[]> = {

@@ -33,11 +33,18 @@ export async function scoring(store: AgentStore) {
   const profileText = await getProfileText()
   const jobs = await getAllJobs(store, "inbox")
 
-  const { scores, distribution } = await batchScoreJobs(jobs, profileText, { concurrency: 8 })
+  const { ranked, distribution } = await batchScoreJobs(jobs, profileText, {
+    concurrency: 8
+    // weights: {
+    //   strongMatch: 0.1,
+    //   missingSkill: 0.2,
+    //   domainMatch: 0.1
+    // }
+  })
 
   logger.debug({ distribution }, "Batch score distribution")
 
-  for (const { job, ...batch } of scores) {
+  for (const { job, ...batch } of ranked) {
     job.batch = batch
     const moveTo: JobDir = isShortlisted(batch.score) ? "shortlisted" : "screened_out"
     store.save(job, moveTo)

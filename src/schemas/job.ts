@@ -3,7 +3,9 @@ import z from "zod"
 export const ScoreSchema = z.object({
   score: z.number().min(0).max(1),
   signals: z.array(z.string().min(1)).min(1).max(5),
-  redFlags: z.array(z.string()).max(3)
+  redFlags: z.array(z.string()).max(3),
+  breakdown: z.any().optional(),
+  contributions: z.record(z.string(), z.number()).optional()
 })
 
 export const EvaluationSchema = z.object({
