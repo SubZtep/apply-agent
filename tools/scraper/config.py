@@ -10,12 +10,16 @@ from dotenv import dotenv_values
 
 
 def load_env_config(root: Path) -> Mapping[str, str]:
-    # Capture system environment variables before loading any files
-    # These take precedence and cannot be overwritten by .env files
+    """
+    Capture system environment variables before loading any files
+    These take precedence and cannot be overwritten by .env files
+    """
     system_keys = set(os.environ.keys())
 
-    # Load files in order: .env first, then .env.local
-    # .env.local will override .env for variables not in system environment
+    """
+    Load files in order: .env first, then .env.local
+    .env.local will override .env for variables not in system environment
+    """
     file_values: dict[str, str] = {}
 
     for fname in (".env", ".env.local"):
@@ -27,13 +31,17 @@ def load_env_config(root: Path) -> Mapping[str, str]:
         values = dotenv_values(fpath)
         log.debug("Loaded %s", fpath)
 
-        # Only accept keys not already defined in system environment
+        """
+        Only accept keys not already defined in system environment
+        """
         for key, value in values.items():
             if key not in system_keys:
                 file_values[key] = value
 
-    # Combine: Start with system environment, then add file-derived values
-    # (Files cannot override system, but .env.local overrides .env)
+    """
+    Combine: Start with system environment, then add file-derived values
+    (Files cannot override system, but .env.local overrides .env)
+    """
     cfg = dict(os.environ)
     cfg.update(file_values)
 

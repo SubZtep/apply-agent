@@ -4,7 +4,7 @@ import {
   DOMAIN_MAP,
   NEGATIVE_PATTERNS,
   type ScoreWeights,
-  SENRITY_PHRASES,
+  SENORITY_SIGNALS,
   SKILL_ALIASES
 } from "#/lib/vars"
 import type { JobData } from "#/schemas/job"
@@ -41,9 +41,9 @@ export async function scoreSingleJob(
   // Seniority
   let seniorityMatch = false
   let seniorityMismatch = false
-  for (const phrase in SENRITY_PHRASES) {
-    if (jobTextLower.includes(phrase) && profileTextLower.includes(phrase)) seniorityMatch = true
-    if (jobTextLower.includes(phrase) && !profileTextLower.includes(phrase)) seniorityMismatch = true
+  for (const signal in SENORITY_SIGNALS) {
+    if (jobTextLower.includes(signal) && profileTextLower.includes(signal)) seniorityMatch = true
+    if (jobTextLower.includes(signal) && !profileTextLower.includes(signal)) seniorityMismatch = true
     if (seniorityMatch && seniorityMismatch) break
   }
 

@@ -1,4 +1,4 @@
-export const SENRITY_PHRASES = ["senior", "principal", "staff", "lead", "architect", "head", "vp", "intern", "junior"]
+export const SENORITY_SIGNALS = ["senior", "principal", "staff", "lead", "architect", "head", "vp", "intern", "junior"]
 
 export const DEFAULT_WEIGHTS = {
   base: 0.2,
