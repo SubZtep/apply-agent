@@ -1,12 +1,6 @@
 export const SENRITY_PHRASES = ["senior", "principal", "staff", "lead", "architect", "head", "vp", "intern", "junior"]
 
 export const DEFAULT_WEIGHTS = {
-  // base: 0.4,
-  // skill: 0.4,
-  // domainMatch: 0.1,
-  // domainMismatch: -0.2,
-  // seniorityMatch: 0.1,
-  // seniorityMismatch: -0.1
   base: 0.2,
   skill: 0.5,
   domainMatch: 0.15,

@@ -38,7 +38,7 @@ export async function scoreSingleJob(
   const domainMatch = jobDomain !== null && jobDomain === profileDomain
   const domainMismatch = jobDomain !== null && profileDomain !== null && jobDomain !== profileDomain
 
-  // Seniority (very basic deterministic heuristic)
+  // Seniority
   let seniorityMatch = false
   let seniorityMismatch = false
   for (const phrase in SENRITY_PHRASES) {
@@ -99,7 +99,6 @@ function computeScore(data: {
   let score = w.base
 
   // ---- Skills
-  // const skillDelta = data.coverageRatio * w.skill
   const skillDelta = data.coverageRatio ** 1.5 * w.skill
   contributions.skills = toFixed(skillDelta)
   score += skillDelta
