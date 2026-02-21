@@ -1,5 +1,6 @@
 import pLimit from "p-limit"
 import { logger } from "#/lib/logger"
+import type { ScoreWeights } from "#/lib/vars"
 import type { Job } from "#/schemas/job"
 import { scoreSingleJob } from "#/score/score"
 
@@ -7,8 +8,6 @@ export interface ScoredJob {
   job: Job
   score: number
   contributions: any
-  // signals: string[]
-  // redFlags: string[]
 }
 
 // Utility to bucket scores
@@ -33,13 +32,14 @@ export async function batchScoreJobs(
     concurrency?: number
     shortlistThreshold?: number
     rejectThreshold?: number
+    weights?: ScoreWeights
   }
 ): Promise<BatchScoreResult> {
   const limit = pLimit(options?.concurrency ?? 5)
 
   const tasks = jobs.map(job =>
     limit(async () => {
-      const { score, contributions } = await scoreSingleJob(job.job, profileText)
+      const { score, contributions } = await scoreSingleJob(job.job, profileText, options?.weights)
 
       logger.info({
         title: job.job.title,

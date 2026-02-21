@@ -1,20 +1,18 @@
 import { clamp, escapeRegex, toFixed } from "#/lib/utils"
+import {
+  DEFAULT_WEIGHTS,
+  DOMAIN_MAP,
+  NEGATIVE_PATTERNS,
+  type ScoreWeights,
+  SENRITY_PHRASES,
+  SKILL_ALIASES
+} from "#/lib/vars"
 import type { JobData } from "#/schemas/job"
-
-// const _DEFAULT_WEIGHTS = {
-//   strongMatch: 0.1,
-//   missingSkill: 0.2,
-//   domainMatch: 0.1,
-//   domainMismatch: 0.2,
-//   seniorityMatch: 0.1,
-//   seniorityMismatch: 0.1,
-//   base: 0.5
-// }
 
 export async function scoreSingleJob(
   job: Pick<JobData, "title" | "description">,
-  profileText: string
-  // weights: typeof DEFAULT_WEIGHTS
+  profileText: string,
+  weights = DEFAULT_WEIGHTS
 ) {
   const jobTextLower = `${job.title}\n\n${job.description}`.trim().toLowerCase()
   const profileTextLower = profileText.trim().toLowerCase()
@@ -41,18 +39,25 @@ export async function scoreSingleJob(
   const domainMismatch = jobDomain !== null && profileDomain !== null && jobDomain !== profileDomain
 
   // Seniority (very basic deterministic heuristic)
-  const seniorityMatch = jobTextLower.includes("senior") && profileTextLower.includes("senior")
-  const seniorityMismatch = jobTextLower.includes("senior") && !profileTextLower.includes("senior")
+  let seniorityMatch = false
+  let seniorityMismatch = false
+  for (const phrase in SENRITY_PHRASES) {
+    if (jobTextLower.includes(phrase) && profileTextLower.includes(phrase)) seniorityMatch = true
+    if (jobTextLower.includes(phrase) && !profileTextLower.includes(phrase)) seniorityMismatch = true
+    if (seniorityMatch && seniorityMismatch) break
+  }
+
+  const totalSkills = jobSkills.length
+  const coverageRatio = totalSkills === 0 ? 0 : strongMatches.length / totalSkills
 
   // Score
   const { score, contributions } = computeScore({
     coverageRatio,
-    strongMatches,
-    majorMissingSkills,
     domainMatch,
     domainMismatch,
     seniorityMatch,
-    seniorityMismatch
+    seniorityMismatch,
+    weights
   })
 
   return {
@@ -61,7 +66,7 @@ export async function scoreSingleJob(
     coverage: {
       matched: strongMatches,
       missing: majorMissingSkills,
-      ratio: strongMatches.length / Math.max(jobSkills.length, 1)
+      ratio: coverageRatio
     },
     meta: {
       domainMatch,
@@ -74,64 +79,56 @@ export async function scoreSingleJob(
 
 function computeScore(data: {
   coverageRatio: number
-  strongMatches: string[]
-  majorMissingSkills: string[]
   domainMatch: boolean
   domainMismatch: boolean
   seniorityMatch: boolean
   seniorityMismatch: boolean
+  weights: ScoreWeights
 }) {
+  const w = data.weights
+
   const contributions = {
-    base: 0.5,
+    base: w.base,
     skills: 0,
     domainMatch: 0,
-    seniorityMatch: 0,
     domainMismatch: 0,
+    seniorityMatch: 0,
     seniorityMismatch: 0
   }
 
-  let score = contributions.base
-  const skillDelta = data.coverageRatio * 0.5
+  let score = w.base
 
+  // ---- Skills
+  // const skillDelta = data.coverageRatio * w.skill
+  const skillDelta = data.coverageRatio ** 1.5 * w.skill
   contributions.skills = toFixed(skillDelta)
   score += skillDelta
 
   // ---- Domain
   if (data.domainMatch) {
-    contributions.domainMatch = 0.1
-    score += 0.1
+    contributions.domainMatch = w.domainMatch
+    score += w.domainMatch
   }
 
   if (data.domainMismatch) {
-    contributions.domainMismatch = -0.2
-    score -= 0.2
+    contributions.domainMismatch = w.domainMismatch
+    score += w.domainMismatch
   }
 
   // ---- Seniority
   if (data.seniorityMatch) {
-    contributions.seniorityMatch = 0.1
-    score += 0.1
+    contributions.seniorityMatch = w.seniorityMatch
+    score += w.seniorityMatch
   }
 
   if (data.seniorityMismatch) {
-    contributions.seniorityMismatch = -0.1
-    score -= 0.1
+    contributions.seniorityMismatch = w.seniorityMismatch
+    score += w.seniorityMismatch
   }
 
   const finalScore = clamp(toFixed(score))
 
   return { score: finalScore, contributions }
-}
-
-const SKILL_ALIASES: Record<string, string[]> = {
-  typescript: ["typescript", "ts"],
-  javascript: ["javascript", "js"],
-  aws: ["aws", "amazon web services"],
-  react: ["react"],
-  cobol: ["cobol"],
-  python: ["python"],
-  web: ["html", "css", "svelte", "vue"]
-  // c: ["c"] // FIXME: use word boundaries: /\bc\b/
 }
 
 function extractSkills(text: string): string[] {
@@ -149,12 +146,10 @@ function extractSkills(text: string): string[] {
   return [...new Set(found)]
 }
 
-const DOMAIN_MAP = {
-  web: ["react", "javascript", "typescript"],
-  cloud: ["aws"],
-  systems: ["c", "cobol"]
-}
-
+// FIXME: Domain Detection Is Too Naive
+// - First match wins
+// - No scoring
+// - No dominance logic
 export function detectDomain(skills: string[]): string | null {
   for (const [domain, group] of Object.entries(DOMAIN_MAP)) {
     if (skills.some(skill => group.includes(skill))) {
@@ -163,12 +158,6 @@ export function detectDomain(skills: string[]): string | null {
   }
   return null
 }
-
-const NEGATIVE_PATTERNS = [
-  /(hate|dislike|avoid)\s+([a-z0-9/+#.\- ]+)/gi,
-  /never\s+(?:want\s+to\s+)?(?:work\s+with\s+)?([a-z0-9/+#.\- ]+)/gi,
-  /don't\s+want\s+to\s+(?:work\s+with\s+)?([a-z0-9/+#.\- ]+)/gi
-]
 
 function getNegativeMatches(textLower: string): string[] {
   const phrases: string[] = []
