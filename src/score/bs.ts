@@ -6,8 +6,9 @@ import { scoreSingleJob } from "#/score/score"
 export interface ScoredJob {
   job: Job
   score: number
-  signals: string[]
-  redFlags: string[]
+  contributions: any
+  // signals: string[]
+  // redFlags: string[]
 }
 
 // Utility to bucket scores
@@ -18,6 +19,13 @@ function bucketScore(score: number) {
   return ">0.8"
 }
 
+export interface BatchScoreResult {
+  ranked: ScoredJob[]
+  shortlisted: ScoredJob[]
+  rejected: ScoredJob[]
+  distribution: Record<string, number>
+}
+
 export async function batchScoreJobs(
   jobs: Job[],
   profileText: string,
@@ -26,7 +34,7 @@ export async function batchScoreJobs(
     shortlistThreshold?: number
     rejectThreshold?: number
   }
-) {
+): Promise<BatchScoreResult> {
   const limit = pLimit(options?.concurrency ?? 5)
 
   const tasks = jobs.map(job =>
@@ -63,8 +71,8 @@ export async function batchScoreJobs(
 
   return {
     ranked,
-    shortlisted: scores.filter(s => s.score >= (options?.shortlistThreshold ?? 0.6)),
-    rejected: scores.filter(s => s.score < (options?.rejectThreshold ?? 0.4)),
+    shortlisted: ranked.filter(s => s.score >= (options?.shortlistThreshold ?? 0.6)),
+    rejected: ranked.filter(s => s.score < (options?.rejectThreshold ?? 0.4)),
     distribution
   }
 }

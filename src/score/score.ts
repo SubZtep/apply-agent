@@ -1,16 +1,15 @@
 import { clamp, escapeRegex, toFixed } from "#/lib/utils"
 import type { JobData } from "#/schemas/job"
 
-const _DEFAULT_WEIGHTS = {
-  strongMatch: 0.1,
-  partialMatch: 0.05,
-  missingSkill: 0.2,
-  domainMatch: 0.1,
-  domainMismatch: 0.2,
-  seniorityMatch: 0.1,
-  seniorityMismatch: 0.1,
-  base: 0.5
-}
+// const _DEFAULT_WEIGHTS = {
+//   strongMatch: 0.1,
+//   missingSkill: 0.2,
+//   domainMatch: 0.1,
+//   domainMismatch: 0.2,
+//   seniorityMatch: 0.1,
+//   seniorityMismatch: 0.1,
+//   base: 0.5
+// }
 
 export async function scoreSingleJob(
   job: Pick<JobData, "title" | "description">,
@@ -32,7 +31,6 @@ export async function scoreSingleJob(
 
   // Compute overlaps
   const strongMatches = jobSkills.filter(skill => filteredProfileSkills.includes(skill))
-  const partialMatches = computePartialMatches(jobSkills, filteredProfileSkills)
   const majorMissingSkills = jobSkills.filter(skill => !filteredProfileSkills.includes(skill))
 
   // Detect domain
@@ -48,8 +46,8 @@ export async function scoreSingleJob(
 
   // Score
   const { score, contributions } = computeScore({
+    coverageRatio,
     strongMatches,
-    partialMatches,
     majorMissingSkills,
     domainMatch,
     domainMismatch,
@@ -59,29 +57,24 @@ export async function scoreSingleJob(
 
   return {
     score,
-    signals: strongMatches,
-    redFlags: majorMissingSkills,
-    breakdown: {
-      strongMatches,
-      partialMatches,
-      majorMissingSkills,
+    contributions,
+    coverage: {
+      matched: strongMatches,
+      missing: majorMissingSkills,
+      ratio: strongMatches.length / Math.max(jobSkills.length, 1)
+    },
+    meta: {
       domainMatch,
       domainMismatch,
       seniorityMatch,
       seniorityMismatch
-    },
-    contributions
+    }
   }
 }
 
-const SKILL_WEIGHTS = {
-  python: 1.2,
-  aws: 1.1
-}
-
 function computeScore(data: {
+  coverageRatio: number
   strongMatches: string[]
-  partialMatches: string[]
   majorMissingSkills: string[]
   domainMatch: boolean
   domainMismatch: boolean
@@ -90,50 +83,34 @@ function computeScore(data: {
 }) {
   const contributions = {
     base: 0.5,
-    strongMatches: 0,
-    partialMatches: 0,
+    skills: 0,
     domainMatch: 0,
     seniorityMatch: 0,
-    missingSkills: 0,
     domainMismatch: 0,
     seniorityMismatch: 0
   }
 
   let score = contributions.base
+  const skillDelta = data.coverageRatio * 0.5
 
-  // strong matches
-  for (const skill of data.strongMatches) {
-    const weight = SKILL_WEIGHTS[skill as keyof typeof SKILL_WEIGHTS] ?? 1
-    const delta = 0.1 * weight
-    contributions.strongMatches = toFixed(contributions.strongMatches + delta)
-    score += delta
-  }
+  contributions.skills = toFixed(skillDelta)
+  score += skillDelta
 
-  // partial matches
-  const partialDelta = data.partialMatches.length * 0.05
-  contributions.partialMatches = partialDelta
-  score += partialDelta
-
-  // domain match
+  // ---- Domain
   if (data.domainMatch) {
     contributions.domainMatch = 0.1
     score += 0.1
   }
 
-  // seniority match
-  if (data.seniorityMatch) {
-    contributions.seniorityMatch = 0.1
-    score += 0.1
-  }
-
-  // missing skills
-  const missingDelta = data.majorMissingSkills.length * -0.2
-  contributions.missingSkills = missingDelta
-  score += missingDelta
-
   if (data.domainMismatch) {
     contributions.domainMismatch = -0.2
     score -= 0.2
+  }
+
+  // ---- Seniority
+  if (data.seniorityMatch) {
+    contributions.seniorityMatch = 0.1
+    score += 0.1
   }
 
   if (data.seniorityMismatch) {
@@ -185,33 +162,6 @@ export function detectDomain(skills: string[]): string | null {
     }
   }
   return null
-}
-
-const SKILL_GROUPS = {
-  web: ["react", "javascript", "typescript", "vue", "svelte"],
-  cloud: ["aws"],
-  systems: ["c", "c++", "cobol", "python"]
-}
-
-function computePartialMatches(jobSkills: string[], profileSkills: string[]) {
-  const partial: string[] = []
-
-  for (const group of Object.values(SKILL_GROUPS)) {
-    const jobInGroup = group.filter(skill => jobSkills.includes(skill))
-    const profileInGroup = group.filter(skill => profileSkills.includes(skill))
-
-    // If both have something in same group but no exact overlap,
-    // then treat job-only skills as partial matches
-    if (jobInGroup.length > 0 && profileInGroup.length > 0) {
-      for (const skill of jobInGroup) {
-        if (!profileSkills.includes(skill)) {
-          partial.push(skill)
-        }
-      }
-    }
-  }
-
-  return [...new Set(partial)]
 }
 
 const NEGATIVE_PATTERNS = [
