@@ -6,7 +6,7 @@ describe("RiskAssessmentSchema", () => {
     const validRisk = {
       hardGaps: ["Kubernetes", "Docker"],
       softGaps: ["Leadership"],
-      mitigations: ["Take online course", "Pair with senior dev"],
+      mitigations: ["Take online course", "Pair with senior dev"]
     }
     const result = RiskAssessmentSchema.safeParse(validRisk)
     expect(result.success).toBeTrue()
@@ -16,7 +16,7 @@ describe("RiskAssessmentSchema", () => {
     const invalidRisk = {
       hardGaps: [],
       softGaps: ["Leadership"],
-      mitigations: ["Course"],
+      mitigations: ["Course"]
     }
     const result = RiskAssessmentSchema.safeParse(invalidRisk)
     expect(result.success).toBeTrue()
@@ -26,7 +26,7 @@ describe("RiskAssessmentSchema", () => {
     const invalidRisk = {
       hardGaps: ["1", "2", "3", "4", "5", "6"],
       softGaps: [],
-      mitigations: [],
+      mitigations: []
     }
     const result = RiskAssessmentSchema.safeParse(invalidRisk)
     expect(result.success).toBeFalse()
@@ -36,7 +36,7 @@ describe("RiskAssessmentSchema", () => {
     const invalidRisk = {
       hardGaps: [""],
       softGaps: [],
-      mitigations: [],
+      mitigations: []
     }
     const result = RiskAssessmentSchema.safeParse(invalidRisk)
     expect(result.success).toBeFalse()
@@ -48,7 +48,7 @@ describe("JobSpecSchema", () => {
     const validSpec = {
       skills: ["TypeScript", "React"],
       responsibilities: ["Build UI", "Code review"],
-      senioritySignals: ["5+ years", "Lead projects"],
+      senioritySignals: ["5+ years", "Lead projects"]
     }
     const result = JobSpecSchema.safeParse(validSpec)
     expect(result.success).toBeTrue()
@@ -59,7 +59,7 @@ describe("JobSpecSchema", () => {
     const validSpec = {
       skills: [],
       responsibilities: [],
-      senioritySignals: [],
+      senioritySignals: []
     }
     const result = JobSpecSchema.safeParse(validSpec)
     expect(result.success).toBeTrue()
@@ -69,7 +69,7 @@ describe("JobSpecSchema", () => {
     const invalidSpec = {
       skills: ["TypeScript", 123],
       responsibilities: [],
-      senioritySignals: [],
+      senioritySignals: []
     }
     const result = JobSpecSchema.safeParse(invalidSpec)
     expect(result.success).toBeFalse()
@@ -77,7 +77,7 @@ describe("JobSpecSchema", () => {
 
   it("should reject missing required fields", () => {
     const invalidSpec = {
-      skills: ["TypeScript"],
+      skills: ["TypeScript"]
       // missing responsibilities and senioritySignals
     }
     const result = JobSpecSchema.safeParse(invalidSpec)

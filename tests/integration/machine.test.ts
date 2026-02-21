@@ -12,7 +12,7 @@ describe("State Machine Flow Integration", () => {
         company: "Corp",
         description: "Job",
         url: "https://example.com",
-        location: "Remote",
+        location: "Remote"
       },
       agent: {
         mode: "strict",
@@ -20,15 +20,15 @@ describe("State Machine Flow Integration", () => {
         evaluation: {
           requirements: [
             { requirement: "TypeScript", confidence: 0.95, evidence: "Expert" },
-            { requirement: "React", confidence: 0.9, evidence: "Expert" },
-          ],
+            { requirement: "React", confidence: 0.9, evidence: "Expert" }
+          ]
         },
         risks: {
           hardGaps: [],
           softGaps: ["Leadership"],
-          mitigations: ["Mentorship"],
-        },
-      },
+          mitigations: ["Mentorship"]
+        }
+      }
     }
 
     const { nextState } = decideNextState(job)
@@ -44,20 +44,20 @@ describe("State Machine Flow Integration", () => {
         company: "Corp",
         description: "Job",
         url: "https://example.com",
-        location: "Remote",
+        location: "Remote"
       },
       agent: {
         mode: "strict",
         state: "DECIDE",
         evaluation: {
-          requirements: [{ requirement: "Kubernetes", confidence: 0.1, evidence: "None" }],
+          requirements: [{ requirement: "Kubernetes", confidence: 0.1, evidence: "None" }]
         },
         risks: {
           hardGaps: ["Kubernetes", "Docker", "Cloud"],
           softGaps: [],
-          mitigations: [],
-        },
-      },
+          mitigations: []
+        }
+      }
     }
 
     const { nextState, questions } = decideNextState(job)
@@ -74,25 +74,25 @@ describe("State Machine Flow Integration", () => {
         company: "Corp",
         description: "Job",
         url: "https://example.com",
-        location: "Remote",
+        location: "Remote"
       },
       agent: {
         mode: "strict",
         state: "DECIDE",
         evaluation: {
-          requirements: [{ requirement: "Kubernetes", confidence: 0.1, evidence: "None" }],
+          requirements: [{ requirement: "Kubernetes", confidence: 0.1, evidence: "None" }]
         },
         risks: {
           hardGaps: ["Kubernetes", "Docker", "Cloud"],
           softGaps: [],
-          mitigations: [],
+          mitigations: []
         },
         humanInput: {
           answers: {
-            HARD_GAPS_PROCEED: "no",
-          },
-        },
-      },
+            HARD_GAPS_PROCEED: "no"
+          }
+        }
+      }
     }
 
     const { nextState } = decideNextState(job)
@@ -108,7 +108,7 @@ describe("State Machine Flow Integration", () => {
         company: "Corp",
         description: "Job",
         url: "https://example.com",
-        location: "Remote",
+        location: "Remote"
       },
       agent: {
         mode: "exploratory",
@@ -116,15 +116,15 @@ describe("State Machine Flow Integration", () => {
         evaluation: {
           requirements: [
             { requirement: "Kubernetes", confidence: 0.1, evidence: "None" },
-            { requirement: "Docker", confidence: 0.2, evidence: "None" },
-          ],
+            { requirement: "Docker", confidence: 0.2, evidence: "None" }
+          ]
         },
         risks: {
           hardGaps: ["Kubernetes", "Docker", "Cloud"],
           softGaps: [],
-          mitigations: [],
-        },
-      },
+          mitigations: []
+        }
+      }
     }
 
     const { nextState } = decideNextState(job)

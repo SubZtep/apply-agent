@@ -5,3 +5,11 @@ silent = true
 
 [console]
 depth = 3
+
+[test]
+randomize = true
+rerunEach = 5
+retry = 3
+
+[test.reporter]
+dots = true

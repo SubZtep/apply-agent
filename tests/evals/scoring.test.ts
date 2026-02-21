@@ -1,18 +1,45 @@
+import { describe, expect, it } from "bun:test"
 import { scoreSingleJob } from "#/score/score"
-import { test, expect } from "bun:test"
 
-test("Job scoring", async() => {
-  const job = {
-    "title": "Full-stack web developer",
-    "description": "If you're a very experienced dev, please join our team and help to fix our Amazon services and legacy Cobol nightmare. We use tons of language, like C, Python, JS/TS.",
-  }
+describe("scoreSingleJob", () => {
+  it("high overlap should score high", async () => {
+    const job = {
+      title: "Senior Backend Engineer",
+      description: `
+        Must have Python
+        Strong experience with AWS
+        Senior level role
+      `
+    }
 
-  const profile = "I like to work with legacy code in C and Python since I'm senior by age, fix AWS nightmares with JavaScript and write back-end TypeScript with React front-end, but I hate Cobol and never want to touch it."
+    const profile = `
+      Senior engineer
+      Python backend developer
+      Worked with AWS
+    `
 
-  const res = await scoreSingleJob(job, profile)
+    const result = await scoreSingleJob(job, profile)
 
-  expect(res.score).toBeGreaterThanOrEqual(0.3)
-  expect(res.score).toBeLessThanOrEqual(0.7)
-  expect(res.signals).toContain("python")
-  expect(res.redFlags).toContain("cobol")
+    expect(result.score).toBeGreaterThan(0.6)
+    expect(result.signals).toContain("python")
+    expect(result.signals).toContain("aws")
+  })
+
+  it("missing required skill should penalize", async () => {
+    const job = {
+      title: "Backend Engineer",
+      description: `
+        Must have Cobol
+      `
+    }
+
+    const profile = `
+      Senior Python developer
+    `
+
+    const result = await scoreSingleJob(job, profile)
+
+    expect(result.score).toBeLessThan(0.5)
+    expect(result.redFlags).toContain("cobol")
+  })
 })
