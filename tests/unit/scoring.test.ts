@@ -56,7 +56,7 @@ describe("Shortlist Filtering", () => {
       { score: 0.41, expected: true },
       { score: 0.5, expected: true },
       { score: 0.9, expected: true },
-      { score: 1.0, expected: true },
+      { score: 1.0, expected: true }
     ]
 
     testCases.forEach(({ score, expected }) => {
@@ -69,7 +69,7 @@ describe("Shortlist Filtering", () => {
       { score: 0.0, expected: false },
       { score: 0.1, expected: false },
       { score: 0.4, expected: false },
-      { score: 0.39, expected: false },
+      { score: 0.39, expected: false }
     ]
 
     testCases.forEach(({ score, expected }) => {
@@ -87,9 +87,9 @@ describe("Shortlist Filtering", () => {
           description: "Desc",
           location: "Remote",
           source: "LinkedIn",
-          url: "https://example.com/1",
+          url: "https://example.com/1"
         },
-        batch: { score: 0.6, signals: [], redFlags: [] },
+        batch: { score: 0.6, signals: [], redFlags: [] }
       },
       {
         job: {
@@ -99,9 +99,9 @@ describe("Shortlist Filtering", () => {
           description: "Desc",
           location: "Remote",
           source: "LinkedIn",
-          url: "https://example.com/2",
+          url: "https://example.com/2"
         },
-        batch: { score: 0.3, signals: [], redFlags: [] },
+        batch: { score: 0.3, signals: [], redFlags: [] }
       },
       {
         job: {
@@ -111,10 +111,10 @@ describe("Shortlist Filtering", () => {
           description: "Desc",
           location: "Remote",
           source: "LinkedIn",
-          url: "https://example.com/3",
+          url: "https://example.com/3"
         },
-        batch: { score: 0.5, signals: [], redFlags: [] },
-      },
+        batch: { score: 0.5, signals: [], redFlags: [] }
+      }
     ]
 
     const shortlisted = jobs.filter(job => job.batch && isShortlisted(job.batch))

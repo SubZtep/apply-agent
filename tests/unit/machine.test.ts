@@ -1,9 +1,9 @@
 import { describe, expect, it, mock } from "bun:test"
+import type { AgentStore } from "#/lib/store"
 import { handlers } from "#/machine/handlers"
 import { decideNextState } from "#/machine/next"
 import { runSateMachine } from "#/machine/runner"
 import type { Job } from "#/schemas/job"
-import type { AgentStore } from "#/lib/store"
 
 describe("decideNextState", () => {
   const baseJob: Job = {
@@ -14,7 +14,7 @@ describe("decideNextState", () => {
       company: "TechCorp",
       description: "We need devs",
       url: "https:/example.com",
-      location: "Remote",
+      location: "Remote"
     },
     agent: {
       mode: "strict",
@@ -22,15 +22,15 @@ describe("decideNextState", () => {
       evaluation: {
         requirements: [
           { requirement: "TypeScript", confidence: 0.9, evidence: "5 years" },
-          { requirement: "React", confidence: 0.8, evidence: "3 years" },
-        ],
+          { requirement: "React", confidence: 0.8, evidence: "3 years" }
+        ]
       },
       risks: {
         hardGaps: [],
         softGaps: [],
-        mitigations: [],
-      },
-    },
+        mitigations: []
+      }
+    }
   }
 
   describe("Rule D - forceProceed override", () => {
@@ -40,9 +40,9 @@ describe("decideNextState", () => {
         agent: {
           ...baseJob.agent!,
           humanInput: {
-            forceProceed: true,
-          },
-        },
+            forceProceed: true
+          }
+        }
       }
       const { nextState } = decideNextState(job)
       expect(nextState).toBe("PLAN")
@@ -56,12 +56,12 @@ describe("decideNextState", () => {
           risks: {
             hardGaps: ["Kubernetes", "Docker", "Rust"],
             softGaps: [],
-            mitigations: [],
+            mitigations: []
           },
           humanInput: {
-            forceProceed: true,
-          },
-        },
+            forceProceed: true
+          }
+        }
       }
       const { nextState } = decideNextState(job)
       expect(nextState).toBe("PLAN")
@@ -77,14 +77,14 @@ describe("decideNextState", () => {
           risks: {
             hardGaps: ["Kubernetes", "Docker", "Rust"],
             softGaps: [],
-            mitigations: [],
+            mitigations: []
           },
           humanInput: {
             answers: {
-              HARD_GAPS_PROCEED: "no",
-            },
-          },
-        },
+              HARD_GAPS_PROCEED: "no"
+            }
+          }
+        }
       }
       const { nextState } = decideNextState(job)
       expect(nextState).toBe("FAILED")
@@ -98,14 +98,14 @@ describe("decideNextState", () => {
           risks: {
             hardGaps: ["Kubernetes", "Docker", "Rust"],
             softGaps: [],
-            mitigations: [],
+            mitigations: []
           },
           humanInput: {
             answers: {
-              HARD_GAPS_PROCEED: "yes",
-            },
-          },
-        },
+              HARD_GAPS_PROCEED: "yes"
+            }
+          }
+        }
       }
       const { nextState } = decideNextState(job)
       expect(nextState).toBe("PLAN")
@@ -119,9 +119,9 @@ describe("decideNextState", () => {
           risks: {
             hardGaps: ["Kubernetes", "Docker", "Rust"],
             softGaps: [],
-            mitigations: [],
-          },
-        },
+            mitigations: []
+          }
+        }
       }
       const { nextState, questions } = decideNextState(job)
       expect(questions).toBeDefined()
@@ -137,9 +137,9 @@ describe("decideNextState", () => {
           risks: {
             hardGaps: ["Kubernetes"],
             softGaps: [],
-            mitigations: [],
-          },
-        },
+            mitigations: []
+          }
+        }
       }
       const { nextState, questions } = decideNextState(job)
       expect(nextState).not.toBe("FAILED")
@@ -153,16 +153,16 @@ describe("decideNextState", () => {
         ...baseJob,
         job: {
           ...baseJob.job,
-          senioritySignals: ["leadership"],
+          senioritySignals: ["leadership"]
         },
         agent: {
           ...baseJob.agent!,
           risks: {
             hardGaps: ["ownership"],
             softGaps: [],
-            mitigations: [],
-          },
-        },
+            mitigations: []
+          }
+        }
       }
       const { questions } = decideNextState(job)
       expect(questions?.some(q => q.id === "LEADERSHIP_REFRAME")).toBeTrue()
@@ -173,21 +173,21 @@ describe("decideNextState", () => {
         ...baseJob,
         job: {
           ...baseJob.job,
-          senioritySignals: ["leadership"],
+          senioritySignals: ["leadership"]
         },
         agent: {
           ...baseJob.agent!,
           risks: {
             hardGaps: ["ownership"],
             softGaps: [],
-            mitigations: [],
+            mitigations: []
           },
           humanInput: {
             answers: {
-              LEADERSHIP_REFRAME: "stretch",
-            },
-          },
-        },
+              LEADERSHIP_REFRAME: "stretch"
+            }
+          }
+        }
       }
       const { questions } = decideNextState(job)
       expect(questions?.some(q => q.id === "LEADERSHIP_REFRAME")).toBeFalsy()
@@ -206,10 +206,10 @@ describe("decideNextState", () => {
               { requirement: "React", confidence: 0.3, evidence: "Maybe" },
               { requirement: "Node.js", confidence: 0.2, evidence: "Maybe" },
               { requirement: "GraphQL", confidence: 0.1, evidence: "Maybe" },
-              { requirement: "Docker", confidence: 0.9, evidence: "Yes" },
-            ],
-          },
-        },
+              { requirement: "Docker", confidence: 0.9, evidence: "Yes" }
+            ]
+          }
+        }
       }
       const { questions } = decideNextState(job)
       // 3 out of 5 = 60% low confidence
@@ -225,10 +225,10 @@ describe("decideNextState", () => {
             requirements: [
               { requirement: "TypeScript", confidence: 0.9, evidence: "Yes" },
               { requirement: "React", confidence: 0.85, evidence: "Yes" },
-              { requirement: "Node.js", confidence: 0.8, evidence: "Yes" },
-            ],
-          },
-        },
+              { requirement: "Node.js", confidence: 0.8, evidence: "Yes" }
+            ]
+          }
+        }
       }
       const { questions } = decideNextState(job)
       expect(questions?.some(q => q.id === "LOW_CONFIDENCE_STRATEGY")).toBeFalsy()
@@ -245,10 +245,10 @@ describe("decideNextState", () => {
           risks: {
             hardGaps: ["Kubernetes", "Docker", "Rust"],
             softGaps: [],
-            mitigations: [],
-          },
+            mitigations: []
+          }
           // No human input
-        },
+        }
       }
       const { nextState } = decideNextState(job)
       expect(nextState).toBe("PLAN")
@@ -263,10 +263,10 @@ describe("decideNextState", () => {
           risks: {
             hardGaps: ["Kubernetes", "Docker", "Rust"],
             softGaps: [],
-            mitigations: [],
-          },
+            mitigations: []
+          }
           // No human input
-        },
+        }
       }
       const { nextState } = decideNextState(job)
       expect(nextState).toBe("WAIT_FOR_HUMAN")
@@ -277,7 +277,7 @@ describe("decideNextState", () => {
     it("should throw error when agent is missing", () => {
       const job: Job = {
         ...baseJob,
-        agent: undefined,
+        agent: undefined
       }
       expect(() => decideNextState(job)).toThrow()
     })
@@ -287,8 +287,8 @@ describe("decideNextState", () => {
         ...baseJob,
         agent: {
           ...baseJob.agent!,
-          evaluation: undefined,
-        },
+          evaluation: undefined
+        }
       }
       const { nextState } = decideNextState(job)
       expect(nextState).toBe("FAILED")
@@ -299,8 +299,8 @@ describe("decideNextState", () => {
         ...baseJob,
         agent: {
           ...baseJob.agent!,
-          risks: undefined,
-        },
+          risks: undefined
+        }
       }
       const { nextState } = decideNextState(job)
       expect(nextState).toBe("FAILED")
@@ -311,7 +311,7 @@ describe("decideNextState", () => {
 describe("runAgent", () => {
   const mockStore: AgentStore = {
     save: mock(async () => {}),
-    load: mock(async () => null),
+    load: mock(async () => null)
   }
 
   const baseJob: Job = {
@@ -322,12 +322,12 @@ describe("runAgent", () => {
       company: "Corp",
       description: "Job description",
       url: "https://example.com",
-      location: "Remote",
+      location: "Remote"
     },
     agent: {
       mode: "strict",
-      state: "IDLE",
-    },
+      state: "IDLE"
+    }
   }
 
   it("should throw error when job.agent is missing", async () => {
@@ -363,12 +363,12 @@ describe("State handlers", () => {
       company: "Corp",
       description: "Job description",
       url: "https://example.com",
-      location: "Remote",
+      location: "Remote"
     },
     agent: {
       mode: "strict",
-      state: "IDLE",
-    },
+      state: "IDLE"
+    }
   }
 
   describe("IDLE handler", () => {
@@ -384,8 +384,8 @@ describe("State handlers", () => {
         ...baseJob,
         job: {
           ...baseJob.job,
-          description: "Valid description",
-        },
+          description: "Valid description"
+        }
       }
       const nextState = await handlers.INGEST(job)
       expect(nextState).toBe("NORMALIZE")
@@ -396,8 +396,8 @@ describe("State handlers", () => {
         ...baseJob,
         job: {
           ...baseJob.job,
-          description: "",
-        },
+          description: ""
+        }
       }
       const nextState = await handlers.INGEST(job)
       expect(nextState).toBe("FAILED")
