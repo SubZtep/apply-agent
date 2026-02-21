@@ -21,6 +21,9 @@ export async function scoreSingleJob(
   const jobSkills = extractSkills(jobTextLower)
   const profileSkills = extractSkills(profileTextLower)
 
+  const requiredText = extractRequiredSection(jobTextLower)
+  const requiredSkills = extractSkills(requiredText)
+
   // Detect negatives from profile
   const negativeMatches = getNegativeMatches(profileTextLower)
 
@@ -46,12 +49,16 @@ export async function scoreSingleJob(
   const seniorityMatch = jobLevel !== null && profileLevel !== null && profileLevel >= jobLevel
   const seniorityMismatch = jobLevel !== null && (profileLevel === null || profileLevel < jobLevel)
 
-  const totalSkills = jobSkills.length
-  const coverageRatio = totalSkills === 0 ? 0 : strongMatches.length / totalSkills
+  const requiredMatches = requiredSkills.filter(skill => filteredProfileSkills.includes(skill))
+  const optionalSkills = jobSkills.filter(skill => !requiredSkills.includes(skill))
+  const optionalMatches = optionalSkills.filter(skill => filteredProfileSkills.includes(skill))
+  const requiredRatio = requiredSkills.length === 0 ? 1 : requiredMatches.length / requiredSkills.length
+  const optionalRatio = optionalSkills.length === 0 ? 0 : optionalMatches.length / optionalSkills.length
 
   // Score
   const { score, contributions } = computeScore({
-    coverageRatio,
+    requiredRatio,
+    optionalRatio,
     domainMatch,
     domainMismatch,
     seniorityMatch,
@@ -65,7 +72,8 @@ export async function scoreSingleJob(
     coverage: {
       matched: strongMatches,
       missing: majorMissingSkills,
-      ratio: coverageRatio
+      requiredRatio,
+      optionalRatio
     },
     meta: {
       domainMatch,
@@ -77,7 +85,8 @@ export async function scoreSingleJob(
 }
 
 function computeScore(data: {
-  coverageRatio: number
+  requiredRatio: number
+  optionalRatio: number
   domainMatch: boolean
   domainMismatch: boolean
   seniorityMatch: boolean
@@ -98,9 +107,10 @@ function computeScore(data: {
   let score = w.base
 
   // ---- Skills
-  const skillDelta = data.coverageRatio ** 1.5 * w.skill
-  contributions.skills = toFixed(skillDelta)
-  score += skillDelta
+  const requiredDelta = data.requiredRatio ** 1.5 * (w.skill * 0.7)
+  const optionalDelta = data.optionalRatio ** 1.5 * (w.skill * 0.3)
+  contributions.skills = toFixed(requiredDelta + optionalDelta)
+  score += requiredDelta + optionalDelta
 
   // ---- Domain
   if (data.domainMatch) {
@@ -167,10 +177,33 @@ export function detectDomain(skills: string[]): string | null {
 }
 
 function detectSeniority(text: string): string | null {
-  for (const level of Object.keys(SENIORITY_LEVELS)) {
-    if (text.includes(level)) return level
+  const lower = text.toLowerCase()
+
+  // Sort by length descending to avoid partial overlaps like "intern" inside "internal"
+  const levels = Object.keys(SENIORITY_LEVELS).sort((a, b) => b.length - a.length)
+
+  for (const level of levels) {
+    const pattern = new RegExp(`\\b${escapeRegex(level)}\\b`, "i")
+    if (pattern.test(lower)) return level
   }
+
   return null
+}
+
+function extractRequiredSection(text: string): string {
+  const requiredPatterns = [
+    /must\s+have[:\s]+([\s\S]*?)(?:\n\n|nice to have|required|$)/i,
+    /required[:\s]+([\s\S]*?)(?:\n\n|nice to have|$)/i
+  ]
+
+  for (const pattern of requiredPatterns) {
+    const match = text.match(pattern)
+    if (match?.[1]) {
+      return match[1].toLowerCase()
+    }
+  }
+
+  return ""
 }
 
 function getNegativeMatches(textLower: string): string[] {
