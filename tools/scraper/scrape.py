@@ -12,11 +12,9 @@ def get_jobs(jobspy_cfg: dict, limit: int, offset: int) -> DataFrame:
         log.exception("scrape_jobs failed: %s", exc)
         sys.exit(1)
 
-    # Filter out jobs where description is None or empty string
+    # Filter out jobs where description is empty string
     if hasattr(jobs, "to_dict"):
-        jobs = jobs[
-            jobs["description"].notnull() & (jobs["description"].str.strip() != "")
-        ]
+        jobs = jobs[jobs["description"].str.strip() != ""]
 
     if len(jobs) == 0:
         log.info("No jobs found, exiting.")
