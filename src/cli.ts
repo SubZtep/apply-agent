@@ -12,7 +12,7 @@ switch (command) {
     await ingest()
     break
   case "scoring":
-    await scoring(store, id)
+    await scoring(store)
     break
   case "evaluation":
     await evaluation(store, id)

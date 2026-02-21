@@ -1,9 +1,7 @@
 import { clamp, escapeRegex } from "#/lib/utils"
 import type { JobData, Score } from "#/schemas/job"
 
-type ScoringJobData = Pick<JobData, "title" | "description">
-
-export async function scoreSingleJob(job: ScoringJobData, profileText: string): Promise<Score> {
+export async function scoreSingleJob(job: Pick<JobData, "title" | "description">, profileText: string): Promise<Score> {
   const jobTextLower = `${job.title}\n\n${job.description}`.trim().toLowerCase()
   const profileTextLower = profileText.trim().toLowerCase()
 

@@ -1,11 +1,10 @@
 import { join } from "node:path"
-import { getInitialJobState, isShortlisted, jobDir, mapScrapedJobToJob } from "#/lib/job"
+import { getAllJobs, getInitialJobState, isShortlisted, jobDir, mapScrapedJobToJob } from "#/lib/job"
 import { logger } from "#/lib/logger"
 import { runSateMachine } from "#/machine/runner"
-import type { Job } from "#/schemas/job"
+import type { Job, JobDir } from "#/schemas/job"
 import { ScrapedJobSchema } from "#/schemas/scraped_job"
-import { batchScoringJobs } from "#/score/batch"
-import { scoreSingleJob } from "#/score/score"
+import { batchScoreJobs } from "#/score/bs"
 import type { AgentStore } from "./store"
 import { getProfileText } from "./user"
 
@@ -30,24 +29,18 @@ export async function ingest() {
   await jsonFile.delete()
 }
 
-export async function scoring(store: AgentStore, id?: string) {
-  const cv = await getProfileText()
-  if (id) {
-    // Score a single job
-    const job = await store.load("inbox", id === "x" ? undefined : id)
-    if (!job) process.exit(0)
-    try {
-      job.batch = await scoreSingleJob(job.job, cv)
-    } catch (error: any) {
-      logger.error({ job, error }, "Score job")
-      process.exit(1)
-    }
-    const nextDir = job.batch && isShortlisted(job.batch) ? "shortlisted" : "screened_out"
-    await store.save(job, nextDir)
-    logger.info({ id: job.job.id, dir: nextDir }, "Job scored")
-  } else {
-    // Batch scoring
-    await batchScoringJobs(store, cv)
+export async function scoring(store: AgentStore) {
+  const profileText = await getProfileText()
+  const jobs = await getAllJobs(store, "inbox")
+
+  const { scores, distribution } = await batchScoreJobs(jobs, profileText, { concurrency: 8 })
+
+  logger.debug({ distribution }, "Batch score distribution")
+
+  for (const { job, ...batch } of scores) {
+    job.batch = batch
+    const moveTo: JobDir = isShortlisted(batch.score) ? "shortlisted" : "screened_out"
+    store.save(job, moveTo)
   }
 }
 
