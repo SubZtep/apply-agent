@@ -45,7 +45,7 @@ export function mapScrapedJobToJob(scrapedJob: ScrapedJob): Job {
     job: {
       id: calculateJobId(scrapedJob),
       title: scrapedJob.title,
-      description: scrapedJob.description, // FIXME: skip job if description is empty
+      description: scrapedJob.description,
       company: scrapedJob.company,
       location: scrapedJob.location,
       source: scrapedJob.site,
@@ -63,6 +63,7 @@ export async function getAllJobs(store: AgentStore, dir: JobDir = "inbox") {
     if (job) {
       jobs.push(job)
     }
+    // TODO: pagination or something memory efficient
   } while (job)
   return jobs
 }

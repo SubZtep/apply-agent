@@ -4,7 +4,7 @@ telemetry = false
 silent = true
 
 [console]
-depth = 3
+depth = 4
 
 [test]
 randomize = true

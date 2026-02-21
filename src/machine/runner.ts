@@ -6,9 +6,9 @@ import { terminal } from "./next"
 
 export async function runSateMachine(job: Job & { agent: NonNullable<Job["agent"]> }, store: AgentStore) {
   while (true) {
-    const start = performance.now()
+    const start = Bun.nanoseconds()
     const nextState = await handlers[job.agent.state](job)
-    const duration = performance.now() - start
+    const duration = Bun.nanoseconds() - start
 
     logger.trace({ id: job.job.id, from: job.agent.state, to: nextState, duration }, "State handler")
 
@@ -16,7 +16,7 @@ export async function runSateMachine(job: Job & { agent: NonNullable<Job["agent"
     store.save(job)
 
     if (terminal(nextState)) {
-      // logger.trace({ id: job.job.id, state: nextState }, "Terminal state machine")
+      logger.trace({ id: job.job.id, state: nextState }, "Terminal state machine")
       return
     }
   }

@@ -1,8 +1,8 @@
 import { logger } from "#/lib/logger"
 import { decideNextState } from "#/machine/next"
-import { challengeWithRetry } from "#/machine/states/challenge"
-import { evaluateWithRetry } from "#/machine/states/evaluate"
-import { normalizeWithRetry } from "#/machine/states/normalize"
+import { challenge } from "#/machine/states/challenge"
+import { evaluate } from "#/machine/states/evaluate"
+import { normalize } from "#/machine/states/normalize"
 import { generatePlan } from "#/machine/states/plan"
 import type { AgentState, Job } from "#/schemas/job"
 
@@ -14,14 +14,14 @@ export const handlers: Record<AgentState, StateHandler> = {
 
   INGEST: async job => {
     if (!job.job.description || !job.job.description) {
-      // logger.error(job, "Missing input")
+      logger.error(job, "Missing input")
       return "FAILED"
     }
     return "NORMALIZE"
   },
 
   NORMALIZE: async job => {
-    const result = await normalizeWithRetry(job.job.description)
+    const result = await normalize(job.job.description)
 
     if (!result.ok) {
       logger.error(job, result.error.message)
@@ -36,11 +36,11 @@ export const handlers: Record<AgentState, StateHandler> = {
   },
 
   EVALUATE: async job => {
-    const result = await evaluateWithRetry(job)
+    const result = await evaluate(job)
     job.agent!.evaluation = result.data
 
     if (!result.ok) {
-      // logger.debug({ id: job.job.id }, result.error.message)
+      logger.error({ id: job.job.id, error: result.error }, "Evaluate failed")
       return "FAILED"
     }
 
@@ -48,10 +48,10 @@ export const handlers: Record<AgentState, StateHandler> = {
   },
 
   CHALLENGE: async job => {
-    const result = await challengeWithRetry(job)
+    const result = await challenge(job)
 
     if (!result.ok) {
-      // logger.error({ id: job.job.id, error: result.error }, "Challenge failed")
+      logger.error({ id: job.job.id, error: result.error }, "Challenge failed")
       return "FAILED"
     }
 
