@@ -4,7 +4,7 @@ import {
   DOMAIN_MAP,
   NEGATIVE_PATTERNS,
   type ScoreWeights,
-  SENIORITY_SIGNALS,
+  SENIORITY_LEVELS,
   SKILL_ALIASES
 } from "#/lib/vars"
 import type { JobData } from "#/schemas/job"
@@ -39,13 +39,12 @@ export async function scoreSingleJob(
   const domainMismatch = jobDomain !== null && profileDomain !== null && jobDomain !== profileDomain
 
   // Seniority
-  let seniorityMatch = false
-  let seniorityMismatch = false
-  for (const signal in SENIORITY_SIGNALS) {
-    if (jobTextLower.includes(signal) && profileTextLower.includes(signal)) seniorityMatch = true
-    if (jobTextLower.includes(signal) && !profileTextLower.includes(signal)) seniorityMismatch = true
-    if (seniorityMatch && seniorityMismatch) break
-  }
+  const jobSeniority = detectSeniority(jobTextLower)
+  const profileSeniority = detectSeniority(profileTextLower)
+  const jobLevel = jobSeniority ? SENIORITY_LEVELS[jobSeniority] : null
+  const profileLevel = profileSeniority ? SENIORITY_LEVELS[profileSeniority] : null
+  const seniorityMatch = jobLevel !== null && profileLevel !== null && profileLevel >= jobLevel
+  const seniorityMismatch = jobLevel !== null && (profileLevel === null || profileLevel < jobLevel)
 
   const totalSkills = jobSkills.length
   const coverageRatio = totalSkills === 0 ? 0 : strongMatches.length / totalSkills
@@ -154,6 +153,13 @@ export function detectDomain(skills: string[]): string | null {
     if (skills.some(skill => group.includes(skill))) {
       return domain
     }
+  }
+  return null
+}
+
+function detectSeniority(text: string): string | null {
+  for (const level of Object.keys(SENIORITY_LEVELS)) {
+    if (text.includes(level)) return level
   }
   return null
 }
