@@ -24,7 +24,7 @@ while (true) {
 
   if (!(await hasJob.scraped())) {
     logger.trace({ orchestrator: true }, "Run scraper")
-    await $`python tools/scraper/scrape.py`
+    await $`python tools/scraper/runner.py`
   }
 
   if (await hasJob.scraped()) {

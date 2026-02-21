@@ -71,3 +71,12 @@ export function normalizeValues(arr: string[]) {
 export function escapeRegex(str: string) {
   return str.replace(/[-.*+?^${}()|[\]\\]/g, "\\$&")
 }
+
+/**
+ * Rounds a number to a specified number of decimal places and returns it as a number.
+ * @param fractionDigits — Number of digits after the decimal point. Must be in the range 0 - 20, inclusive.
+ * @returns Rounded number
+ */
+export function toFixed(x: number, fractionDigits = 3) {
+  return Number(x.toFixed(fractionDigits))
+}
