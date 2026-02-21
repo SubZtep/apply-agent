@@ -144,17 +144,26 @@ function extractSkills(text: string): string[] {
   return [...new Set(found)]
 }
 
-// FIXME: Domain Detection Is Too Naive
-// - First match wins
-// - No scoring
-// - No dominance logic
 export function detectDomain(skills: string[]): string | null {
+  if (!skills.length) return null
+
+  const counts: Record<string, number> = {}
+
   for (const [domain, group] of Object.entries(DOMAIN_MAP)) {
-    if (skills.some(skill => group.includes(skill))) {
-      return domain
+    counts[domain] = skills.filter(skill => group.includes(skill)).length
+  }
+
+  let bestDomain: string | null = null
+  let bestScore = 0
+
+  for (const [domain, count] of Object.entries(counts)) {
+    if (count > bestScore) {
+      bestScore = count
+      bestDomain = domain
     }
   }
-  return null
+
+  return bestScore > 0 ? bestDomain : null
 }
 
 function detectSeniority(text: string): string | null {
