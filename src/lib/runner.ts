@@ -1,6 +1,6 @@
 import { join } from "node:path"
 import { JSONL } from "bun"
-import { getAllJobs, getInitialJobState, isShortlisted, jobDir, mapScrapedJobToJob } from "#/lib/job"
+import { getAllJobs, getInitialJobState, jobDir, mapScrapedJobToJob } from "#/lib/job"
 import { logger } from "#/lib/logger"
 import { runSateMachine } from "#/machine/runner"
 import type { Job, JobDir } from "#/schemas/job"
@@ -8,6 +8,7 @@ import { ScrapedJobSchema } from "#/schemas/scraped_job"
 import { batchScoreJobs } from "#/score/bs"
 import type { AgentStore } from "./store"
 import { getProfileText } from "./user"
+import { isShortlisted } from "./vars"
 
 export async function ingest() {
   const inboxDir = jobDir("inbox")

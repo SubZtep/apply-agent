@@ -1,4 +1,3 @@
-import { logger } from "#/lib/logger"
 import type { AgentQuestion, AgentState, Job, JobAgentContext } from "#/schemas/job"
 
 export function decideNextState({ job, agent }: Job): {
@@ -6,7 +5,6 @@ export function decideNextState({ job, agent }: Job): {
   questions?: AgentQuestion[]
 } {
   if (!agent) {
-    logger.error({ job, agent }, "Agent report is required for next state decision")
     throw new Error("Missing agent report")
   }
 
@@ -25,7 +23,7 @@ export function decideNextState({ job, agent }: Job): {
 
   // Rule A — hard gaps: answered NO → FAIL
   if (agent.risks.hardGaps.length >= 3 && human.hasAnsweredHardGaps && !human.proceedDespiteHardGaps) {
-    logger.info("User declined proceeding due to hard gaps")
+    // User declined proceeding due to hard gaps
     return { nextState: "FAILED" }
   }
 
@@ -67,7 +65,7 @@ export function decideNextState({ job, agent }: Job): {
           questions
         }
       case "exploratory":
-        logger.info({ job, questions }, "Exploratory mode: proceeding despite uncertainty")
+        // Exploratory mode: proceeding despite uncertainty
         return { nextState: "PLAN" }
     }
   }
@@ -97,7 +95,6 @@ function interpretHumanAnswers(ctx: JobAgentContext) {
     leadershipMode: leadership ?? "strict"
   }
 
-  logger.info({ raw, result }, "Human answers interpreted")
   return result
 }
 

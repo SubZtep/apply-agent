@@ -77,6 +77,6 @@ export function escapeRegex(str: string) {
  * @param fractionDigits — Number of digits after the decimal point. Must be in the range 0 - 20, inclusive.
  * @returns Rounded number
  */
-export function toFixed(x: number, fractionDigits = 3) {
+export function toFixed(x: number, fractionDigits = 2) {
   return Number(x.toFixed(fractionDigits))
 }

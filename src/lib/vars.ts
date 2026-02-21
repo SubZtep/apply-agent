@@ -15,12 +15,13 @@ export const SKILL_ALIASES: Record<string, string[]> = {
   typescript: ["typescript", "ts"],
   javascript: ["javascript", "js", "ecmascript"],
   aws: ["aws", "amazon web services"],
-  devops: ["lambda", "serverless", "cloud", "docker", "linux"],
-  react: ["react", "reactjs", "svelte", "vue", "reactjs"],
-  cobol: ["cobol"],
+  devops: ["lambda", "serverless", "cloud", "docker", "linux", "terraform", "kubernetes"],
+  react: ["react", "reactjs", "svelte", "vue", "reactjs", "solidjs"],
+  ancient: ["cobol", "fortran", "clipper"],
   data: ["mysql", "postgresql", "mongo", "mongodb", "redis", "elasticsearch"],
   software: ["python", "py", "go", "golang", "rust", "java", ".net"],
-  web: ["html", "xhtml", "html5", "css", "scss", "sass", "tailwind", "tailwindcss", "ux"]
+  web: ["html", "xhtml", "html5", "css", "scss", "sass", "tailwind", "tailwindcss"],
+  design: ["photoshop", "gimp", "ux", "figma"]
   // c: ["c"] // FIXME: use word boundaries: /\bc\b/
 }
 
@@ -35,3 +36,15 @@ export const NEGATIVE_PATTERNS = [
   /never\s+(?:want\s+to\s+)?(?:work\s+with\s+)?([a-z0-9/+#.\- ]+)/gi,
   /don't\s+want\s+to\s+(?:work\s+with\s+)?([a-z0-9/+#.\- ]+)/gi
 ]
+
+/** 🦥 Tells if **a job is not worth thinking** about 🐒 */
+export function isShortlisted(score: number) {
+  // TODO: add dark magic here
+  return score >= 0.4
+}
+
+/** Enforce penalties deterministically */
+export function applyRedFlagPenalty(score: number, redFlags: string[]) {
+  const penalty = redFlags.length * 0.1
+  return Math.max(0, Math.round((score - penalty) * 100) / 100)
+}

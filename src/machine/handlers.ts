@@ -14,7 +14,8 @@ export const handlers: Record<AgentState, StateHandler> = {
 
   INGEST: async job => {
     if (!job.job.description || !job.job.description) {
-      logger.error(job, "Missing input")
+      // biome-ignore lint/suspicious/noAssignInExpressions: llm magic:)
+      job.agent && (job.agent.errors = (job.agent.errors ?? []).concat("Missing input"))
       return "FAILED"
     }
     return "NORMALIZE"
