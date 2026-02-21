@@ -1,11 +1,10 @@
 import { clamp, escapeRegex } from "#/lib/utils"
 import type { JobData, Score } from "#/schemas/job"
 
-type ScoringPromptJobData = Pick<JobData, "title" | "description">
+type ScoringJobData = Pick<JobData, "title" | "description">
 
-export async function scoreSingleJob(job: ScoringPromptJobData, profileText: string): Promise<Score> {
+export async function scoreSingleJob(job: ScoringJobData, profileText: string): Promise<Score> {
   const jobTextLower = `${job.title}\n\n${job.description}`.trim().toLowerCase()
-
   const profileTextLower = profileText.trim().toLowerCase()
 
   // Extract skills
@@ -48,7 +47,7 @@ export async function scoreSingleJob(job: ScoringPromptJobData, profileText: str
   return {
     score,
     signals: strongMatches,
-    redFlags: majorMissingSkills
+    redFlags: majorMissingSkills // FIXME: very missing skill is treated as a red flag, even optional ones
   }
 }
 
