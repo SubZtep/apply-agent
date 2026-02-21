@@ -15,7 +15,7 @@ There are three main automated processes. They can run in parallel.
 | ☑️ Search by pre-defined criteria | ☑️ Run batch scoring and find signals | ☑️ Put them into the [state machine](./docs/states.md) |
 | ☑️ Download results               | ☑️ Screen out irrelevant jobs         | 🔘 Enjoy approved jobs                                 |
 
-If something is ambiguous during the job categorisation process, the user will need to answer a few questions to clarify it.
+If something is ambiguous during the job categorisation process, the user (HITL) will need to answer a few questions to clarify it.
 
 ### How’s it going?
 
@@ -31,13 +31,7 @@ The simplest way to run the project is with [Docker Compose](https://docs.docker
 
 1. Clone the repository
 
-2. Create shared folder
-
-   ```bash
-   mkdir data
-   ```
-
-3. Run Docker Compose
+2. Run Docker Compose
 
    ```bash
    docker compose up
