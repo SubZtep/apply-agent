@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 import path from "node:path"
+import MarkdownIt from "markdown-it"
 import pdfmake from "pdfmake"
 import type { Content, TDocumentDefinitions, TFontDictionary } from "pdfmake/interfaces"
 
@@ -50,129 +51,188 @@ assertFontRegistered(BODY_FONT, pdfFonts)
 assertFontRegistered(HEADER_FONT, pdfFonts)
 void pdfm.setUrlAccessPolicy(() => false)
 
+const markdownParser = new MarkdownIt({
+  html: false,
+  linkify: true,
+  typographer: false
+})
+
+const styles = {
+  heading1: {
+    font: HEADER_FONT,
+    fontSize: 22,
+    bold: true,
+    margin: [0, 0, 0, 6] as [number, number, number, number]
+  },
+  heading2: {
+    font: HEADER_FONT,
+    fontSize: 13,
+    bold: true,
+    margin: [0, 12, 0, 6] as [number, number, number, number]
+  },
+  heading3: {
+    font: HEADER_FONT,
+    fontSize: 11,
+    bold: true,
+    margin: [0, 8, 0, 4] as [number, number, number, number]
+  },
+  paragraph: {
+    fontSize: 10,
+    margin: [0, 0, 0, 6] as [number, number, number, number]
+  },
+  list: {
+    fontSize: 10,
+    margin: [0, 0, 0, 6] as [number, number, number, number]
+  }
+}
+
+function getHeadingStyle(level: number) {
+  if (level === 1) return styles.heading1
+  if (level === 2) return styles.heading2
+  return styles.heading3
+}
+
+function inlineTokenToPdfText(inlineToken: NonNullable<ReturnType<typeof markdownParser.parse>[number]>) {
+  const children = inlineToken.children ?? []
+  const textParts: Array<{
+    text: string
+    bold?: true
+    italics?: true
+    link?: string
+    decoration?: "underline"
+  }> = []
+  const styleStack: Array<{
+    bold?: true
+    italics?: true
+    link?: string
+    decoration?: "underline"
+  }> = [{}]
+
+  function currentStyle() {
+    return styleStack[styleStack.length - 1] ?? {}
+  }
+
+  for (const token of children) {
+    if (token.type === "strong_open") {
+      styleStack.push({ ...currentStyle(), bold: true })
+      continue
+    }
+    if (token.type === "em_open") {
+      styleStack.push({ ...currentStyle(), italics: true })
+      continue
+    }
+    if (token.type === "link_open") {
+      const href = token.attrs?.find(([name]) => name === "href")?.[1]
+      styleStack.push({
+        ...currentStyle(),
+        ...(href == null ? {} : { link: href, decoration: "underline" as const })
+      })
+      continue
+    }
+    if (token.type === "strong_close" || token.type === "em_close" || token.type === "link_close") {
+      if (styleStack.length > 1) styleStack.pop()
+      continue
+    }
+
+    if (token.type === "softbreak" || token.type === "hardbreak") {
+      textParts.push({ ...currentStyle(), text: "\n" })
+      continue
+    }
+    if (token.type === "code_inline") {
+      textParts.push({ ...currentStyle(), text: token.content })
+      continue
+    }
+    if (token.type === "text") {
+      textParts.push({ ...currentStyle(), text: token.content })
+      continue
+    }
+  }
+
+  if (textParts.length === 0) return ""
+
+  const plainTextOnly = textParts.every(
+    (part) =>
+      part.bold == null && part.italics == null && part.link == null && part.decoration == null
+  )
+
+  if (plainTextOnly) {
+    return textParts.map((part) => part.text).join("")
+  }
+
+  return textParts
+}
+
 function parseCvMarkdown(markdown: string): Content[] {
-  const lines = markdown.split(/\n/)
+  const tokens = markdownParser.parse(markdown, {})
   const content: Content[] = []
-  const pendingPara: string[] = []
-  const pendingBullets: string[] = []
-  let nextParagraphIsSubtitle = false
+  for (let i = 0; i < tokens.length; i += 1) {
+    const token = tokens[i]
+    if (token == null) continue
 
-  function flushParagraph() {
-    if (pendingPara.length === 0) return
-    const text = pendingPara.join(" ").trim()
-    pendingPara.length = 0
-    if (!text) return
-
-    if (nextParagraphIsSubtitle) {
-      nextParagraphIsSubtitle = false
-      content.push({
-        text,
-        font: HEADER_FONT,
-        fontSize: 11,
-        bold: true,
-        margin: [0, 0, 0, 6]
-      })
-      return
+    if (token.type === "heading_open") {
+      const level = Number(token.tag.slice(1))
+      const inlineToken = tokens[i + 1]
+      if (inlineToken?.type === "inline") {
+        content.push({
+          ...getHeadingStyle(level),
+          text: inlineTokenToPdfText(inlineToken)
+        })
+      }
+      continue
     }
 
-    content.push({
-      text,
-      fontSize: 10,
-      margin: [0, 0, 0, 6]
-    })
+    if (token.type === "paragraph_open") {
+      const inlineToken = tokens[i + 1]
+      if (inlineToken?.type === "inline") {
+        content.push({
+          ...styles.paragraph,
+          text: inlineTokenToPdfText(inlineToken)
+        })
+      }
+      continue
+    }
+
+    if (token.type === "bullet_list_open") {
+      const items: Array<
+        | string
+        | Array<{ text: string; bold?: true; italics?: true; link?: string; decoration?: "underline" }>
+      > = []
+      let listCursor = i + 1
+      while (tokens[listCursor]?.type !== "bullet_list_close" && listCursor < tokens.length) {
+        const listToken = tokens[listCursor]
+        if (listToken?.type !== "list_item_open") {
+          listCursor += 1
+          continue
+        }
+
+        let itemText:
+          | string
+          | Array<{ text: string; bold?: true; italics?: true; link?: string; decoration?: "underline" }>
+          | null = null
+        listCursor += 1
+        while (tokens[listCursor]?.type !== "list_item_close" && listCursor < tokens.length) {
+          const innerToken = tokens[listCursor]
+          if (innerToken?.type === "inline") {
+            itemText = inlineTokenToPdfText(innerToken)
+          }
+          listCursor += 1
+        }
+
+        if (itemText != null && itemText !== "") {
+          items.push(itemText)
+        }
+        listCursor += 1
+      }
+
+      if (items.length > 0) {
+        content.push({
+          ...styles.list,
+          ul: items
+        })
+      }
+      i = listCursor
+    }
   }
-
-  function flushBullets() {
-    if (pendingBullets.length === 0) return
-    const items = pendingBullets.splice(0, pendingBullets.length)
-    content.push({
-      ul: items,
-      fontSize: 10,
-      margin: [0, 0, 0, 6]
-    })
-  }
-
-  function flushBulletsIfLineIsNotBullet(line: string) {
-    if (pendingBullets.length === 0) return
-    if (line.startsWith("- ")) return
-    flushBullets()
-  }
-
-  for (const rawLine of lines) {
-    const line = rawLine.trimEnd()
-    const trimmed = line.trim()
-
-    if (trimmed === "") {
-      flushParagraph()
-      continue
-    }
-
-    if (trimmed.startsWith("# ")) {
-      flushBullets()
-      flushParagraph()
-      content.push({
-        text: trimmed.slice(2),
-        font: HEADER_FONT,
-        fontSize: 22,
-        bold: true,
-        margin: [0, 0, 0, 4]
-      })
-      nextParagraphIsSubtitle = true
-      continue
-    }
-
-    if (trimmed.startsWith("## ")) {
-      flushBullets()
-      flushParagraph()
-      content.push({
-        text: trimmed.slice(3),
-        font: HEADER_FONT,
-        fontSize: 13,
-        bold: true,
-        margin: [0, 12, 0, 6]
-      })
-      continue
-    }
-
-    if (trimmed.startsWith("### ")) {
-      flushBullets()
-      flushParagraph()
-      content.push({
-        text: trimmed.slice(4),
-        font: HEADER_FONT,
-        fontSize: 11,
-        bold: true,
-        margin: [0, 8, 0, 2]
-      })
-      continue
-    }
-
-    if (trimmed.startsWith("- ")) {
-      flushParagraph()
-      pendingBullets.push(trimmed.slice(2).trim())
-      continue
-    }
-
-    if (trimmed.startsWith("Skills used:")) {
-      flushBullets()
-      flushParagraph()
-      const rest = trimmed.slice("Skills used:".length).trim()
-      content.push({
-        margin: [0, 0, 0, 8],
-        text: [
-          { text: "Skills used: ", bold: true, fontSize: 9 },
-          { text: rest, italics: true, fontSize: 9 }
-        ]
-      })
-      continue
-    }
-
-    flushBulletsIfLineIsNotBullet(trimmed)
-    pendingPara.push(trimmed)
-  }
-
-  flushBullets()
-  flushParagraph()
 
   return content
 }
@@ -198,7 +258,6 @@ async function main() {
 
   const markdown = await inputFile.text()
   const pdfContent = parseCvMarkdown(markdown)
-
 
   const docDefinition: TDocumentDefinitions = {
     pageMargins: [48, 48, 48, 48],
