@@ -1,19 +1,22 @@
 #!/usr/bin/env bun
 import path from "node:path"
-import MarkdownIt from "markdown-it"
+import type { PhrasingContent, Root, RootContent } from "mdast"
 import pdfmake from "pdfmake"
 import type { Content, TDocumentDefinitions, TFontDictionary } from "pdfmake/interfaces"
+import remarkParse from "remark-parse"
+import { unified } from "unified"
 
 const BODY_FONT = "Helvetica"
 const HEADER_FONT = "Times"
 
+// pdfmake exposes these methods at runtime but the published types don't include them
 type PdfmakeServer = typeof pdfmake & {
   setUrlAccessPolicy(callback: (url: string) => boolean): void
   setFonts(fonts: TFontDictionary): void
 }
 
 function assertFontRegistered(family: string, fonts: TFontDictionary) {
-  if (fonts[family] == null) {
+  if (!(family in fonts)) {
     throw new Error(`Font family "${family}" is not registered. Available: ${Object.keys(fonts).join(", ")}`)
   }
 }
@@ -49,13 +52,7 @@ const pdfm = pdfmake as PdfmakeServer
 pdfm.setFonts(pdfFonts)
 assertFontRegistered(BODY_FONT, pdfFonts)
 assertFontRegistered(HEADER_FONT, pdfFonts)
-void pdfm.setUrlAccessPolicy(() => false)
-
-const md = new MarkdownIt({
-  html: false,
-  linkify: false,
-  typographer: true
-})
+pdfm.setUrlAccessPolicy(() => false)
 
 const markdownStyles = {
   h1: { font: HEADER_FONT, fontSize: 22, bold: true, margin: [0, 0, 0, 4] as [number, number, number, number] },
@@ -65,8 +62,10 @@ const markdownStyles = {
   ul: { fontSize: 10, margin: [0, 0, 0, 6] as [number, number, number, number] }
 }
 
+type TextRun = { text: string; bold?: boolean; italics?: boolean; link?: string }
+
 function simplifyRuns(
-  runs: Array<{ text: string; bold?: boolean; italics?: boolean; link?: string }>
+  runs: TextRun[]
 ) {
   if (runs.length === 0) return ""
   if (runs.length === 1 && runs[0].bold !== true && runs[0].italics !== true && runs[0].link === undefined) {
@@ -75,122 +74,73 @@ function simplifyRuns(
   return runs
 }
 
-function parseInlineRuns(token: { children?: Array<{ type: string; content: string; attrGet?: (name: string) => string | null }> }) {
-  const runs: Array<{ text: string; bold?: boolean; italics?: boolean; link?: string }> = []
-  if (token.children == null) return runs
+function parseInlineRuns(nodes: PhrasingContent[], activeStyles: Omit<TextRun, "text"> = {}) {
+  const runs: TextRun[] = []
 
-  let strongDepth = 0
-  let emDepth = 0
-  let activeLink: string | undefined
-
-  for (const child of token.children) {
-    if (child.type === "strong_open") {
-      strongDepth += 1
-      continue
-    }
-    if (child.type === "strong_close") {
-      strongDepth = Math.max(0, strongDepth - 1)
-      continue
-    }
-    if (child.type === "em_open") {
-      emDepth += 1
-      continue
-    }
-    if (child.type === "em_close") {
-      emDepth = Math.max(0, emDepth - 1)
-      continue
-    }
-    if (child.type === "link_open") {
-      activeLink = child.attrGet?.("href") ?? undefined
-      continue
-    }
-    if (child.type === "link_close") {
-      activeLink = undefined
+  for (const node of nodes) {
+    if (node.type === "text" || node.type === "inlineCode") {
+      if (node.value) {
+        runs.push({ text: node.value, ...activeStyles })
+      }
       continue
     }
 
-    const text = child.type === "softbreak" || child.type === "hardbreak" ? "\n" : child.content
-    if (!text) continue
+    if (node.type === "break") {
+      runs.push({ text: "\n", ...activeStyles })
+      continue
+    }
 
-    runs.push({
-      text,
-      bold: strongDepth > 0 ? true : undefined,
-      italics: emDepth > 0 ? true : undefined,
-      link: activeLink
-    })
+    if (node.type === "strong") {
+      runs.push(...parseInlineRuns(node.children, { ...activeStyles, bold: true }))
+      continue
+    }
+
+    if (node.type === "emphasis") {
+      runs.push(...parseInlineRuns(node.children, { ...activeStyles, italics: true }))
+      continue
+    }
+
+    if (node.type === "link") {
+      runs.push(...parseInlineRuns(node.children, { ...activeStyles, link: node.url }))
+      continue
+    }
   }
 
   return runs
 }
 
 function parseCvMarkdown(markdown: string): Content[] {
-  const tokens = md.parse(markdown, {})
+  const tree = unified().use(remarkParse).parse(markdown)
   const content: Content[] = []
 
-  let pendingHeadingLevel: number | null = null
-  const listStack: Array<{ items: Array<string | Array<{ text: string; bold?: boolean; italics?: boolean; link?: string }>>; currentItem: Array<{ text: string; bold?: boolean; italics?: boolean; link?: string }> }> = []
-
-  for (const token of tokens) {
-    if (token.type === "heading_open") {
-      pendingHeadingLevel = Number.parseInt(token.tag.slice(1), 10)
+  for (const block of tree.children) {
+    if (block.type === "heading") {
+      const runs = parseInlineRuns(block.children)
+      if (runs.length === 0) continue
+      const headingStyle = block.depth === 1 ? "h1" : block.depth === 2 ? "h2" : "h3"
+      content.push({ text: simplifyRuns(runs), style: headingStyle })
       continue
     }
 
-    if (token.type === "heading_close") {
-      pendingHeadingLevel = null
+    if (block.type === "paragraph") {
+      const runs = parseInlineRuns(block.children)
+      if (runs.length === 0) continue
+      content.push({ text: simplifyRuns(runs), style: "p" })
       continue
     }
 
-    if (token.type === "bullet_list_open") {
-      listStack.push({ items: [], currentItem: [] })
-      continue
+    if (block.type === "list") {
+      const items = block.children.map((item) => {
+        const itemRuns: TextRun[] = []
+        for (const child of item.children) {
+          if (child.type !== "paragraph") continue
+          if (itemRuns.length > 0) itemRuns.push({ text: "\n" })
+          itemRuns.push(...parseInlineRuns(child.children))
+        }
+        return simplifyRuns(itemRuns)
+      })
+      content.push({ ul: items, style: "ul" })
     }
-
-    if (token.type === "bullet_list_close") {
-      const list = listStack.pop()
-      if (list == null) continue
-      if (listStack.length > 0) continue
-      const listNode: Content = { ul: list.items, style: "ul" }
-      content.push(listNode)
-      continue
-    }
-
-    if (token.type === "list_item_open") {
-      if (listStack.length > 0) {
-        listStack[listStack.length - 1].currentItem = []
-      }
-      continue
-    }
-
-    if (token.type === "list_item_close") {
-      if (listStack.length === 0) continue
-      const currentList = listStack[listStack.length - 1]
-      currentList.items.push(simplifyRuns(currentList.currentItem))
-      currentList.currentItem = []
-      continue
-    }
-
-    if (token.type !== "inline") continue
-
-    const inlineRuns = parseInlineRuns(token)
-    if (inlineRuns.length === 0) continue
-
-    if (pendingHeadingLevel !== null) {
-      const headingStyle = pendingHeadingLevel === 1 ? "h1" : pendingHeadingLevel === 2 ? "h2" : "h3"
-      content.push({ text: simplifyRuns(inlineRuns), style: headingStyle })
-      continue
-    }
-
-    if (listStack.length > 0) {
-      const currentList = listStack[listStack.length - 1]
-      currentList.currentItem.push(...inlineRuns)
-      continue
-    }
-
-    content.push({
-      text: simplifyRuns(inlineRuns),
-      style: "p"
-    })
   }
 
   return content
@@ -218,13 +168,12 @@ async function main() {
   const markdown = await inputFile.text()
   const pdfContent = parseCvMarkdown(markdown)
 
-
   const docDefinition: TDocumentDefinitions = {
     pageMargins: [48, 48, 48, 48],
     content: pdfContent,
     defaultStyle: {
       font: BODY_FONT,
-      lineHeight: 1.35
+      lineHeight: 1.45
     },
     styles: markdownStyles
   }
