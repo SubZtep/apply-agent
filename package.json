@@ -19,6 +19,8 @@
     "pdfmake": "^0.3.7",
     "pino": "^10.3.1",
     "pino-loki": "^3.0.0",
+    "remark-parse": "^11.0.0",
+    "unified": "^11.0.5",
     "zod": "^4.3.6"
   },
   "devDependencies": {
