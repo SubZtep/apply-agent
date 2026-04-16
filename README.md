@@ -11,7 +11,13 @@ There are three config files the user can configure. Running `./scripts/install.
 
 ## ⛓️ .env.local
 
-The original [`.env`](../.env) file with the project’s environment variables is part of the repository and contains sensible defaults for LLM APIs and local paths. To override any value, create a `.env.local` file with your local configuration.
+Copy [`.env.example`](./.env.example) to `.env` (defaults), then put machine-specific overrides and secrets into `.env.local`.
+
+```bash
+cp .env.example .env
+```
+
+Precedence is: **system env > `.env.local` > `.env`**.
 
 ### Models
 
@@ -284,7 +290,13 @@ The simplest way to run the project is with [Docker Compose](https://docs.docker
 
 1. Clone the repository
 
-2. Run Docker Compose
+2. Create `.env` from the example
+
+   ```bash
+   cp .env.example .env
+   ```
+
+3. Run Docker Compose
 
    ```bash
    docker compose up

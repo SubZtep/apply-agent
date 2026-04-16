@@ -17,6 +17,17 @@ source "$(dirname "$0")/lib/dotenv.sh"
 
 readonly SCRIPTS_DIR="scripts"
 
+if [[ ! -f ".env" ]]; then
+  if [[ -f ".env.example" ]]; then
+    cp ".env.example" ".env"
+  else
+    echo "❌ Missing .env and .env.example. Create .env or restore .env.example." >&2
+    exit 1
+  fi
+fi
+
+source "$SCRIPTS_DIR/lib/dotenv.sh"
+
 require_script() {
   if [ ! -f "$1" ]; then
     echo "❌ Missing required script: $1" >&2
