@@ -17,9 +17,13 @@ services:
     depends_on:
       ollama:
         condition: service_healthy
+    env_file:
+      - path: .env
+        required: true
+      - path: .env.local
+        required: false
     environment:
       OLLAMA_BASE_URL: http://ollama:11434
     entrypoint: ["./scripts/start.sh"]
     volumes:
       - ./data:/app/data
-      - ./.env.local:/app/.env.local:ro
