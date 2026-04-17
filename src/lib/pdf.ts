@@ -1,63 +1,98 @@
+import { readFileSync } from "node:fs"
+import { fileURLToPath } from "node:url"
 import pdfmake from "pdfmake"
-import type { Content, TDocumentDefinitions, TFontDictionary } from "pdfmake/interfaces"
+import type {
+  Content,
+  StyleDictionary,
+  StyleReference,
+  TDocumentDefinitions,
+  TFontDictionary
+} from "pdfmake/interfaces"
 
-const BODY_FONT = "Helvetica"
-const HEADER_FONT = "Times"
-const SUBHEADER_FONT = "Courier"
+// MARK: PDF fonts and styles
+
+const SERIF_FONT = "Merriweather"
+const SANS_SERIF_FONT = "OpenSans"
+
+/** Latin WOFF only: pdfkit/fontkit subset embed can throw on WOFF2 for these families. */
+const FONTSOURCE_WOFF = [
+  {
+    key: "Merriweather",
+    specifierDir: "@fontsource/merriweather/files",
+    faces: {
+      normal: { vfs: "fonts/merriweather-400.woff", file: "merriweather-latin-400-normal.woff" },
+      bold: { vfs: "fonts/merriweather-700.woff", file: "merriweather-latin-700-normal.woff" },
+      italics: { vfs: "fonts/merriweather-400-italic.woff", file: "merriweather-latin-400-italic.woff" },
+      bolditalics: { vfs: "fonts/merriweather-700-italic.woff", file: "merriweather-latin-700-italic.woff" }
+    }
+  },
+  {
+    key: "OpenSans",
+    specifierDir: "@fontsource/open-sans/files",
+    faces: {
+      normal: { vfs: "fonts/open-sans-400.woff", file: "open-sans-latin-400-normal.woff" },
+      bold: { vfs: "fonts/open-sans-700.woff", file: "open-sans-latin-700-normal.woff" },
+      italics: { vfs: "fonts/open-sans-400-italic.woff", file: "open-sans-latin-400-italic.woff" },
+      bolditalics: { vfs: "fonts/open-sans-700-italic.woff", file: "open-sans-latin-700-italic.woff" }
+    }
+  }
+] as const
+
+type FontsourceWoffFamily = (typeof FONTSOURCE_WOFF)[number]
+type FontSlot = keyof FontsourceWoffFamily["faces"]
+
+function addFontsourceWoffFonts(
+  vfs: { writeFileSync(filename: string, content: Buffer): void },
+  families: readonly FontsourceWoffFamily[]
+) {
+  const slots: FontSlot[] = ["normal", "bold", "italics", "bolditalics"]
+  for (const fam of families) {
+    for (const slot of slots) {
+      const { vfs: vfsPath, file } = fam.faces[slot]
+      const url = import.meta.resolve(`${fam.specifierDir}/${file}`)
+      vfs.writeFileSync(vfsPath, readFileSync(fileURLToPath(url)))
+    }
+  }
+  return Object.fromEntries(
+    families.map(f => [
+      f.key,
+      {
+        normal: f.faces.normal.vfs,
+        bold: f.faces.bold.vfs,
+        italics: f.faces.italics.vfs,
+        bolditalics: f.faces.bolditalics.vfs
+      }
+    ])
+  ) as TFontDictionary
+}
 
 type PdfmakeServer = typeof pdfmake & {
   setUrlAccessPolicy(callback: (url: string) => boolean): void
   setFonts(fonts: TFontDictionary): void
-}
-
-function assertFontRegistered(family: string, fonts: TFontDictionary) {
-  if (!(family in fonts)) {
-    throw new Error(`Font family "${family}" is not registered. Available: ${Object.keys(fonts).join(", ")}`)
-  }
-}
-
-const pdfFonts: TFontDictionary = {
-  Courier: {
-    normal: "Courier",
-    bold: "Courier-Bold",
-    italics: "Courier-Oblique",
-    bolditalics: "Courier-BoldOblique"
-  },
-  Helvetica: {
-    normal: "Helvetica",
-    bold: "Helvetica-Bold",
-    italics: "Helvetica-Oblique",
-    bolditalics: "Helvetica-BoldOblique"
-  },
-  Times: {
-    normal: "Times-Roman",
-    bold: "Times-Bold",
-    italics: "Times-Italic",
-    bolditalics: "Times-BoldItalic"
-  }
+  virtualfs: { writeFileSync(filename: string, content: Buffer): void }
 }
 
 const pdfm = pdfmake as PdfmakeServer
+const pdfFonts = addFontsourceWoffFonts(pdfm.virtualfs, FONTSOURCE_WOFF)
 pdfm.setFonts(pdfFonts)
-assertFontRegistered(BODY_FONT, pdfFonts)
-assertFontRegistered(HEADER_FONT, pdfFonts)
-assertFontRegistered(SUBHEADER_FONT, pdfFonts)
-pdfm.setUrlAccessPolicy(() => false)
+pdfm.setUrlAccessPolicy(() => false) // no remote embedding
 
-const sectionStyles = {
-  h1: { font: HEADER_FONT, fontSize: 22, bold: true, margin: [0, 0, 0, 4] as [number, number, number, number] },
+const sectionStyles: StyleDictionary = {
+  h1: { font: SERIF_FONT, fontSize: 22, bold: true, margin: [0, 0, 0, 4] },
   h2: {
-    font: SUBHEADER_FONT,
     color: "#2079c7",
     fontSize: 10,
     bold: true,
-    margin: [0, 12, 0, 6] as [number, number, number, number]
+    margin: [0, 12, 0, 6]
   },
-  h3: { font: HEADER_FONT, fontSize: 11, bold: true, margin: [0, 8, 0, 2] as [number, number, number, number] },
-  p: { fontSize: 10, margin: [0, 0, 0, 6] as [number, number, number, number] },
-  ul: { fontSize: 10, margin: [0, 0, 0, 6] as [number, number, number, number] },
-  meta: { fontSize: 9, margin: [0, 0, 0, 2] as [number, number, number, number] }
+  h3: { font: SANS_SERIF_FONT, fontSize: 11, bold: true, margin: [0, 8, 0, 2] },
+  p: { fontSize: 10, margin: [0, 0, 0, 6] },
+  ul: { fontSize: 10, margin: [0, 0, 0, 6] },
+  meta: { fontSize: 9, margin: [0, 0, 0, 2] },
+  small: { font: SANS_SERIF_FONT, color: "#666666", fontSize: 8, bold: true, margin: [0, 0, 0, 122] }
 }
+
+// MARK: CV data types
 
 type CvProfile = {
   network?: string
@@ -119,135 +154,140 @@ export type Cv = {
   education?: CvEducation[]
 }
 
-function formatLocation(loc: NonNullable<CvBasics["location"]>) {
-  const parts = [loc.address, loc.city, loc.region, loc.postalCode, loc.countryCode].filter(Boolean)
-  return parts.join(", ")
-}
+// MARK: PDF helpers
 
-function formatDateRange(start?: string, end?: string) {
-  if (start && end) return `${start} – ${end}`
-  if (start) return start
-  if (end) return end
-  return ""
-}
-
-function pushParagraph(content: Content[], text: string | undefined, style: "p" | "meta" = "p") {
-  const t = text?.trim()
-  if (t) content.push({ text: t, style })
+function pushParagraph(content: Content[], text?: string, style: StyleReference = "p") {
+  if (text) content.push({ text, style })
 }
 
 function cvToPdfContent(cv: Cv) {
   const content: Content[] = []
+
+  // MARK: Basics
   const b = cv.basics
 
-  if (b?.name?.trim()) {
-    content.push({ text: b.name.trim(), style: "h1" })
+  if (b?.name) {
+    content.push({ text: b.name, style: "h1" })
   }
-  if (b?.label?.trim()) {
-    content.push({ text: b.label.trim(), style: "p" })
+  const metaLine: { text: string; link?: string }[] = []
+  if (b?.label) metaLine.push({ text: b.label })
+  if (b?.email) {
+    if (metaLine.length) metaLine.push({ text: " · " })
+    const e = b.email
+    metaLine.push({ text: e, link: `mailto:${e}` })
   }
-
-  const contactLine: { text: string; link?: string }[] = []
-  if (b?.email?.trim()) {
-    const e = b.email.trim()
-    contactLine.push({ text: e, link: `mailto:${e}` })
+  if (b?.phone) {
+    if (metaLine.length) metaLine.push({ text: " · " })
+    metaLine.push({ text: b.phone })
   }
-  if (b?.phone?.trim()) {
-    if (contactLine.length) contactLine.push({ text: " · " })
-    contactLine.push({ text: b.phone.trim() })
+  if (b?.url) {
+    if (metaLine.length) metaLine.push({ text: " · " })
+    const u = b.url
+    metaLine.push({ text: u, link: u })
   }
-  if (b?.url?.trim()) {
-    if (contactLine.length) contactLine.push({ text: " · " })
-    const u = b.url.trim()
-    contactLine.push({ text: u, link: u })
-  }
-  if (contactLine.length) {
-    content.push({ text: contactLine, style: "meta" })
-  }
-
   if (b?.location) {
-    const locStr = formatLocation(b.location).trim()
-    if (locStr) pushParagraph(content, locStr, "meta")
+    const locStr = [
+      b.location.address,
+      b.location.city,
+      b.location.region,
+      b.location.postalCode,
+      b.location.countryCode
+    ]
+      .filter(Boolean)
+      .join(", ")
+
+    if (locStr) {
+      if (metaLine.length) metaLine.push({ text: " · " })
+      metaLine.push({ text: locStr })
+    }
+  }
+  if (metaLine.length) {
+    content.push({ text: metaLine, style: "meta" })
   }
 
   if (b?.profiles?.length) {
-    const profileBits: { text: string; link?: string }[] = []
     for (const p of b.profiles) {
-      const label = [p.network, p.username].filter(Boolean).join(": ") || p.url
-      if (!label?.trim()) continue
-      if (profileBits.length) profileBits.push({ text: " · " })
-      const u = p.url?.trim()
-      profileBits.push(u ? { text: label.trim(), link: u } : { text: label.trim() })
-    }
-    if (profileBits.length) {
-      content.push({ text: profileBits, style: "meta" })
+      const label = /*[p.network, p.username].filter(Boolean).join(": ") || */ p.url
+      if (label) {
+        if (metaLine.length) metaLine.push({ text: " · " })
+        metaLine.push(p.url ? { text: label, link: p.url } : { text: label })
+      }
     }
   }
 
-  if (b?.summary?.trim()) {
-    content.push({ text: "Summary", style: "h2" })
+  if (b?.summary) {
+    content.push({ text: "SUMMARY", style: "h2" })
     pushParagraph(content, b.summary)
   }
 
+  // MARK: Skills
   if (cv.skills?.length) {
-    content.push({ text: "Skills", style: "h2" })
+    content.push({ text: "SKILLS", style: "h2" })
+    const skillsFormatted: Content[] = []
     for (const s of cv.skills) {
-      const title = s.name?.trim()
-      if (title) content.push({ text: title, style: "h3" })
-      const kws = s.keywords?.filter(k => k.trim())
-      if (kws?.length) {
-        content.push({ ul: kws, style: "ul" })
+      const kws = s.keywords?.filter(Boolean)
+      if (s.name && kws?.length) {
+        skillsFormatted.push({
+          text: [{ text: `${s.name}: `, bold: true }, { text: kws.join(", ") }],
+          margin: [0, 0, 0, 3],
+          font: SANS_SERIF_FONT,
+          fontSize: 10,
+          lineHeight: 0.8
+        })
       }
+    }
+    if (skillsFormatted.length) {
+      content.push(...skillsFormatted)
     }
   }
 
+  // MARK: Work
   if (cv.work?.length) {
-    content.push({ text: "Experience", style: "h2" })
+    content.push({ text: "EXPERIENCE", style: "h2" })
     for (const w of cv.work) {
-      const company = w.name?.trim()
-      const role = w.position?.trim()
-      const heading = company && role ? `${company} — ${role}` : company || role || "Role"
-      content.push({ text: heading, style: "h3" })
-
-      const metaParts = [formatDateRange(w.startDate, w.endDate), w.location?.trim()].filter(Boolean)
+      content.push({ text: [w.name, w.position].join(" — "), style: "h3" })
+      const metaParts = [[w.startDate, w.endDate].filter(Boolean).join(" – "), w.location].filter(Boolean)
       if (metaParts.length) {
-        pushParagraph(content, metaParts.join(" · "), "meta")
+        pushParagraph(content, metaParts.join(" · "), sectionStyles.small)
       }
       pushParagraph(content, w.summary)
-      const hl = w.highlights?.map(h => h.trim()).filter(Boolean)
+      const hl = w.highlights?.filter(Boolean)
       if (hl?.length) {
         content.push({ ul: hl, style: "ul" })
       }
     }
   }
 
+  // MARK: Projects
   if (cv.projects?.length) {
-    content.push({ text: "Projects", style: "h2" })
+    content.push({ text: "PROJECTS", style: "h2" })
     for (const p of cv.projects) {
-      if (p.name?.trim()) content.push({ text: p.name.trim(), style: "h3" })
-      const u = p.url?.trim()
-      if (u) {
-        content.push({ text: [{ text: u, link: u }], style: "meta" })
+      if (p.name) content.push({ text: p.name, style: "h3" })
+      if (p.url) {
+        content.push({ text: [{ text: p.url, link: p.url }], style: "meta" })
       }
       pushParagraph(content, p.description)
-      const hl = p.highlights?.map(h => h.trim()).filter(Boolean)
+      const hl = p.highlights?.filter(Boolean)
       if (hl?.length) {
         content.push({ ul: hl, style: "ul" })
       }
     }
   }
 
+  // MARK: Education
   if (cv.education?.length) {
-    content.push({ text: "Education", style: "h2" })
+    content.push({ text: "EDUCATION", style: "h2" })
     for (const e of cv.education) {
       const title = [e.institution, e.area, e.studyType].filter(Boolean).join(" — ")
-      if (title.trim()) content.push({ text: title.trim(), style: "h3" })
+      if (title) content.push({ text: title, style: "h3" })
       pushParagraph(content, e.location, "meta")
     }
   }
 
   return content
 }
+
+// MARK: PDF rendering
 
 export async function renderCvPdf(cv: Cv, outputPath: string) {
   const pdfContent = cvToPdfContent(cv)
@@ -256,8 +296,8 @@ export async function renderCvPdf(cv: Cv, outputPath: string) {
     pageMargins: [48, 48, 48, 48],
     content: pdfContent,
     defaultStyle: {
-      font: BODY_FONT,
-      lineHeight: 1.45
+      font: SERIF_FONT,
+      lineHeight: 1.2
     },
     styles: sectionStyles
   }
