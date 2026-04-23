@@ -1,7 +1,6 @@
 #!/usr/bin/env bun
 import path from "node:path"
-import type { Cv } from "#/lib/pdf"
-import { renderCvPdf } from "#/lib/pdf"
+import { renderCvPdf, type Cv } from "#/lib/pdf"
 
 const args = process.argv.slice(2).filter((a) => a !== "--")
 

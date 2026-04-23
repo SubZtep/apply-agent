@@ -80,16 +80,17 @@ pdfm.setUrlAccessPolicy(() => false) // no remote embedding
 const sectionStyles: StyleDictionary = {
   h1: { font: SERIF_FONT, fontSize: 22, bold: true, margin: [0, 0, 0, 4] },
   h2: {
+    font: SANS_SERIF_FONT,
     color: "#2079c7",
     fontSize: 10,
     bold: true,
     margin: [0, 12, 0, 6]
   },
-  h3: { font: SANS_SERIF_FONT, fontSize: 11, bold: true, margin: [0, 8, 0, 2] },
-  p: { fontSize: 10, margin: [0, 0, 0, 6] },
-  ul: { fontSize: 10, margin: [0, 0, 0, 6] },
+  h3: { font: SANS_SERIF_FONT, fontSize: 11, bold: true, margin: [0, 8, 0, 0] },
+  p: { fontSize: 10, margin: [0, 0, 0, 6], color: "#444444" },
+  ul: { fontSize: 10, margin: [0, 0, 0, 6], color: "#666666" },
   meta: { fontSize: 9, margin: [0, 0, 0, 2] },
-  small: { font: SANS_SERIF_FONT, color: "#666666", fontSize: 8, bold: true, margin: [0, 0, 0, 122] }
+  small: { font: SANS_SERIF_FONT, color: "#444444", fontSize: 8, bold: true, lineHeight: 1.5 }
 }
 
 // MARK: CV data types
@@ -160,6 +161,32 @@ function pushParagraph(content: Content[], text?: string, style: StyleReference 
   if (text) content.push({ text, style })
 }
 
+const MONTHS_EN_GB = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec"
+]
+
+/** Format ISO8601 date (YYYY, YYYY-MM, YYYY-MM-DD) in UK English short form, e.g. "Oct 2023" or "29 Jun 2014". */
+function formatDateEnGb(iso?: string) {
+  if (!iso) return iso
+  const m = iso.match(/^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/)
+  if (!m) return iso
+  const [, year, month, day] = m
+  if (day && month) return `${Number(day)} ${MONTHS_EN_GB[Number(month) - 1]} ${year}`
+  if (month) return `${MONTHS_EN_GB[Number(month) - 1]} ${year}`
+  return year
+}
+
 function cvToPdfContent(cv: Cv) {
   const content: Content[] = []
 
@@ -169,50 +196,48 @@ function cvToPdfContent(cv: Cv) {
   if (b?.name) {
     content.push({ text: b.name, style: "h1" })
   }
-  const metaLine: { text: string; link?: string }[] = []
-  if (b?.label) metaLine.push({ text: b.label })
+
+  type HeaderPiece = { text: string; link?: string }
+  const headerPieces: HeaderPiece[] = []
+  if (b?.label) headerPieces.push({ text: b.label })
   if (b?.email) {
-    if (metaLine.length) metaLine.push({ text: " · " })
     const e = b.email
-    metaLine.push({ text: e, link: `mailto:${e}` })
+    headerPieces.push({ text: e, link: `mailto:${e}` })
   }
-  if (b?.phone) {
-    if (metaLine.length) metaLine.push({ text: " · " })
-    metaLine.push({ text: b.phone })
-  }
+  if (b?.phone) headerPieces.push({ text: b.phone })
   if (b?.url) {
-    if (metaLine.length) metaLine.push({ text: " · " })
-    const u = b.url
-    metaLine.push({ text: u, link: u })
+    headerPieces.push({
+      text: b.url.replace(/^https?:\/\/(www\.)?|\/$/g, ""),
+      link: b.url
+    })
   }
   if (b?.location) {
     const locStr = [
       b.location.address,
       b.location.city,
       b.location.region,
-      b.location.postalCode,
+      // b.location.postalCode,
       b.location.countryCode
     ]
       .filter(Boolean)
       .join(", ")
-
-    if (locStr) {
-      if (metaLine.length) metaLine.push({ text: " · " })
-      metaLine.push({ text: locStr })
-    }
+    if (locStr) headerPieces.push({ text: locStr })
   }
-  if (metaLine.length) {
-    content.push({ text: metaLine, style: "meta" })
-  }
-
   if (b?.profiles?.length) {
     for (const p of b.profiles) {
-      const label = /*[p.network, p.username].filter(Boolean).join(": ") || */ p.url
-      if (label) {
-        if (metaLine.length) metaLine.push({ text: " · " })
-        metaLine.push(p.url ? { text: label, link: p.url } : { text: label })
+      const label = p.url?.replace(/^https?:\/\/(www\.)?|\/$/g, "")
+      if (!label) continue
+      if (p.url) {
+        headerPieces.push({ text: label, link: p.url })
+      } else {
+        headerPieces.push({ text: label })
       }
     }
+  }
+  if (headerPieces.length) {
+    const sep = " — "
+    const text = headerPieces.flatMap((piece, i) => (i === 0 ? [piece] : [{ text: sep }, piece]))
+    content.push({ text, style: "meta" })
   }
 
   if (b?.summary) {
@@ -231,6 +256,7 @@ function cvToPdfContent(cv: Cv) {
           text: [{ text: `${s.name}: `, bold: true }, { text: kws.join(", ") }],
           margin: [0, 0, 0, 3],
           font: SANS_SERIF_FONT,
+          color: "#444444",
           fontSize: 10,
           lineHeight: 0.8
         })
@@ -245,12 +271,32 @@ function cvToPdfContent(cv: Cv) {
   if (cv.work?.length) {
     content.push({ text: "EXPERIENCE", style: "h2" })
     for (const w of cv.work) {
-      content.push({ text: [w.name, w.position].join(" — "), style: "h3" })
-      const metaParts = [[w.startDate, w.endDate].filter(Boolean).join(" – "), w.location].filter(Boolean)
+      // company and position
+      const { name, position } = w
+      if (name && position) {
+        content.push({
+          text: [name, { text: " — " }, { text: position, bold: false, italics: true }],
+          style: "h3"
+        })
+      } else if (name) {
+        content.push({ text: name, style: "h3" })
+      } else if (position) {
+        content.push({ text: position, style: "h3", bold: false, italics: true })
+      }
+
+      // period and location
+      const metaParts = [
+        [formatDateEnGb(w.startDate), formatDateEnGb(w.endDate)].filter(Boolean).join(" – "),
+        w.location
+      ].filter(Boolean)
       if (metaParts.length) {
         pushParagraph(content, metaParts.join(" · "), sectionStyles.small)
       }
+
+      // summary
       pushParagraph(content, w.summary)
+
+      // highlights
       const hl = w.highlights?.filter(Boolean)
       if (hl?.length) {
         content.push({ ul: hl, style: "ul" })
@@ -278,8 +324,18 @@ function cvToPdfContent(cv: Cv) {
   if (cv.education?.length) {
     content.push({ text: "EDUCATION", style: "h2" })
     for (const e of cv.education) {
-      const title = [e.institution, e.area, e.studyType].filter(Boolean).join(" — ")
-      if (title) content.push({ text: title, style: "h3" })
+      const { institution, area, studyType } = e
+      const titleParts: { text: string; bold?: boolean }[] = []
+      if (institution) titleParts.push({ text: institution, bold: true })
+      if (area) {
+        if (titleParts.length) titleParts.push({ text: " — " })
+        titleParts.push({ text: area, bold: false })
+      }
+      if (studyType) {
+        if (titleParts.length) titleParts.push({ text: " — " })
+        titleParts.push({ text: studyType, bold: false })
+      }
+      if (titleParts.length) content.push({ text: titleParts, style: "h3" })
       pushParagraph(content, e.location, "meta")
     }
   }
