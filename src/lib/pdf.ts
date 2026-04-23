@@ -9,6 +9,8 @@ import type {
   TFontDictionary
 } from "pdfmake/interfaces"
 
+const READABLE_URL_REGEX = /^https?:\/\/(www\.)?|\/$/g
+
 // MARK: PDF fonts and styles
 
 const SERIF_FONT = "Merriweather"
@@ -161,20 +163,7 @@ function pushParagraph(content: Content[], text?: string, style: StyleReference 
   if (text) content.push({ text, style })
 }
 
-const MONTHS_EN_GB = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec"
-]
+const MONTHS_EN_GB = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
 /** Format ISO8601 date (YYYY, YYYY-MM, YYYY-MM-DD) in UK English short form, e.g. "Oct 2023" or "29 Jun 2014". */
 function formatDateEnGb(iso?: string) {
@@ -207,7 +196,7 @@ function cvToPdfContent(cv: Cv) {
   if (b?.phone) headerPieces.push({ text: b.phone })
   if (b?.url) {
     headerPieces.push({
-      text: b.url.replace(/^https?:\/\/(www\.)?|\/$/g, ""),
+      text: b.url.replace(READABLE_URL_REGEX, ""),
       link: b.url
     })
   }
@@ -225,7 +214,7 @@ function cvToPdfContent(cv: Cv) {
   }
   if (b?.profiles?.length) {
     for (const p of b.profiles) {
-      const label = p.url?.replace(/^https?:\/\/(www\.)?|\/$/g, "")
+      const label = p.url?.replace(READABLE_URL_REGEX, "")
       if (!label) continue
       if (p.url) {
         headerPieces.push({ text: label, link: p.url })
@@ -310,7 +299,7 @@ function cvToPdfContent(cv: Cv) {
     for (const p of cv.projects) {
       if (p.name) content.push({ text: p.name, style: "h3" })
       if (p.url) {
-        content.push({ text: [{ text: p.url, link: p.url }], style: "meta" })
+        content.push({ text: [{ text: p.url.replace(READABLE_URL_REGEX, ""), link: p.url }], style: "meta" })
       }
       pushParagraph(content, p.description)
       const hl = p.highlights?.filter(Boolean)

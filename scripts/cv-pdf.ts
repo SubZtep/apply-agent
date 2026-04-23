@@ -1,10 +1,11 @@
 #!/usr/bin/env bun
 import path from "node:path"
+import stripJsonComments from "strip-json-comments"
 import { renderCvPdf, type Cv } from "#/lib/pdf"
 
 const args = process.argv.slice(2).filter((a) => a !== "--")
 
-const defaultInput = path.join(import.meta.dir, "..", "data", "cv.json")
+const defaultInput = path.join(import.meta.dir, "..", "data", "cv.jsonc")
 const inputPath =
   args[0] !== undefined ? path.resolve(args[0]) : path.resolve(defaultInput)
 const outputPath =
@@ -26,7 +27,7 @@ if (!(await inputFile.exists())) {
 
 let cv: Cv
 try {
-  cv = JSON.parse(await inputFile.text()) as Cv
+  cv = JSON.parse(stripJsonComments(await inputFile.text())) as Cv
 } catch (e) {
   console.error(`Invalid JSON: ${inputPath}`, e)
   process.exit(1)
